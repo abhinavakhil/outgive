@@ -1,92 +1,185 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, Globe01, Minus, Plus } from "@untitledui/icons";
+import { ArrowRight, Brush03, Minus, Plus, User01 } from "@untitledui/icons";
 import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/modal";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { Badge } from "@/components/base/badges/badges";
 import { Button } from "@/components/base/buttons/button";
 import { Input } from "@/components/base/input/input";
 import { NativeSelect } from "@/components/base/select/select-native";
-import { Container, FIELD, Logo, PillSelect, ThemeToggle, useApp } from "@/components/outgive/shared";
-import { CAUSES, CURRENCIES, REGIONS, initials } from "@/data";
+import { BrandPanel } from "@/components/outgive/BrandPanel";
+import { BrandLogo, Container, FIELD, PillSelect, ThemeToggle, useApp } from "@/components/outgive/shared";
+import { CURRENCIES, KINDS, REGIONS, type Supporter, VARIANTS, type Variant, initials } from "@/data";
 import { cx } from "@/utils/cx";
 
 const ago = (m: number) => (m < 1 ? "just now" : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} h ago` : `${Math.round(m / 1440)} d ago`);
 const opts = (xs: string[]) => xs.map((x) => ({ label: x, value: x }));
+type Row = Supporter & { rank: number };
+const YOU = "ring-2 ring-brand ring-offset-2 ring-offset-bg-primary";
+const one = (kind: string) => ({ Individuals: "Individual", Teams: "Team", Companies: "Company", Schools: "School" })[kind] ?? kind;
 
 export const Leaderboard = () => {
-    const { go, money, currency, setCurrency, orgs, setOrgs, activity, setActivity } = useApp();
+    const { go, money, currency, setCurrency, board, setBoard, activity, setActivity, brand, setBrand } = useApp();
     const [period, setPeriod] = useState<"total" | "today">("total");
-    const [cause, setCause] = useState("All");
+    const [kind, setKind] = useState("All");
     const [region, setRegion] = useState("Worldwide");
     const [open, setOpen] = useState<number | null>(null);
     const [bump, setBump] = useState(1);
     const [heroName, setHeroName] = useState("");
-    const [heroCause, setHeroCause] = useState("");
+    const [heroKind, setHeroKind] = useState("");
     const [claim, setClaim] = useState<{ usd: number; rank: number } | null>(null);
-    const [form, setForm] = useState({ name: "", tagline: "", domain: "", country: "", cause: CAUSES[0], region: REGIONS[0], amount: "" });
+    const [form, setForm] = useState({ name: "", tagline: "", page: "", country: "", kind: KINDS[0], region: REGIONS[0], amount: "" });
     const [error, setError] = useState("");
     const [toast, setToast] = useState("");
+    const [you, setYou] = useState<number | null>(null);
+    const [branding, setBranding] = useState(false);
+    const variant = brand.variant;
 
     useEffect(() => { if (!toast) return; const id = setTimeout(() => setToast(""), 4000); return () => clearTimeout(id); }, [toast]);
+    useEffect(() => { if (you !== null) document.getElementById(`row-${you}`)?.scrollIntoView({ behavior: "smooth", block: "center" }); }, [you, variant]);
 
     const rate = CURRENCIES[currency];
-    const byTotal = useMemo(() => [...orgs].sort((a, b) => b.total - a.total), [orgs]);
-    const ranked = useMemo(() => [...orgs].sort((a, b) => b[period] - a[period]).map((o, i) => ({ ...o, rank: i + 1 })), [orgs, period]);
-    const shown = ranked.filter((o) => (cause === "All" || o.cause === cause) && (region === "Worldwide" || o.region === region));
-    const todayTotal = money(orgs.reduce((n, o) => n + o.today, 0));
-    const todayTop = useMemo(() => [...orgs].sort((a, b) => b.today - a.today).slice(0, 5), [orgs]);
-    const heroUsd = byTotal[0].total + bump;
-    const existing = orgs.find((o) => o.name.toLowerCase() === form.name.trim().toLowerCase());
+    const byTotal = useMemo(() => [...board].sort((a, b) => b.total - a.total), [board]);
+    const ranked: Row[] = useMemo(() => [...board].sort((a, b) => b[period] - a[period]).map((o, i) => ({ ...o, rank: i + 1 })), [board, period]);
+    const shown = ranked.filter((o) => (kind === "All" || o.kind === kind) && (region === "Worldwide" || o.region === region));
+    const todayTotal = money(board.reduce((n, o) => n + o.today, 0));
+    const todayTop = useMemo(() => [...board].sort((a, b) => b.today - a.today).slice(0, 5), [board]);
+    const heroUsd = (byTotal[0]?.total ?? 0) + bump;
+    const existing = board.find((o) => o.name.toLowerCase() === form.name.trim().toLowerCase());
 
-    const openClaim = (usd: number, rank: number, name = "", causeName = "") => {
-        setForm({ name, tagline: "", domain: "", country: "", cause: causeName || CAUSES[0], region: REGIONS[0], amount: String(Math.ceil(usd * rate)) });
+    const openClaim = (usd: number, rank: number, name = "", kindName = "") => {
+        setForm({ name, tagline: "", page: "", country: "", kind: kindName || KINDS[0], region: REGIONS[0], amount: String(Math.ceil(usd * rate)) });
         setError(""); setClaim({ usd, rank });
     };
     const submit = () => {
         if (!claim) return;
         const amount = Number(form.amount); const name = form.name.trim(); const usd = Math.round(amount / rate);
-        if (!name) return setError("Enter the charity's name.");
+        if (!name) return setError("Enter your name, or your team's.");
         if (!(amount >= Math.ceil(claim.usd * rate))) return setError(`Rank #${claim.rank} needs at least ${money(claim.usd)}.`);
         if (existing && usd <= existing.total) return setError(`${existing.name} already stands at ${money(existing.total)}. Give more than that.`);
-        setOrgs((prev) => existing
+        const id = existing?.id ?? Date.now();
+        setBoard((prev) => existing
             ? prev.map((o) => (o.id === existing.id ? { ...o, total: usd, today: o.today + (usd - o.total) } : o))
-            : [...prev, { id: Date.now(), name, tagline: form.tagline.trim() || "Newly listed", cause: form.cause, region: form.region, country: form.country.trim() || form.region, domain: form.domain.trim().replace(/^https?:\/\//, "") || "not added", total: usd, today: usd, clicks: 0, days: 0 }]);
+            : [...prev, { id, name, tagline: form.tagline.trim() || "Newly listed", kind: form.kind, region: form.region, country: form.country.trim() || form.region, page: form.page.trim().replace(/^https?:\/\//, ""), total: usd, today: usd, visits: 0, days: 0 }]);
         setActivity((a) => [{ who: name, usd, at: Date.now() }, ...a]);
-        setClaim(null); setBump(1); setPeriod("total"); setCause("All"); setRegion("Worldwide"); setHeroName("");
-        setToast(`${name} claimed its rank with ${money(usd)}`);
+        setClaim(null); setBump(1); setPeriod("total"); setKind("All"); setRegion("Worldwide"); setHeroName(""); setYou(id);
+        setToast(`${name} claimed #${claim.rank} with ${money(usd)}`);
     };
 
     const pill = (on: boolean) => cx("shrink-0 cursor-pointer rounded-full px-3.5 py-1.5 text-sm font-semibold outline-focus-ring transition focus-visible:outline-2", on ? "bg-brand-solid text-white shadow-xs" : "text-tertiary hover:text-primary");
+    const claimLink = (o: Row) => <button type="button" onClick={() => openClaim(o.total + 1, byTotal.findIndex((x) => x.id === o.id) + 1)} className="cursor-pointer font-semibold text-brand-secondary underline-offset-2 hover:underline">claim for {money(o.total + 1)}</button>;
+    const meta = (o: Row) => (
+        <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-tertiary"><span className="font-semibold text-secondary">{one(o.kind)}</span><span>·</span><span>{o.country}</span><span>·</span><span>{o.visits.toLocaleString("en")} visits</span><span>·</span>
+            <button type="button" aria-expanded={open === o.id} onClick={() => setOpen(open === o.id ? null : o.id)} className="cursor-pointer underline-offset-2 hover:text-primary hover:underline">{open === o.id ? "hide details" : "see details"}</button><span>·</span>{claimLink(o)}</div>
+    );
+    const details = (o: Row) => open === o.id && <p className="mt-2 max-w-prose text-sm text-tertiary">{o.name} is giving from {o.country} ({o.region}). All-time {money(o.total)}, today {money(o.today)}. {o.page ? `Fundraising page: ${o.page}. ` : ""}{o.days === 0 ? "Joined the board today." : `On the board for ${o.days} days.`}</p>;
+    const youBadge = (o: Row) => you === o.id && <Badge type="pill-color" color="brand" size="sm">You</Badge>;
+
+    const ListRow = ({ o }: { o: Row }) => (
+        <li id={`row-${o.id}`} className={cx("shrink-0 px-4 py-3", o.rank === 1 ? "rounded-2xl bg-brand-secondary" : o.rank === 2 ? "rounded-2xl bg-brand-primary" : o.rank === 3 ? "rounded-2xl bg-brand-primary/60" : "border-b border-secondary", you === o.id && cx(YOU, "rounded-2xl"))}>
+            <div className="flex items-center gap-3.5">
+                <span className={cx("w-8 text-md font-semibold tabular-nums", o.rank <= 3 ? "text-brand-secondary" : "text-tertiary")}>#{o.rank}</span>
+                <Avatar size="md" initials={initials(o.name)} />
+                <div className="min-w-0 flex-1">
+                    <div className="flex items-baseline justify-between gap-3"><span className="flex min-w-0 items-center gap-2"><span className="truncate text-md font-semibold text-primary">{o.name}</span>{youBadge(o)}</span><span className="shrink-0 text-md font-semibold text-brand-secondary tabular-nums">{money(o[period])}</span></div>
+                    <div className="truncate text-sm text-tertiary">{o.tagline}</div>
+                    {meta(o)}
+                </div>
+            </div>
+            <div className="ml-[3.25rem]">{details(o)}</div>
+        </li>
+    );
+
+    /** Top three on a stand (2, 1, 3 on wide screens), the rest as rows. */
+    const Podium = ({ rows }: { rows: Row[] }) => {
+        const top = rows.slice(0, 3); const order = top.length === 3 ? [top[1], top[0], top[2]] : top;
+        const h: Record<number, string> = { 1: "md:pt-8 md:pb-10 bg-brand-secondary", 2: "md:mt-10 bg-brand-primary", 3: "md:mt-16 bg-brand-primary/60" };
+        return (
+            <>
+                <ol className="grid gap-3 md:grid-cols-3 md:items-end">
+                    {order.map((o) => (
+                        <li key={o.id} id={`row-${o.id}`} className={cx("flex flex-col items-center gap-2 rounded-3xl px-4 py-6 text-center", o.rank === 1 ? "max-md:order-first" : o.rank === 3 ? "max-md:order-last" : "max-md:order-2", h[o.rank], you === o.id && YOU)}>
+                            <span className={cx("flex items-center justify-center rounded-full font-bold", o.rank === 1 ? "size-9 bg-brand-solid text-md text-white" : "size-7 bg-brand-secondary text-sm text-brand-secondary")}>{o.rank}</span>
+                            <Avatar size={o.rank === 1 ? "2xl" : "xl"} initials={initials(o.name)} className="mt-1" />
+                            <span className="flex items-center gap-2"><span className="text-lg font-semibold text-primary">{o.name}</span>{youBadge(o)}</span>
+                            <span className={cx("font-semibold tracking-tight text-brand-secondary tabular-nums", o.rank === 1 ? "text-display-sm" : "text-display-xs")}>{money(o[period])}</span>
+                            <span className="line-clamp-2 text-sm text-tertiary">{o.tagline}</span>
+                            <span className="text-xs text-tertiary">{one(o.kind)} · {o.country}</span>
+                            <span className="text-xs">{claimLink(o)}</span>
+                        </li>
+                    ))}
+                </ol>
+                {rows.length > 3 && <ol className="mt-3 flex flex-col gap-1.5">{rows.slice(3).map((o) => <ListRow key={o.id} o={o} />)}</ol>}
+            </>
+        );
+    };
+
+    /** Every row is a bar relative to #1, so the gap to the next rank is visible at a glance. */
+    const Race = ({ rows }: { rows: Row[] }) => {
+        const max = Math.max(1, ...rows.map((o) => o[period]));
+        return (
+            <ol className="flex flex-col gap-2">
+                {rows.map((o) => (
+                    <li key={o.id} id={`row-${o.id}`} className={cx("rounded-2xl px-3 py-2", you === o.id && YOU)}>
+                        <div className="flex items-center gap-3">
+                            <span className={cx("w-7 text-sm font-semibold tabular-nums", o.rank <= 3 ? "text-brand-secondary" : "text-tertiary")}>#{o.rank}</span>
+                            <Avatar size="sm" initials={initials(o.name)} />
+                            <div className="min-w-0 flex-1">
+                                <div className="mb-1 flex items-baseline justify-between gap-3 text-sm"><span className="flex min-w-0 items-center gap-2"><span className="truncate font-semibold text-primary">{o.name}</span>{youBadge(o)}<span className="hidden truncate text-xs text-tertiary sm:inline">{o.tagline}</span></span>
+                                    <button type="button" aria-expanded={open === o.id} onClick={() => setOpen(open === o.id ? null : o.id)} className="shrink-0 cursor-pointer text-xs text-tertiary hover:text-primary">{one(o.kind)} · {o.country}</button></div>
+                                <div className="flex items-center gap-2">
+                                    <div className="h-7 flex-1 overflow-hidden rounded-full bg-secondary">
+                                        <div className={cx("flex h-full min-w-[4.5rem] items-center justify-end rounded-full px-2.5 text-xs font-semibold tabular-nums transition-[width] duration-700", o.rank === 1 ? "bg-brand-solid text-white" : o.rank <= 3 ? "bg-brand-400 text-white" : "bg-brand-secondary text-brand-secondary")} style={{ width: `${Math.max(8, (o[period] / max) * 100)}%` }}>{money(o[period])}</div>
+                                    </div>
+                                    <span className="hidden shrink-0 text-xs sm:inline">{claimLink(o)}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="ml-[4.25rem]">{details(o)}</div>
+                    </li>
+                ))}
+            </ol>
+        );
+    };
+
     return (
         <div className="flex min-h-dvh flex-col bg-primary">
             <Container className="flex flex-1 flex-col gap-4 py-5 lg:max-w-[1000px]">
                 <header className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
-                    <div className="flex items-center gap-3"><Logo /><span className="hidden items-center gap-2 rounded-full bg-primary px-3 py-1 text-xs text-tertiary ring-1 ring-secondary ring-inset sm:flex"><span className="size-1.5 rounded-full bg-success-solid" /><span className="font-semibold text-success-primary">{orgs.length} listed</span>· {todayTotal} given today</span></div>
+                    <div className="flex min-w-0 items-center gap-3"><BrandLogo /><span className="hidden items-center gap-2 rounded-full bg-primary px-3 py-1 text-xs text-tertiary ring-1 ring-secondary ring-inset md:flex"><span className="size-1.5 rounded-full bg-success-solid" /><span className="font-semibold text-success-primary">{board.length} on the board</span>· {todayTotal} given today</span></div>
                     <nav aria-label="Main" className="flex items-center gap-1 text-sm font-medium text-tertiary sm:gap-2">
                         {([["page", "Layouts"], ["about", "About"], ["rules", "Rules"]] as const).map(([n, l]) => <button key={n} type="button" onClick={() => go({ name: n })} className="cursor-pointer rounded-full px-2.5 py-1.5 outline-focus-ring transition hover:text-primary focus-visible:outline-2 max-sm:last:hidden">{l}</button>)}
                         <PillSelect label="Currency" size="sm" className="w-24" value={currency} onChange={setCurrency} options={Object.keys(CURRENCIES)} />
                         <ThemeToggle />
+                        <Button color="secondary" size="sm" className="rounded-full" iconLeading={Brush03} onPress={() => setBranding(true)}>Your branding</Button>
                         <Button color="primary" size="sm" className="rounded-full" onPress={() => go({ name: "create" })}>Start fundraising</Button>
                     </nav>
                 </header>
 
-                <div className="no-scrollbar flex gap-1 overflow-x-auto rounded-full bg-secondary p-1.5 ring-1 ring-secondary ring-inset" role="group" aria-label="Cause">
-                    {["All", ...CAUSES].map((c) => <button key={c} type="button" aria-pressed={cause === c} onClick={() => setCause(c)} className={pill(cause === c)}>{c}</button>)}
+                <div className="no-scrollbar flex gap-1 overflow-x-auto rounded-full bg-secondary p-1.5 ring-1 ring-secondary ring-inset" role="group" aria-label="Who">
+                    {["All", ...KINDS].map((c) => <button key={c} type="button" aria-pressed={kind === c} onClick={() => setKind(c)} className={pill(kind === c)}>{c}</button>)}
                 </div>
 
                 <section className="flex flex-col items-center gap-3 py-2">
-                    <div role="group" aria-label="Period" className="flex gap-1 rounded-full bg-primary p-1 ring-1 ring-secondary ring-inset">
-                        {([["total", "All-time"], ["today", "Today"]] as const).map(([k, l]) => <button key={k} type="button" aria-pressed={period === k} onClick={() => setPeriod(k)} className={pill(period === k)}>{l}</button>)}
+                    <div className="flex flex-wrap justify-center gap-2">
+                        <div role="group" aria-label="Period" className="flex gap-1 rounded-full bg-primary p-1 ring-1 ring-secondary ring-inset">
+                            {([["total", "All-time"], ["today", "Today"]] as const).map(([k, l]) => <button key={k} type="button" aria-pressed={period === k} onClick={() => setPeriod(k)} className={pill(period === k)}>{l}</button>)}
+                        </div>
+                        <div role="group" aria-label="Layout" className="flex gap-1 rounded-full bg-primary p-1 ring-1 ring-secondary ring-inset">
+                            {VARIANTS.map(([k, l]) => <button key={k} type="button" aria-pressed={variant === k} onClick={() => setBrand({ ...brand, variant: k as Variant })} className={pill(variant === k)}>{l}</button>)}
+                        </div>
                     </div>
-                    <h1 className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center text-display-sm font-semibold tracking-tight text-primary md:text-display-lg">
-                        <span>Take #1 for</span>
-                        <button type="button" aria-label="Lower amount" onClick={() => setBump((b) => Math.max(1, b - 100))} className="flex size-6 cursor-pointer items-center justify-center rounded-full bg-brand-secondary text-brand-secondary outline-focus-ring focus-visible:outline-2"><Minus className="size-3.5" /></button>
-                        <span className="text-brand-secondary tabular-nums">{money(heroUsd)}</span>
-                        <button type="button" aria-label="Raise amount" onClick={() => setBump((b) => (b === 1 ? 100 : b + 100))} className="flex size-6 cursor-pointer items-center justify-center rounded-full bg-brand-secondary text-brand-secondary outline-focus-ring focus-visible:outline-2"><Plus className="size-3.5" /></button>
+                    <h1 className="flex flex-col items-center gap-y-1 text-center text-display-sm font-semibold tracking-tight text-primary md:text-display-lg">
+                        <span>Take #1 for {brand.name}</span>
+                        <span className="flex items-center gap-3">
+                            <button type="button" aria-label="Lower amount" onClick={() => setBump((b) => Math.max(1, b - 100))} className="flex size-7 cursor-pointer items-center justify-center rounded-full bg-brand-secondary text-brand-secondary outline-focus-ring focus-visible:outline-2"><Minus className="size-4" /></button>
+                            <span className="text-brand-secondary tabular-nums">{money(heroUsd)}</span>
+                            <button type="button" aria-label="Raise amount" onClick={() => setBump((b) => (b === 1 ? 100 : b + 100))} className="flex size-7 cursor-pointer items-center justify-center rounded-full bg-brand-secondary text-brand-secondary outline-focus-ring focus-visible:outline-2"><Plus className="size-4" /></button>
+                        </span>
                     </h1>
-                    <form className="flex w-full max-w-3xl flex-col gap-2 sm:flex-row" onSubmit={(e) => { e.preventDefault(); openClaim(heroUsd, 1, heroName, heroCause); }}>
-                        <label className="relative flex-1"><Globe01 aria-hidden="true" className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-quaternary" /><input aria-label="Charity name or website" className={cx(FIELD, "w-full pl-10")} placeholder="Charity name or website" value={heroName} onChange={(e) => setHeroName(e.target.value)} /></label>
-                        <PillSelect label="Cause" className="sm:w-52" value={heroCause} onChange={setHeroCause} options={CAUSES} placeholder="Choose a cause" />
+                    <p className="-mt-1 text-center text-sm text-tertiary">{brand.tagline}. Every gift goes to {brand.name}; your name goes on the board.</p>
+                    <form className="flex w-full max-w-3xl flex-col gap-2 sm:flex-row" onSubmit={(e) => { e.preventDefault(); openClaim(heroUsd, 1, heroName, heroKind); }}>
+                        <label className="relative flex-1"><User01 aria-hidden="true" className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-quaternary" /><input aria-label="Your name or team" className={cx(FIELD, "w-full pl-10")} placeholder="Your name, team or company" value={heroName} onChange={(e) => setHeroName(e.target.value)} /></label>
+                        <PillSelect label="Giving as" className="sm:w-48" value={heroKind} onChange={setHeroKind} options={KINDS} placeholder="Giving as" />
                         <button type="submit" className="h-11 cursor-pointer rounded-full bg-brand-solid px-6 text-md font-semibold text-white shadow-xs outline-focus-ring transition hover:bg-brand-solid_hover focus-visible:outline-2 focus-visible:outline-offset-2">Claim rank</button>
                     </form>
                 </section>
@@ -94,28 +187,10 @@ export const Leaderboard = () => {
                 <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_230px]">
                     <main className="flex min-w-0 flex-col gap-2">
                         <div className="flex items-center justify-between gap-3"><h2 className="text-sm font-semibold text-tertiary">{period === "total" ? "All-time ranking" : "Today's ranking"} · {shown.length}</h2><PillSelect label="Region" size="sm" className="w-44" value={region} onChange={setRegion} options={["Worldwide", ...REGIONS]} /></div>
-                        <ol className="flex flex-col gap-1.5">
-                            {shown.length === 0 && <li className="rounded-2xl bg-secondary p-5 text-sm text-tertiary">No charities here yet. Be the first to list one for this cause and region.</li>}
-                            {shown.map((o) => {
-                                const top = o.rank <= 3; const totalRank = byTotal.findIndex((x) => x.id === o.id) + 1;
-                                return (
-                                    <li key={o.id} className={cx("shrink-0 px-4 py-3", o.rank === 1 ? "rounded-2xl bg-brand-secondary" : o.rank === 2 ? "rounded-2xl bg-brand-primary" : o.rank === 3 ? "rounded-2xl bg-brand-primary/60" : "border-b border-secondary")}>
-                                        <div className="flex items-center gap-3.5">
-                                            <span className={cx("w-8 text-md font-semibold tabular-nums", top ? "text-brand-secondary" : "text-tertiary")}>#{o.rank}</span>
-                                            <Avatar size="md" initials={initials(o.name)} />
-                                            <div className="min-w-0 flex-1">
-                                                <div className="flex items-baseline justify-between gap-3"><span className="truncate text-md font-semibold text-primary">{o.name}</span><span className="shrink-0 text-md font-semibold text-brand-secondary tabular-nums">{money(o[period])}</span></div>
-                                                <div className="truncate text-sm text-tertiary">{o.tagline}</div>
-                                                <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-tertiary"><span className="font-semibold text-secondary">{o.cause}</span><span>·</span><span>{o.country}</span><span>·</span><span>{o.clicks.toLocaleString("en")} clicks</span><span>·</span>
-                                                    <button type="button" aria-expanded={open === o.id} onClick={() => setOpen(open === o.id ? null : o.id)} className="cursor-pointer underline-offset-2 hover:text-primary hover:underline">{open === o.id ? "hide details" : "see details"}</button><span>·</span>
-                                                    <button type="button" onClick={() => openClaim(o.total + 1, totalRank)} className="cursor-pointer font-semibold text-brand-secondary underline-offset-2 hover:underline">claim for {money(o.total + 1)}</button></div>
-                                            </div>
-                                        </div>
-                                        {open === o.id && <p className="mt-2 ml-[3.25rem] max-w-prose text-sm text-tertiary">{o.name} works in {o.country} ({o.region}) on {o.cause.toLowerCase()}. All-time {money(o.total)}, today {money(o.today)}. Its listing links to {o.domain}, {o.days === 0 ? "and it was listed today" : `and it has been on the board for ${o.days} days`}.</p>}
-                                    </li>
-                                );
-                            })}
-                        </ol>
+                        {shown.length === 0 && <p className="rounded-2xl bg-secondary p-5 text-sm text-tertiary">Nobody here yet. Be the first to claim a rank for this group and region.</p>}
+                        {shown.length > 0 && variant === "list" && <ol className="flex flex-col gap-1.5">{shown.map((o) => <ListRow key={o.id} o={o} />)}</ol>}
+                        {shown.length > 0 && variant === "podium" && <Podium rows={shown} />}
+                        {shown.length > 0 && variant === "race" && <Race rows={shown} />}
                     </main>
 
                     <aside className="flex min-w-0 flex-col gap-5">
@@ -126,30 +201,36 @@ export const Leaderboard = () => {
                             <ul className="flex flex-col gap-2 text-xs text-tertiary">{activity.slice(0, 4).map((a, i) => (<li key={i}><span className="font-semibold text-primary">{a.who}</span> claimed a rank with {money(a.usd)} · {ago(Math.round((Date.now() - a.at) / 60000))}</li>))}</ul>
                         </section>
                         <div className="flex flex-col items-start gap-2 rounded-2xl bg-brand-primary p-4">
-                            <h2 className="text-sm font-semibold text-primary">Raising money yourself?</h2>
-                            <p className="text-xs text-tertiary">Fundraiser, campaign, team, challenge or event, in 12 layouts.</p>
+                            <h2 className="text-sm font-semibold text-primary">Fundraising for {brand.name}?</h2>
+                            <p className="text-xs text-tertiary">Set up a page in one of 12 layouts. Every gift to it counts toward your rank.</p>
                             <Button color="primary" size="sm" className="rounded-full" iconTrailing={ArrowRight} onPress={() => go({ name: "create" })}>Start fundraising</Button>
+                        </div>
+                        <div className="flex flex-col items-start gap-2 rounded-2xl p-4 ring-1 ring-secondary ring-inset">
+                            <h2 className="text-sm font-semibold text-primary">Run this for your charity</h2>
+                            <p className="text-xs text-tertiary">Your name, logo, colour and font. See it in ten seconds.</p>
+                            <Button color="secondary" size="sm" className="rounded-full" iconLeading={Brush03} onPress={() => setBranding(true)}>Your branding</Button>
                         </div>
                     </aside>
                 </div>
                 <footer className="mt-6 flex flex-col items-center gap-3 border-t border-secondary pt-6 pb-4 text-center text-sm text-tertiary">
-                    <p>Since launch, <span className="font-semibold text-primary">{orgs.length}</span> charities have been listed and <span className="font-semibold text-primary">{money(orgs.reduce((n, o) => n + o.total, 0))}</span> has been given in their name.</p>
-                    <p className="text-xs">Demo with fictional charities. No payments are taken.</p>
+                    <p><span className="font-semibold text-primary">{board.length}</span> supporters have given <span className="font-semibold text-primary">{money(board.reduce((n, o) => n + o.total, 0))}</span> to {brand.name} through this board.</p>
+                    <p className="text-xs">Demo with fictional supporters. No payments are taken. White-label leaderboard by outgive.</p>
                     <nav aria-label="Footer" className="flex flex-wrap items-center justify-center gap-x-1 text-xs font-medium">
                         {([["rules", "Rules"], ["faq", "FAQ"], ["about", "About"], ["create", "Start fundraising"]] as const).map(([n, l], i) => <span key={n} className="flex items-center gap-1">{i > 0 && <span>·</span>}<button type="button" onClick={() => go({ name: n })} className="cursor-pointer rounded px-1 hover:text-primary hover:underline">{l}</button></span>)}
                     </nav>
                 </footer>
             </Container>
 
+            <BrandPanel open={branding} onClose={() => setBranding(false)} />
             <ModalOverlay isOpen={!!claim} isDismissable onOpenChange={(o) => { if (!o) setClaim(null); }}>
                 <Modal className="max-w-md"><Dialog aria-label="Claim a rank">
                     <form className="flex flex-col gap-4 p-5 md:p-6" onSubmit={(e) => { e.preventDefault(); submit(); }}>
-                        <div><h2 className="text-lg font-semibold text-primary">Claim rank #{claim?.rank}</h2><p className="text-sm text-tertiary">Give at least {claim ? money(claim.usd) : ""} in a charity's name.</p></div>
-                        <Input label="Charity name" autoFocus placeholder="Type a listed charity or a new one" value={form.name} onChange={(v) => setForm({ ...form, name: v })} />
-                        {existing ? <Badge type="pill-color" color="success" size="md">Already listed. Your gift raises its amount.</Badge> : <>
-                            <Input label="One-line description" value={form.tagline} onChange={(v) => setForm({ ...form, tagline: v })} />
-                            <div className="grid grid-cols-2 gap-3"><Input label="Website" placeholder="charity.org" value={form.domain} onChange={(v) => setForm({ ...form, domain: v })} /><Input label="Country" value={form.country} onChange={(v) => setForm({ ...form, country: v })} /></div>
-                            <div className="grid grid-cols-2 gap-3"><NativeSelect label="Cause" value={form.cause} onChange={(e) => setForm({ ...form, cause: e.target.value })} options={opts(CAUSES)} /><NativeSelect label="Region" value={form.region} onChange={(e) => setForm({ ...form, region: e.target.value })} options={opts(REGIONS)} /></div>
+                        <div><h2 className="text-lg font-semibold text-primary">Claim rank #{claim?.rank}</h2><p className="text-sm text-tertiary">Give at least {claim ? money(claim.usd) : ""} to {brand.name}.</p></div>
+                        <Input label="Your name" autoFocus placeholder="You, your team or your company" value={form.name} onChange={(v) => setForm({ ...form, name: v })} />
+                        {existing ? <Badge type="pill-color" color="success" size="md">Already on the board. Your gift raises your total.</Badge> : <>
+                            <Input label="One line about why you're giving" value={form.tagline} onChange={(v) => setForm({ ...form, tagline: v })} />
+                            <div className="grid grid-cols-2 gap-3"><Input label="Fundraising page" placeholder="optional link" value={form.page} onChange={(v) => setForm({ ...form, page: v })} /><Input label="Country" value={form.country} onChange={(v) => setForm({ ...form, country: v })} /></div>
+                            <div className="grid grid-cols-2 gap-3"><NativeSelect label="Giving as" value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value })} options={opts(KINDS)} /><NativeSelect label="Region" value={form.region} onChange={(e) => setForm({ ...form, region: e.target.value })} options={opts(REGIONS)} /></div>
                         </>}
                         <Input label={`Gift amount (${currency})`} type="number" value={form.amount} onChange={(v) => setForm({ ...form, amount: v })} isInvalid={!!error} hint={error || "Demo only. No payment is taken."} />
                         <div className="flex justify-end gap-3 pt-1"><Button size="md" color="secondary" onPress={() => setClaim(null)}>Cancel</Button><Button size="md" color="primary" type="submit">Give and claim</Button></div>

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AppContext, type View, makeMoney } from "@/components/outgive/shared";
-import { ACTIVITY, type Activity, CAUSES, CHARITIES, type Charity, type Donation, NO_CHARITY, PREFIX, type PageData, type PageUpdate, REGIONS, REGION_OF, SAMPLE_PAGE, pageKey } from "@/data";
+import { AppContext, type View, makeMoney, typeOf } from "@/components/outgive/shared";
+import { applyBrand } from "@/brand";
+import { ACTIVITY, type Activity, type Brand, DEFAULT_BRAND, type Donation, PREFIX, type PageData, type PageUpdate, REGIONS, REGION_OF, SAMPLE_PAGE, SUPPORTERS, type Supporter, pageKey } from "@/data";
 import { CampaignPage } from "@/views/CampaignPage";
 import { CreateFlow } from "@/views/CreateFlow";
 import { Info } from "@/views/Info";
@@ -25,8 +26,14 @@ export const App = () => {
     const [view, setView] = useState<View>(() => parse(window.location.pathname));
     const [currency, setCurrency] = useState("USD");
     const [pages, setPages] = useState<Record<string, PageData>>(() => load(STORE, {}));
-    const [orgs, setOrgs] = useState<Charity[]>(() => load("outgive.orgs", CHARITIES));
+    const [board, setBoard] = useState<Supporter[]>(() => load("outgive.board", SUPPORTERS));
     const [activity, setActivity] = useState<Activity[]>(() => load("outgive.activity", ACTIVITY));
+    const [brand, setBrandState] = useState<Brand>(() => ({ ...DEFAULT_BRAND, ...load("outgive.brand", {}) }));
+    const setBrand = useCallback((b: Brand) => {
+        setBrandState(b); applyBrand(b);
+        try { localStorage.setItem("outgive.brand", JSON.stringify(b)); } catch { /* a big logo can exceed the quota: brand lasts until reload */ }
+    }, []);
+    useEffect(() => { applyBrand(brand); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         const onPop = () => setView(parse(window.location.pathname));
@@ -37,16 +44,16 @@ export const App = () => {
         try { localStorage.setItem(STORE, JSON.stringify(pages)); } catch { /* storage full or unavailable: pages last until reload */ }
     }, [pages]);
     useEffect(() => {
-        try { localStorage.setItem("outgive.orgs", JSON.stringify(orgs)); localStorage.setItem("outgive.activity", JSON.stringify(activity.slice(0, 30))); } catch { /* storage full or unavailable */ }
-    }, [orgs, activity]);
-    useEffect(() => { document.title = view.name === "page" ? "Outgive. Fundraising page" : "Outgive. Claim a rank on the public leaderboard"; }, [view]);
+        try { localStorage.setItem("outgive.board", JSON.stringify(board)); localStorage.setItem("outgive.activity", JSON.stringify(activity.slice(0, 30))); } catch { /* storage full or unavailable */ }
+    }, [board, activity]);
+    useEffect(() => { document.title = view.name === "page" ? `${brand.name}. Fundraising page` : `${brand.name}. Leaderboard`; }, [view, brand.name]);
 
     const go = useCallback((v: View) => {
         setView(v);
         try { window.history.pushState(null, "", toPath(v)); } catch { /* history unavailable */ }
         window.scrollTo(0, 0);
     }, []);
-    const ctx = useMemo(() => ({ currency, setCurrency, go, money: makeMoney(currency), orgs, setOrgs, activity, setActivity }), [currency, go, orgs, activity]);
+    const ctx = useMemo(() => ({ currency, setCurrency, go, money: makeMoney(currency), board, setBoard, activity, setActivity, brand, setBrand }), [currency, go, board, activity, brand, setBrand]);
 
     /** Saves a new page under a free URL and returns its key. */
     const publish = (p: PageData) => {
@@ -63,14 +70,14 @@ export const App = () => {
         const target = key === pageKey(SAMPLE_PAGE) ? sample : pages[key];
         if (key === pageKey(SAMPLE_PAGE)) setSample(bump);
         else setPages((all) => (all[key] ? { ...all, [key]: bump(all[key]) } : all));
-        if (target && target.org.trim() && target.org !== NO_CHARITY) credit(target, d.usd);
+        if (target && target.title.trim()) credit(target, d.usd);
     };
-    /** A gift on a page counts toward its charity's rank on the board; a charity that isn't listed yet is added. */
+    /** A gift on a page counts toward that page's rank on the charity's board; a page that isn't listed yet is added. */
     const credit = (p: PageData, usd: number) => {
-        const name = p.org.trim();
-        setOrgs((all) => all.some((c) => c.name.toLowerCase() === name.toLowerCase())
+        const name = p.title.trim();
+        setBoard((all) => all.some((c) => c.name.toLowerCase() === name.toLowerCase())
             ? all.map((c) => (c.name.toLowerCase() === name.toLowerCase() ? { ...c, total: c.total + usd, today: c.today + usd } : c))
-            : [...all, { id: Date.now(), name, tagline: p.title, cause: p.causes.find((c) => CAUSES.includes(c)) ?? CAUSES[0], region: REGION_OF[p.country] ?? REGIONS[0], country: p.country, domain: "not added", total: usd, today: usd, clicks: 0, days: 0 }]);
+            : [...all, { id: Date.now(), name, tagline: typeOf(p).label + " page", kind: p.type === "team" ? "Teams" : "Individuals", region: REGION_OF[p.country] ?? REGIONS[0], country: p.country, page: "/" + pageKey(p), total: usd, today: usd, visits: 0, days: 0 }]);
         setActivity((a) => [{ who: name, usd, at: Date.now() }, ...a]);
     };
 

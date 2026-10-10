@@ -6,11 +6,29 @@ import { Button } from "@/components/base/buttons/button";
 import { ProgressBarBase } from "@/components/base/progress-indicators/progress-indicators";
 import { cx } from "@/utils/cx";
 import { CoverMedia, DescriptionView } from "@/components/outgive/media";
-import { type Activity, type Charity, CURRENCIES, LEVELS, PAGE_TYPES, PEOPLE, type LayoutId, type PageData, type PageUpdate, initials } from "@/data";
+import { type Activity, type Brand, type Supporter, CURRENCIES, LEVELS, PAGE_TYPES, PEOPLE, type LayoutId, type PageData, type PageUpdate, initials } from "@/data";
 
 export type View = { name: "home" } | { name: "create" } | { name: "page"; key?: string } | { name: "about" } | { name: "rules" } | { name: "faq" } | { name: "notfound" };
-export const AppContext = createContext<{ currency: string; setCurrency: (c: string) => void; go: (v: View) => void; money: (usd: number) => string; orgs: Charity[]; setOrgs: Dispatch<SetStateAction<Charity[]>>; activity: Activity[]; setActivity: Dispatch<SetStateAction<Activity[]>> }>(null!);
+export const AppContext = createContext<{ currency: string; setCurrency: (c: string) => void; go: (v: View) => void; money: (usd: number) => string; board: Supporter[]; setBoard: Dispatch<SetStateAction<Supporter[]>>; activity: Activity[]; setActivity: Dispatch<SetStateAction<Activity[]>>; brand: Brand; setBrand: (b: Brand) => void }>(null!);
 export const useApp = () => useContext(AppContext);
+
+/** The charity's mark: its uploaded logo, or its initials in the brand colour. */
+export const BrandMark = ({ className }: { className?: string }) => {
+    const { brand } = useApp();
+    return brand.logo
+        ? <img src={brand.logo} alt="" className={cx("size-9 shrink-0 rounded-xl object-cover", className)} />
+        : <span className={cx("flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-solid text-sm font-bold text-white", className)}>{initials(brand.name) || "?"}</span>;
+};
+/** The charity's name and mark; links home. */
+export const BrandLogo = ({ onClick }: { onClick?: () => void }) => {
+    const { brand } = useApp();
+    return (
+        <button type="button" onClick={onClick} className="flex min-w-0 cursor-pointer items-center gap-2.5 rounded-md text-left outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2">
+            <BrandMark />
+            <span className="min-w-0"><span className="block truncate text-lg leading-tight font-semibold tracking-tight text-primary">{brand.name}</span><span className="block text-[11px] leading-tight text-tertiary">Leaderboard · powered by outgive</span></span>
+        </button>
+    );
+};
 /** The page being viewed. Lets shared sections show an empty state on a newly published page instead of sample people. */
 export const PageContext = createContext<PageData | null>(null);
 export const makeMoney = (currency: string) => (usd: number) =>
@@ -49,7 +67,7 @@ export const SiteHeader = ({ right }: { right?: ReactNode }) => {
     const { go } = useApp();
     return (
         <header className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-4"><Logo onClick={() => go({ name: "home" })} /></div>
+            <div className="flex items-center gap-4"><BrandLogo onClick={() => go({ name: "home" })} /></div>
             <nav aria-label="Main" className="flex items-center gap-1 text-sm font-medium text-tertiary sm:gap-2">
                 {(["about", "rules", "faq"] as const).map((n) => (
                     <button key={n} type="button" onClick={() => go({ name: n })} className="hidden cursor-pointer rounded-full px-3 py-1.5 capitalize outline-focus-ring transition hover:text-primary focus-visible:outline-2 sm:block">{n === "faq" ? "FAQ" : n}</button>
@@ -112,10 +130,10 @@ export const Raised = ({ p, size = "lg" }: { p: PageData; size?: "lg" | "xl" }) 
     );
 };
 
-/** Where this page's charity stands on the live Outgive board, and what it takes to climb one place. */
-export const boardRank = (p: PageData, orgs: Charity[]) => {
-    const sorted = [...orgs].sort((a, b) => b.total - a.total);
-    const i = sorted.findIndex((c) => c.name.toLowerCase() === p.org.toLowerCase());
+/** Where this page stands on the charity's board, and what it takes to climb one place. */
+export const boardRank = (p: PageData, board: Supporter[]) => {
+    const sorted = [...board].sort((a, b) => b.total - a.total);
+    const i = sorted.findIndex((c) => c.name.toLowerCase() === p.title.toLowerCase());
     const total = i >= 0 ? sorted[i].total : p.raised;
     const next = i >= 0 ? sorted[i - 1] : sorted.filter((c) => c.total >= p.raised).pop();
     return { rank: i >= 0 ? i + 1 : sorted.filter((c) => c.total >= p.raised).length + 1, listed: i >= 0, next, gap: next ? next.total + 1 - total : 0 };
@@ -124,10 +142,10 @@ export const daysLeft = (p: PageData) => (p.endDate ? Math.max(0, Math.ceil((new
 
 /** The sticky donate card: progress, the two actions and the live feed of gifts. */
 export const Donate = ({ p, cta }: { p: PageData; cta?: string }) => {
-    const { money, orgs } = useApp();
+    const { money, board, brand } = useApp();
     const { donate, share, donations } = useContext(PageActions);
     const topUsd = Math.max(0, ...p.donations.map((d) => d.usd));
-    const rank = boardRank(p, orgs);
+    const rank = boardRank(p, board);
     const label = cta ?? (typeOf(p).cta === "Donate" ? "Donate now" : typeOf(p).cta);
     return (
         <Card className="flex flex-col gap-4 md:p-5 lg:sticky lg:top-20">
@@ -142,7 +160,7 @@ export const Donate = ({ p, cta }: { p: PageData; cta?: string }) => {
             <button type="button" onClick={share} className="h-14 w-full cursor-pointer rounded-full bg-primary-solid text-md font-semibold text-white outline-focus-ring transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2">Share</button>
             <div className="flex items-center gap-3 rounded-2xl bg-brand-primary p-3">
                 <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-solid text-sm font-semibold text-white">#{rank.rank}</span>
-                <div className="min-w-0 flex-1 text-sm"><div className="font-semibold text-primary">{rank.listed ? "On the Outgive leaderboard" : "Would rank on the Outgive board"}</div><div className="text-xs text-tertiary">{rank.next ? `${money(rank.gap)} more takes #${rank.rank - 1} from ${rank.next.name}` : "This is the top rank"}</div></div>
+                <div className="min-w-0 flex-1 text-sm"><div className="font-semibold text-primary">{rank.listed ? `On the ${brand.name} leaderboard` : `Would rank on the ${brand.name} board`}</div><div className="text-xs text-tertiary">{rank.next ? `${money(rank.gap)} more takes #${rank.rank - 1} from ${rank.next.name}` : "This is the top rank"}</div></div>
                 {rank.next && <Button size="sm" color="secondary" className="rounded-full" onPress={() => donate(rank.gap)}>Outbid</Button>}
             </div>
             {p.donations.length > 0 && <>

@@ -34,8 +34,9 @@
 
 :root:not(.dark-mode) {
     --color-bg-primary: rgb(253 251 250);
-    --color-bg-brand-primary: rgb(254 241 236);
-    --color-bg-brand-secondary: rgb(252 227 218);
+    /* Brand tints follow the scale so a white-label colour (set on <html> by brand.ts) recolours everything. */
+    --color-bg-brand-primary: var(--color-brand-50);
+    --color-bg-brand-secondary: var(--color-brand-100);
     --color-text-brand-secondary: var(--color-brand-600);
     --color-border-secondary: rgb(237 228 222);
     color-scheme: light;
@@ -47,13 +48,13 @@
     --color-bg-secondary: rgb(31 23 20);
     --color-bg-tertiary: rgb(46 36 31);
     --color-bg-primary_hover: rgb(31 23 20);
-    --color-bg-brand-primary: rgb(40 25 20);
-    --color-bg-brand-secondary: rgb(56 33 26);
+    --color-bg-brand-primary: color-mix(in srgb, var(--color-brand-950) 70%, rgb(21 15 13));
+    --color-bg-brand-secondary: var(--color-brand-950);
     --color-bg-brand-solid: var(--color-brand-600);
     --color-text-primary: rgb(247 241 238);
     --color-text-secondary: rgb(222 211 205);
     --color-text-tertiary: rgb(168 153 145);
-    --color-text-brand-secondary: rgb(240 128 96);
+    --color-text-brand-secondary: var(--color-brand-400);
     --color-text-brand-primary: rgb(247 241 238);
     --color-border-secondary: rgb(51 39 33);
     --color-border-primary: rgb(70 54 46);

@@ -6,51 +6,68 @@ export const REGIONS = ["Africa", "Asia", "Europe", "Latin America", "Middle Eas
 /** Indicative demo rates against USD. Replace with a live rates service. */
 export const CURRENCIES: Record<string, number> = { USD: 1, EUR: 0.92, GBP: 0.78, INR: 84, AED: 3.67 };
 
-export interface Charity { id: number; name: string; tagline: string; cause: string; region: string; country: string; domain: string; total: number; today: number; clicks: number; days: number }
+/** Who can hold a rank on a charity's board. */
+export const KINDS = ["Individuals", "Teams", "Companies", "Schools"];
+/** One row on the board: a supporter ranked by what they have given to the charity. */
+export interface Supporter { id: number; name: string; tagline: string; kind: string; region: string; country: string; page: string; total: number; today: number; visits: number; days: number }
 
-/** Fictional organisations. Demo data only. */
+/** Fictional supporters of the demo charity. Demo data only. */
 const SEED: [string, string, string, string, string][] = [
-    ["Clearwell Trust", "Boreholes and hand pumps for villages past the last road", "Clean Water", "Africa", "Kenya"],
-    ["Second Bell Schools", "Evening classes for children who work during the day", "Education", "Asia", "India"],
-    ["Open Ladle Kitchens", "Hot meals served daily, no questions asked", "Hunger", "Europe", "United Kingdom"],
-    ["Mangrove Line", "Replanting coastal mangroves one kilometre at a time", "Climate", "Asia", "Indonesia"],
-    ["Night Bus Clinic", "A mobile clinic that parks where the hospitals aren't", "Health", "Latin America", "Peru"],
-    ["Paws Over Borders", "Vet care and rehoming for street animals", "Animals", "Europe", "Romania"],
-    ["First Thousand Days", "Nutrition for mothers and babies from pregnancy to age two", "Children", "Africa", "Malawi"],
-    ["Roof Before Rain", "Emergency shelter kits delivered within 72 hours", "Disaster Relief", "Asia", "Philippines"],
-    ["Welcome Table", "Legal help and language classes for new arrivals", "Refugees", "Middle East", "Jordan"],
-    ["Her Ledger", "Bookkeeping training and seed loans for women traders", "Women & Girls", "Africa", "Ghana"],
-    ["Ramp & Rail", "Making public buildings usable for wheelchair users", "Disability", "Latin America", "Colombia"],
-    ["Quiet Line", "A free listening service staffed through the night", "Mental Health", "Oceania", "New Zealand"],
-    ["Tin Roof Collective", "Self-build housing co-ops with shared tools", "Housing", "Africa", "Uganda"],
-    ["Sunday Callers", "Weekly visits and phone calls for people living alone", "Elderly Care", "Europe", "Portugal"],
-    ["Paper Lantern Library", "Travelling libraries on three-wheelers", "Education", "Asia", "Bangladesh"],
-    ["Court Friend", "Free representation for people who can't afford a lawyer", "Human Rights", "North America", "Mexico"],
-    ["Salt Marsh Watch", "Community rangers protecting nesting wetlands", "Climate", "Europe", "Netherlands"],
-    ["Little Lungs", "Paediatric asthma care in high-smog cities", "Health", "Asia", "Pakistan"],
-    ["Loom House", "Keeping handloom weaving alive with paid apprenticeships", "Arts & Culture", "Asia", "India"],
-    ["Harvest Relay", "Rescuing unsold produce from markets to food banks", "Hunger", "North America", "Canada"],
-    ["Stray Hours", "Weekend spay and neuter camps", "Animals", "Asia", "Thailand"],
-    ["River Schoolboats", "Floating classrooms for monsoon-cut-off villages", "Education", "Asia", "Bangladesh"],
-    ["Warm Hall", "Heated community rooms through winter", "Elderly Care", "Europe", "Poland"],
-    ["Kite String Fund", "Bursaries that cover the last year of school", "Children", "Africa", "Nigeria"],
-    ["Two Buckets", "Household water filters and hygiene training", "Clean Water", "Asia", "Nepal"],
-    ["After the Flood", "Rebuilding small farms after extreme weather", "Disaster Relief", "Africa", "Mozambique"],
-    ["Sister Circuit", "Coding bootcamps for girls aged 12 to 18", "Women & Girls", "Middle East", "Egypt"],
-    ["Common Ground Homes", "Tenancy support for families leaving shelters", "Housing", "North America", "United States"],
-    ["Signing Hands", "Sign language interpreters in clinics and courts", "Disability", "Africa", "South Africa"],
-    ["Reef Nursery", "Growing and replanting coral fragments", "Climate", "Oceania", "Fiji"],
-    ["Border Kitchen", "Meals and phone charging at transit points", "Refugees", "Europe", "Greece"],
-    ["Open Mic Minds", "Peer support groups for young men", "Mental Health", "Europe", "Ireland"],
+    ["Amara Okafor", "Running the Nairobi marathon for the Kitui boreholes", "Individuals", "Africa", "Kenya"],
+    ["Northfield Rotary", "Our club's annual water appeal", "Teams", "Europe", "United Kingdom"],
+    ["Bluefin Logistics", "Matching every staff gift pound for pound", "Companies", "North America", "United States"],
+    ["St Hilda's Primary", "Year 6 walked 40 km, one for each village", "Schools", "Europe", "United Kingdom"],
+    ["Jonas Weber", "Shaving my head when we hit the first pump", "Individuals", "Europe", "Germany"],
+    ["The Tuesday Swimmers", "A cold-water swim every week until March", "Teams", "Oceania", "New Zealand"],
+    ["Priya Sharma", "In memory of my grandmother, who carried water daily", "Individuals", "Asia", "India"],
+    ["Harbour Dental", "Our practice's charity of the year", "Companies", "Oceania", "Australia"],
+    ["Lakeside High", "The sixth-form bake sale that got out of hand", "Schools", "North America", "Canada"],
+    ["Tomás Rivera", "Cycling Lisbon to Porto in July", "Individuals", "Europe", "Portugal"],
+    ["Team Clearwell Dubai", "Expat five-a-side league, winnings donated", "Teams", "Middle East", "United Arab Emirates"],
+    ["Leila Haddad", "Birthday fundraiser, no presents please", "Individuals", "Middle East", "Jordan"],
+    ["Greenway Architects", "One percent of every project fee", "Companies", "Europe", "Netherlands"],
+    ["Riverbank Academy", "Our whole-school fast for water", "Schools", "Asia", "Singapore"],
+    ["Mateo & Sofia", "Wedding gifts went here instead", "Individuals", "Latin America", "Colombia"],
+    ["The Night Shift", "ICU nurses, fundraising between shifts", "Teams", "Europe", "Ireland"],
+    ["Kofi Mensah", "Three peaks in three days", "Individuals", "Africa", "Ghana"],
+    ["Pinewood Coffee Co.", "Ten cents from every cup in April", "Companies", "North America", "United States"],
+    ["Hana Suzuki", "Running my first 10k at 62", "Individuals", "Asia", "Japan"],
+    ["Oakridge College", "Student union charity week", "Schools", "Europe", "United Kingdom"],
+    ["Fatima Al-Sayed", "Ramadan giving", "Individuals", "Middle East", "Egypt"],
+    ["Ridge Runners", "Trail-running club, one dollar per kilometre", "Teams", "North America", "United States"],
+    ["Daniel Osei", "Sponsored silence, 48 hours", "Individuals", "Africa", "Nigeria"],
+    ["Marlow & Finch", "Our firm's year-end giving", "Companies", "Europe", "United Kingdom"],
+    ["Elena Petrova", "Selling my paintings for pumps", "Individuals", "Europe", "Bulgaria"],
+    ["Sunrise Montessori", "Pennies for pumps jar, finally counted", "Schools", "Asia", "India"],
+    ["Yusuf Rahman", "Fasting for water, with friends", "Individuals", "Asia", "Bangladesh"],
+    ["The Allotment Crew", "Veg box sales all summer", "Teams", "Europe", "United Kingdom"],
+    ["Grace Mwangi", "Walking to work for a month", "Individuals", "Africa", "Kenya"],
+    ["Cedar Point Gym", "Spin-a-thon, 24 hours straight", "Companies", "North America", "Canada"],
+    ["Ben Carter", "Quit coffee, gave the money away", "Individuals", "Oceania", "Australia"],
+    ["Willow Lane School", "Reception class sponsored toddle", "Schools", "Europe", "United Kingdom"],
 ];
-export const CHARITIES: Charity[] = SEED.map((r, i) => {
+export const SUPPORTERS: Supporter[] = SEED.map((r, i) => {
     const total = Math.round(18500 * Math.pow(0.89, i) + 400 - i * 4);
-    return { id: i + 1, name: r[0], tagline: r[1], cause: r[2], region: r[3], country: r[4], domain: r[0].toLowerCase().replace(/[^a-z]+/g, "") + ".example",
-        total, today: Math.round(total * (((i * 37) % 11) / 60 + 0.01)), clicks: Math.round(total * (2.2 + ((i * 13) % 7) / 3)), days: 3 + ((i * 17) % 44) };
+    return { id: i + 1, name: r[0], tagline: r[1], kind: r[2], region: r[3], country: r[4], page: "/f/" + r[0].toLowerCase().replace(/[^a-z]+/g, "-"),
+        total, today: Math.round(total * (((i * 37) % 11) / 60 + 0.01)), visits: Math.round(total * (2.2 + ((i * 13) % 7) / 3)), days: 3 + ((i * 17) % 44) };
 });
 export interface Activity { who: string; usd: number; at: number }
 const MIN = 60000;
-export const ACTIVITY: Activity[] = [{ who: "Clearwell Trust", usd: 18900, at: Date.now() - 49 * MIN }, { who: "Harvest Relay", usd: 2810, at: Date.now() - 130 * MIN }, { who: "Quiet Line", usd: 6120, at: Date.now() - 310 * MIN }, { who: "Reef Nursery", usd: 1050, at: Date.now() - 560 * MIN }];
+export const ACTIVITY: Activity[] = [{ who: "Amara Okafor", usd: 18900, at: Date.now() - 49 * MIN }, { who: "Hana Suzuki", usd: 2810, at: Date.now() - 130 * MIN }, { who: "Priya Sharma", usd: 6120, at: Date.now() - 310 * MIN }, { who: "Ben Carter", usd: 1050, at: Date.now() - 560 * MIN }];
+
+/** How the ranking is drawn. list = rows, podium = top three on a stand, race = bars relative to #1. */
+export type Variant = "list" | "podium" | "race";
+export const VARIANTS: [Variant, string][] = [["list", "List"], ["podium", "Podium"], ["race", "Race"]];
+export const FONTS = ["Poppins", "Inter", "DM Sans", "Nunito", "Lora"];
+/** The charity running this board. Everything a white-label customer changes lives here. */
+export interface Brand { name: string; tagline: string; logo: string; color: string; font: string; variant: Variant }
+export const DEFAULT_BRAND: Brand = { name: "Clearwell Trust", tagline: "Clean water for 40 villages", logo: "", color: "#e0603f", font: "Poppins", variant: "list" };
+export const BRAND_PRESETS: Brand[] = [
+    DEFAULT_BRAND,
+    { name: "Mangrove Line", tagline: "Replanting the coast, one kilometre at a time", logo: "", color: "#1f7a4d", font: "DM Sans", variant: "race" },
+    { name: "Quiet Line", tagline: "Someone to talk to, all night", logo: "", color: "#5b4bd6", font: "Inter", variant: "podium" },
+    { name: "Little Lungs", tagline: "Paediatric asthma care in high-smog cities", logo: "", color: "#0f6fb5", font: "Nunito", variant: "list" },
+];
 export const REGION_OF: Record<string, string> = { India: "Asia", Kenya: "Africa", "United Kingdom": "Europe", "United States": "North America", "United Arab Emirates": "Middle East" };
 export const NO_CHARITY = "Independent organiser";
 
