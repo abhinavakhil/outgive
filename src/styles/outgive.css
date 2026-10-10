@@ -1,0 +1,87 @@
+@import "./globals.css";
+
+/* Outgive look: Poppins, warm paper in light, warm charcoal in dark, one coral accent. */
+@theme {
+    --font-body: "Poppins", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-display: "Poppins", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+    --color-brand-25: rgb(255 250 248);
+    --color-brand-50: rgb(254 241 236);
+    --color-brand-100: rgb(253 227 218);
+    --color-brand-200: rgb(250 205 191);
+    --color-brand-300: rgb(244 169 148);
+    --color-brand-400: rgb(236 131 105);
+    --color-brand-500: rgb(228 105 76);
+    --color-brand-600: rgb(224 96 63);
+    --color-brand-700: rgb(196 72 42);
+    --color-brand-800: rgb(150 55 33);
+    --color-brand-900: rgb(111 43 32);
+    --color-brand-950: rgb(60 19 12);
+
+    --color-neutral-25: rgb(253 251 250);
+    --color-neutral-50: rgb(248 243 240);
+    --color-neutral-100: rgb(240 233 228);
+    --color-neutral-200: rgb(232 223 217);
+    --color-neutral-300: rgb(212 201 194);
+    --color-neutral-400: rgb(170 156 148);
+    --color-neutral-500: rgb(128 114 107);
+    --color-neutral-600: rgb(104 91 85);
+    --color-neutral-700: rgb(75 64 59);
+    --color-neutral-800: rgb(48 39 35);
+    --color-neutral-900: rgb(40 32 29);
+    --color-neutral-950: rgb(21 15 13);
+}
+
+:root:not(.dark-mode) {
+    --color-bg-primary: rgb(253 251 250);
+    --color-bg-brand-primary: rgb(254 241 236);
+    --color-bg-brand-secondary: rgb(252 227 218);
+    --color-text-brand-secondary: var(--color-brand-600);
+    --color-border-secondary: rgb(237 228 222);
+    color-scheme: light;
+}
+
+.dark-mode {
+    color-scheme: dark;
+    --color-bg-primary: rgb(21 15 13);
+    --color-bg-secondary: rgb(31 23 20);
+    --color-bg-tertiary: rgb(46 36 31);
+    --color-bg-primary_hover: rgb(31 23 20);
+    --color-bg-brand-primary: rgb(40 25 20);
+    --color-bg-brand-secondary: rgb(56 33 26);
+    --color-bg-brand-solid: var(--color-brand-600);
+    --color-text-primary: rgb(247 241 238);
+    --color-text-secondary: rgb(222 211 205);
+    --color-text-tertiary: rgb(168 153 145);
+    --color-text-brand-secondary: rgb(240 128 96);
+    --color-text-brand-primary: rgb(247 241 238);
+    --color-border-secondary: rgb(51 39 33);
+    --color-border-primary: rgb(70 54 46);
+    --color-fg-brand-primary: var(--color-brand-400);
+    --color-fg-brand-secondary: var(--color-brand-400);
+}
+
+html { font-family: var(--font-body); -webkit-font-smoothing: antialiased; }
+body {
+    margin: 0;
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    font-family: var(--font-body);
+}
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Saved descriptions sit on the page itself, not in an editor box. */
+.penna.pn-readonly { background: transparent; }
+.penna.pn-readonly .pn-editor { padding: 0; }
+
+/* Create flow: every field is at least 56px tall. The Penna editor keeps its own controls. */
+.form-xl label { font-size: 0.9375rem; font-weight: 600; }
+.form-xl .group\/input { min-height: 56px; border-radius: 1rem; }
+.form-xl .group\/input input { min-height: 56px; padding: 0 1rem; font-size: 1rem; }
+.form-xl select:not(.penna *) { min-height: 56px; border-radius: 1rem; padding-left: 1rem; padding-right: 2.75rem; font-size: 1rem; }
+.form-xl textarea:not(.penna *) { padding: 1rem; border-radius: 1rem; font-size: 1rem; }
+.form-xl .pn-editor { padding: 20px 24px; }
+.form-xl .penna { min-height: 32rem; }
+.form-xl .pn-editor { min-height: 24rem; }
+.penna.pn-readonly p { margin: 0 0 1em; }
