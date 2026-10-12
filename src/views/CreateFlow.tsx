@@ -104,8 +104,8 @@ export const CreateFlow = ({ onPublish }: { onPublish: (p: PageData) => string }
         <div className="flex min-h-dvh flex-col bg-primary lg:h-dvh lg:overflow-hidden">
             <header className="flex h-16 shrink-0 items-center justify-between gap-3 border-b border-secondary px-5 md:px-8">
                 <Logo onClick={() => go({ name: "home" })} />
-                <span className="text-sm font-semibold text-primary lg:hidden">{live ? "Published" : <>Step {step} of 7 <span className="font-medium text-tertiary">· {STEPS[step - 1]}</span></>}</span>
-                <div className="flex items-center gap-1"><ThemeToggle /><Button color="secondary" size="md" className="rounded-full" onPress={() => go({ name: "home" })}>Save and exit</Button></div>
+                <span className="text-sm font-semibold whitespace-nowrap text-primary lg:hidden">{live ? "Published" : <>Step {step} of 7 <span className="font-medium text-tertiary max-sm:hidden">· {STEPS[step - 1]}</span></>}</span>
+                <div className="flex items-center gap-1"><ThemeToggle /><Button color="secondary" size="md" className="rounded-full" onPress={() => go({ name: "home" })}><span className="max-sm:hidden">Save and exit</span><span className="sm:hidden">Exit</span></Button></div>
             </header>
 
             <div className="flex min-h-0 flex-1">
@@ -217,7 +217,7 @@ export const CreateFlow = ({ onPublish }: { onPublish: (p: PageData) => string }
                                 <Button size="sm" color="secondary" className="rounded-full" onPress={() => setStep(n)}>Edit</Button>
                             </div>
                         ))}</div>
-                        <Checkbox size="md" isSelected={agree} onChange={setAgree} label="I agree to the Outgive terms and privacy policy" />
+                        <Checkbox size="md" isSelected={agree} onChange={setAgree} label={<>I agree to the Outgive <a href="/terms" target="_blank" rel="noopener" className="underline underline-offset-2">terms</a> and <a href="/privacy" target="_blank" rel="noopener" className="underline underline-offset-2">privacy policy</a></>} />
                         {missing.length > 0 && <p className="text-sm text-error-primary">To publish, add {missing.join(" and ")}.</p>}
                     </>}
 
@@ -245,7 +245,7 @@ export const CreateFlow = ({ onPublish }: { onPublish: (p: PageData) => string }
                         <Button size="xl" color="secondary" iconLeading={ArrowLeft} aria-label="Back" className="rounded-full sm:hidden" onPress={() => setStep((s) => s - 1)} />
                     </>}
                     <span className="flex-1 max-sm:hidden" />
-                    {step === 4 && <Button size="xl" color="tertiary" className="rounded-full" onPress={next}>Skip for now</Button>}
+                    {step === 4 && <Button size="xl" color="tertiary" className="rounded-full" onPress={next}><span className="max-sm:hidden">Skip for now</span><span className="sm:hidden">Skip</span></Button>}
                     {!live && <Button size="xl" color="primary" iconTrailing={step === 7 ? undefined : ArrowRight} isDisabled={step === 7 && missing.length > 0} onPress={next} className="rounded-full max-sm:flex-1">{step === 7 ? "Publish" : "Continue"}</Button>}
                     {live && <Button size="xl" color="secondary" className="rounded-full" onPress={() => go({ name: "home" })}>Go to the leaderboard</Button>}
                 </div></div>

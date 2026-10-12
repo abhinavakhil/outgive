@@ -4,7 +4,8 @@ import { Button } from "@/components/base/buttons/button";
 import { Input } from "@/components/base/input/input";
 import { NativeSelect } from "@/components/base/select/select-native";
 import { BrandMark, useApp } from "@/components/outgive/shared";
-import { BRAND_PRESETS, DEFAULT_BRAND, FONTS, VARIANTS, type Brand } from "@/data";
+import { BRAND_PRESETS, DEFAULT_BRAND, FONTS, type Brand } from "@/data";
+import { ALL_VARIANTS } from "@/views/boards";
 import { cx } from "@/utils/cx";
 
 /** "See it with your branding": a charity previews the board as its own, live, as it types. */
@@ -41,8 +42,10 @@ export const BrandPanel = ({ open, onClose }: { open: boolean; onClose: () => vo
                             </span>
                         </label>
                         <NativeSelect label="Font" value={brand.font} onChange={(e) => set({ font: e.target.value })} options={FONTS.map((f) => ({ label: f, value: f }))} />
-                        <NativeSelect label="Ranking layout" value={brand.variant} onChange={(e) => set({ variant: e.target.value as Brand["variant"] })} options={VARIANTS.map(([v, l]) => ({ label: l, value: v }))} />
-                        <label className="flex flex-col gap-1.5 text-sm font-medium text-secondary">Logo
+                        <NativeSelect label="Ranking layout" value={brand.variant} onChange={(e) => set({ variant: e.target.value as Brand["variant"] })} options={ALL_VARIANTS.map(([v, l]) => ({ label: l, value: v }))} />
+                        <Input label="What gifts buy (plural)" placeholder="boreholes" value={brand.impact?.unit ?? ""} onChange={(v) => set({ impact: { usd: brand.impact?.usd ?? 100, unit: v } })} />
+                        <Input label="Cost of one (USD)" type="number" value={String(brand.impact?.usd ?? "")} onChange={(v) => set({ impact: { usd: Number(v), unit: brand.impact?.unit ?? "" } })} />
+                        <label className="flex flex-col gap-1.5 text-sm font-medium text-secondary sm:col-span-2">Logo
                             <span className="flex h-10 cursor-pointer items-center gap-2 rounded-lg px-3 text-sm text-tertiary ring-1 ring-primary ring-inset hover:bg-secondary"><Upload01 className="size-4" />{brand.logo ? "Replace image" : "Upload image"}
                                 <input type="file" accept="image/*" className="sr-only" onChange={(e) => onLogo(e.target.files?.[0])} /></span>
                         </label>

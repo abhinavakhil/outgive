@@ -4,7 +4,7 @@ import { Tab, TabList, TabPanel, Tabs } from "@/components/application/tabs/tabs
 import { Badge } from "@/components/base/badges/badges";
 import { Button } from "@/components/base/buttons/button";
 import { ProgressBarBase } from "@/components/base/progress-indicators/progress-indicators";
-import { Board, Card, Container, Cover, Donate, Levels, Logo, OrgLine, OrganizerLine, PageActions, PageContext, PillSelect, Protected, Raised, Ring, ago, dateOf, Stats, Story, ThemeToggle, TwoCol, TypeBadge, pct, typeOf, useApp } from "@/components/outgive/shared";
+import { Board, Card, Container, Cover, Donate, Levels, Logo, OrgLine, OrganizerLine, PageActions, PageContext, PillSelect, Protected, Raised, Ring, ago, dateOf, Stats, Story, ThemeToggle, TwoCol, TypeBadge, daysLeft, pct, typeOf, useApp } from "@/components/outgive/shared";
 import { DonateDialog, DonationsDialog, ShareDialog, shareTargets } from "@/components/outgive/dialogs";
 import { DEFAULT_ALLOCATION, type Donation, LAYOUTS, type LayoutId, type PageData, type PageUpdate, initials, pageKey } from "@/data";
 import { Input } from "@/components/base/input/input";
@@ -22,6 +22,9 @@ const Actions = ({ p }: { p: PageData }) => {
     const { donate, share } = useContext(PageActions);
     return <div className="flex flex-wrap gap-3"><Button size="lg" color="primary" className="rounded-full" onPress={() => donate()}>{typeOf(p).cta}</Button><Button size="lg" color="secondary" className="rounded-full" iconLeading={Share07} onPress={share}>Share</Button></div>;
 };
+
+/** Headline numbers. The sample page pads them with example figures; a published page shows only what is true of it. */
+const facts = (p: PageData, lead: [string, string][], sample: [string, string][]): [string, string][] => [...lead, ...(p.isSample ? sample : daysLeft(p) !== null ? [[`${daysLeft(p)} days`, "left"] as [string, string]] : [])];
 
 const ActionRow = ({ p }: { p: PageData }) => {
     const { donate, share } = useContext(PageActions);
@@ -68,7 +71,7 @@ const Poster: L = ({ p }) => {
                 <div className="flex w-full max-w-xl flex-col gap-2.5"><p className="text-lg text-white"><span className="font-semibold">{money(p.raised)}</span> raised of {money(p.goal)} by {p.supporters} people</p><ProgressBarBase value={pct(p)} className="bg-brand-800" progressClassName="bg-white" /></div>
                 <div className="flex flex-wrap gap-3"><Button size="xl" color="secondary" className="rounded-full" onPress={() => donate()}>{typeOf(p).cta}</Button><Button size="xl" color="secondary" className="rounded-full" iconLeading={Share07} onPress={share}>Share</Button></div>
             </Container></div>
-            <Container className="py-10"><TwoCol main={<><Cover className="min-h-72" /><Story p={p} /><Stats items={[[String(p.supporters), "supporters"], [`${pct(p)}%`, "of the goal"], ["17", "teams (sample)"], ["19 days", "left (sample)"]]} /></>} side={<Board title="Top supporters" />} /></Container>
+            <Container className="py-10"><TwoCol main={<><Cover className="min-h-72" /><Story p={p} /><Stats items={facts(p, [[String(p.supporters), "supporters"], [`${pct(p)}%`, "of the goal"]], [["17", "teams (sample)"], ["19 days", "left (sample)"]])} /></>} side={<Board title="Top supporters" />} /></Container>
         </>
     );
 };
@@ -86,31 +89,36 @@ const Dashboard: L = ({ p }) => {
     return (
         <Container className="flex flex-col gap-6 py-8">
             <div className="flex flex-wrap items-end justify-between gap-4"><Head p={p} /><Actions p={p} /></div>
-            <Stats items={[[money(p.raised), `raised of ${money(p.goal)}`], [String(p.supporters), "supporters"], ["36", "fundraisers (sample)"], ["19 days", "left (sample)"]]} />
+            <Stats items={facts(p, [[money(p.raised), `raised of ${money(p.goal)}`], [String(p.supporters), "supporters"]], [["36", "fundraisers (sample)"], ["19 days", "left (sample)"]])} />
             <ProgressCard p={p} />
-            <TwoCol main={<><Cover className="min-h-72" /><Board /><Story p={p} /></>} side={<Card className="flex flex-col gap-1"><h2 className="pb-2 text-xl font-semibold text-primary">Latest gifts</h2>{([["Anonymous", 50], ["Mei L.", 25], ["The Okafor family", 200], ["Dan P.", 10]] as [string, number][]).map(([n, a]) => (<div key={n} className="flex justify-between border-t border-secondary py-2.5"><span className="text-secondary">{n}</span><span className="font-semibold text-brand-secondary">{money(a)}</span></div>))}</Card>} />
+            <TwoCol main={<><Cover className="min-h-72" /><Board /><Story p={p} /></>} side={<Card className="flex flex-col gap-1"><h2 className="pb-2 text-xl font-semibold text-primary">Latest gifts</h2>{p.donations.length === 0 && <p className="border-t border-secondary pt-3 text-sm text-tertiary">No gifts yet. The first one shows here.</p>}{p.donations.slice(0, 5).map((g, i) => (<div key={`${g.at}-${i}`} className="flex justify-between gap-3 border-t border-secondary py-2.5"><span className="min-w-0 truncate text-secondary">{g.name}</span><span className="font-semibold text-brand-secondary">{money(g.usd)}</span></div>))}</Card>} />
         </Container>
     );
 };
 
-const LeaderboardLayout: L = ({ p }) => (
-    <Container className="flex flex-col gap-7 py-8">
-        <Head p={p} />
-        <TwoCol main={<><Card><Board title="Team ranking" items={[["Harbour Runners", 8410], ["Night Shift Walkers", 7950], ["Class of 2011", 5300], ["Office Stairs Club", 4120], ["Sunday Striders", 2870]]} /></Card><Cover className="min-h-72" /><Board title="Top individuals" /><Story p={p} /></>}
-            side={<><Donate p={p} cta="Back a team" /><Card className="flex flex-col items-start gap-3 bg-brand-primary"><h2 className="text-lg font-semibold text-primary">Start a team</h2><p className="text-sm text-tertiary">Pick a name, invite friends and share one total.</p><Button color="secondary" size="md">Create a team</Button></Card></>} />
-    </Container>
-);
+const LeaderboardLayout: L = ({ p }) => {
+    const { go } = useApp();
+    return (
+        <Container className="flex flex-col gap-7 py-8">
+            <Head p={p} />
+            <TwoCol main={<>{p.isSample && <Card><Board title="Team ranking" items={[["Harbour Runners", 8410], ["Night Shift Walkers", 7950], ["Class of 2011", 5300], ["Office Stairs Club", 4120], ["Sunday Striders", 2870]]} /></Card>}<Cover className="min-h-72" /><Board title={p.isSample ? "Top individuals" : "Top supporters"} /><Story p={p} /></>}
+                side={<><Donate p={p} cta={p.isSample ? "Back a team" : undefined} /><Card className="flex flex-col items-start gap-3 bg-brand-primary"><h2 className="text-lg font-semibold text-primary">Start a team</h2><p className="text-sm text-tertiary">Pick a name, invite friends and share one total.</p><Button color="secondary" size="md" onPress={() => go({ name: "create" })}>Create a team</Button></Card></>} />
+        </Container>
+    );
+};
 
 const Ticket: L = ({ p }) => {
     const { money } = useApp();
+    const { donate } = useContext(PageActions);
+    const day = p.isSample ? new Date(new Date().getFullYear(), 10, 14) : p.endDate ? new Date(p.endDate) : null;
     return (
         <Container className="flex flex-col gap-7 py-8">
             <div className="flex flex-wrap items-center gap-5">
-                <div className="w-24 shrink-0 rounded-2xl bg-brand-solid py-3.5 text-center text-white"><div className="text-sm font-semibold tracking-widest">NOV</div><div className="text-display-md leading-none font-semibold">14</div></div>
-                <div className="flex min-w-0 flex-1 flex-col items-start gap-2"><TypeBadge p={p} /><H1>{p.title}</H1><p className="text-secondary">Thursday 14 November, 18:30 · Riverside Hall · also streamed online (sample details)</p></div>
+                {day && <div className="w-24 shrink-0 rounded-2xl bg-brand-solid py-3.5 text-center text-white"><div className="text-sm font-semibold tracking-widest uppercase">{day.toLocaleDateString("en", { month: "short" })}</div><div className="text-display-md leading-none font-semibold">{day.getDate()}</div></div>}
+                <div className="flex min-w-0 flex-1 flex-col items-start gap-2"><TypeBadge p={p} /><H1>{p.title}</H1>{p.isSample ? <p className="text-secondary">Thursday 14 November, 18:30 · Riverside Hall · also streamed online (sample details)</p> : <OrgLine p={p} />}</div>
             </div>
-            <TwoCol main={<><Cover className="min-h-72" /><section className="flex flex-col gap-2"><h2 className="text-xl font-semibold text-primary">Programme</h2>{[["18:30", "Doors and welcome drinks"], ["19:15", "Dinner is served"], ["20:30", "Field report from the team"], ["21:00", "Pledges and auction"]].map(([t, w]) => (<div key={t} className="flex gap-4 border-t border-secondary py-3"><span className="w-16 font-semibold text-brand-secondary">{t}</span><span className="text-secondary">{w}</span></div>))}</section><Story p={p} /></>}
-                side={<><div className="flex flex-col gap-3 rounded-xl border-2 border-dashed border-primary bg-primary p-5"><h2 className="text-xl font-semibold text-primary">Tickets</h2>{([["Seat", "Dinner and programme", money(60)], ["Table of 8", "Reserved together", money(440)], ["Can't come", "Give instead", "Any"]] as string[][]).map(([a, b, c]) => (<div key={a} className="flex items-center justify-between rounded-lg bg-secondary px-3.5 py-3"><span><span className="block font-semibold text-primary">{a}</span><span className="text-sm text-tertiary">{b}</span></span><span className="font-semibold text-brand-secondary">{c}</span></div>))}<Button size="lg" color="primary" className="w-full">Get tickets</Button><p className="text-center text-xs text-tertiary">64 of 120 seats left (sample)</p></div><ProgressCard p={p} /></>} />
+            {!p.isSample ? <TwoCol main={<><Cover className="min-h-72" /><Story p={p} /></>} side={<Donate p={p} />} /> : <TwoCol main={<><Cover className="min-h-72" /><section className="flex flex-col gap-2"><h2 className="text-xl font-semibold text-primary">Programme</h2>{[["18:30", "Doors and welcome drinks"], ["19:15", "Dinner is served"], ["20:30", "Field report from the team"], ["21:00", "Pledges and auction"]].map(([t, w]) => (<div key={t} className="flex gap-4 border-t border-secondary py-3"><span className="w-16 font-semibold text-brand-secondary">{t}</span><span className="text-secondary">{w}</span></div>))}</section><Story p={p} /></>}
+                side={<><div className="flex flex-col gap-3 rounded-xl border-2 border-dashed border-primary bg-primary p-5"><h2 className="text-xl font-semibold text-primary">Tickets</h2>{([["Seat", "Dinner and programme", money(60)], ["Table of 8", "Reserved together", money(440)], ["Can't come", "Give instead", "Any"]] as string[][]).map(([a, b, c]) => (<div key={a} className="flex items-center justify-between rounded-lg bg-secondary px-3.5 py-3"><span><span className="block font-semibold text-primary">{a}</span><span className="text-sm text-tertiary">{b}</span></span><span className="font-semibold text-brand-secondary">{c}</span></div>))}<Button size="lg" color="primary" className="w-full" onPress={() => donate(60)}>Get tickets</Button><p className="text-center text-xs text-tertiary">64 of 120 seats left (sample)</p></div><ProgressCard p={p} /></>} />}
         </Container>
     );
 };
@@ -118,26 +126,27 @@ const Ticket: L = ({ p }) => {
 const Tracker: L = ({ p }) => (
     <Container className="flex flex-col gap-6 py-8">
         <Head p={p} />
-        <Card className="flex flex-col gap-4">
+        {p.isSample && <Card className="flex flex-col gap-4">
             <div className="flex flex-wrap items-end justify-between gap-2"><span><span className="text-display-sm font-semibold text-primary">62 km</span> <span className="text-tertiary">of 100 km (sample)</span></span><span className="text-tertiary">Day 12 of 31</span></div>
             <div className="flex gap-1.5">{Array.from({ length: 10 }, (_, i) => (<div key={i} className="flex flex-1 flex-col gap-1.5"><div className={cx("h-3 rounded-full", i < 6 ? "bg-brand-solid" : "bg-tertiary")} /><span className="text-xs text-tertiary max-sm:hidden">{(i + 1) * 10} km</span></div>))}</div>
-        </Card>
-        <TwoCol main={<><div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{[["25 km", "Reached 6 Oct", true], ["50 km", "Reached 12 Oct", true], ["75 km", "13 km to go", false], ["100 km", "Finish by 31 Oct", false]].map(([a, b, done]) => (<Card key={String(a)} className={cx("md:p-4", done && "bg-brand-primary")}><div className="font-semibold text-primary">{a}</div><div className="text-sm text-tertiary">{b}</div></Card>))}</div><Cover className="min-h-72" /><Story p={p} /></>} side={<Donate p={p} cta="Sponsor" />} />
+        </Card>}
+        <TwoCol main={<>{p.isSample && <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{[["25 km", "Reached 6 Oct", true], ["50 km", "Reached 12 Oct", true], ["75 km", "13 km to go", false], ["100 km", "Finish by 31 Oct", false]].map(([a, b, done]) => (<Card key={String(a)} className={cx("md:p-4", done && "bg-brand-primary")}><div className="font-semibold text-primary">{a}</div><div className="text-sm text-tertiary">{b}</div></Card>))}</div>}<Cover className="min-h-72" /><Story p={p} /></>} side={<Donate p={p} cta="Sponsor" />} />
     </Container>
 );
 
 const Bento: L = ({ p }) => {
-    const { money } = useApp();
-    const tile = "flex min-h-52 flex-col justify-end gap-2.5 rounded-2xl p-6 ring-1 ring-secondary ring-inset";
+    const { money, go } = useApp();
+    const { donate } = useContext(PageActions);
+    const tile = "flex min-h-32 flex-col justify-end gap-2.5 rounded-2xl p-6 ring-1 ring-secondary ring-inset md:min-h-52";
     return (
         <Container className="flex flex-col gap-8 py-8">
             <div className="grid gap-4 md:grid-cols-6">
                 <div className={cx(tile, "items-start bg-brand-primary md:col-span-4 md:min-h-72")}><TypeBadge p={p} /><H1>{p.title}</H1><OrgLine p={p} /></div>
                 <Cover className="md:col-span-2 md:min-h-72" />
-                <div className={cx(tile, "bg-primary md:col-span-2")}><Raised p={p} size="xl" /><ProgressBarBase value={pct(p)} /><Button size="lg" color="primary" className="w-full">{typeOf(p).cta}</Button></div>
+                <div className={cx(tile, "bg-primary md:col-span-2")}><Raised p={p} size="xl" /><ProgressBarBase value={pct(p)} /><Button size="lg" color="primary" className="w-full" onPress={() => donate()}>{typeOf(p).cta}</Button></div>
                 <div className={cx(tile, "bg-brand-primary md:col-span-1")}><div className="text-display-sm font-semibold text-primary">{pct(p)}%</div><div className="text-sm text-tertiary">of the goal</div></div>
                 <div className={cx(tile, "bg-primary md:col-span-1")}><div className="text-display-sm font-semibold text-primary">{p.supporters}</div><div className="text-sm text-tertiary">supporters</div></div>
-                <div className={cx(tile, "items-start bg-secondary md:col-span-2")}><div className="font-semibold text-primary">Raise for this page</div><p className="text-sm text-tertiary">Start your own page in two minutes. Goal {money(p.goal)}.</p><Button color="secondary" size="md">Fundraise</Button></div>
+                <div className={cx(tile, "items-start bg-secondary md:col-span-2")}><div className="font-semibold text-primary">Raise for this page</div><p className="text-sm text-tertiary">Start your own page in two minutes. Goal {money(p.goal)}.</p><Button color="secondary" size="md" onPress={() => go({ name: "create" })}>Fundraise</Button></div>
             </div>
             <TwoCol main={<Story p={p} />} side={<Board />} />
         </Container>
@@ -151,7 +160,7 @@ const Chapters: L = ({ p }) => {
         <Container className="flex flex-col gap-7 py-8">
             <div className="grid items-center gap-8 lg:grid-cols-2"><div className="flex flex-col items-start gap-4"><Head p={p} /><Actions p={p} /></div><Cover className="min-h-72" /></div>
             <Tabs selectedKey={tab} onSelectionChange={(k) => setTab(String(k))}>
-                <TabList type="button-gray" size="md" items={tabs} className="max-w-full overflow-x-auto">{(t) => <Tab id={t.id} label={t.label} />}</TabList>
+                <TabList type="button-gray" size="md" items={tabs} className="no-scrollbar max-w-full overflow-x-auto">{(t) => <Tab id={t.id} label={t.label} />}</TabList>
                 <div className="pt-7"><TwoCol main={<><TabPanel id="story"><Story p={p} /></TabPanel><TabPanel id="impact"><Levels /></TabPanel><TabPanel id="fundraisers"><Board /></TabPanel><TabPanel id="supporters"><Board title="Recent supporters" /></TabPanel></>} side={<Donate p={p} />} /></div>
             </Tabs>
         </Container>
@@ -215,9 +224,9 @@ const Details = ({ p }: { p: PageData }) => {
             <Block title="Sharing helps more than you think">
                 <p className="text-md text-secondary">On average, <span className="font-semibold text-primary">each share can inspire {money(50)}</span> in donations by helping this {typeOf(p).label.toLowerCase()} reach more people.</p>
                 <div className="flex flex-col items-center gap-5 rounded-2xl bg-secondary p-5 md:p-7">
-                    <div className="grid w-full max-w-md grid-cols-[1fr_1.1fr] gap-4 rounded-xl bg-primary p-4 shadow-xs">
+                    <div className="grid w-full max-w-md grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] gap-3 rounded-xl bg-primary p-3 shadow-xs sm:gap-4 sm:p-4">
                         <div className="flex flex-col justify-between gap-3"><Logo /><div className="text-lg leading-snug font-semibold text-primary">{p.title}</div><div className="text-sm text-tertiary">Organised by <span className="font-medium text-secondary">{p.org}</span></div></div>
-                        <div className="relative"><Cover className="aspect-[4/3] size-full" /><div className="absolute -bottom-3 left-2 flex items-center gap-2"><Ring value={pct(p)} size={52} /><span className="rounded-full bg-brand-secondary px-2.5 py-1 text-xs font-semibold text-primary">{money(p.raised)} raised</span></div></div>
+                        <div className="relative"><Cover className="aspect-[4/3] size-full [&>span]:hidden" /><div className="absolute -bottom-3 left-2 flex items-center gap-2"><Ring value={pct(p)} size={52} /><span className="rounded-full bg-brand-secondary px-2.5 py-1 text-xs font-semibold text-primary">{money(p.raised)} raised</span></div></div>
                     </div>
                     <div className="flex flex-wrap items-center justify-center gap-3">
                         <button type="button" aria-label={copied ? "Link copied" : "Copy link"} onClick={copy} className="flex size-11 cursor-pointer items-center justify-center rounded-full bg-primary text-primary ring-1 ring-primary ring-inset outline-focus-ring hover:bg-secondary focus-visible:outline-2">{copied ? <Check className="size-5" /> : <Link01 className="size-5" />}</button>
@@ -275,7 +284,7 @@ export const CampaignPage = ({ pageKey: key, page, setPage, give, addUpdate }: {
             </Container></header>
             <PageContext.Provider value={page}><PageActions.Provider value={actions}>
                 <Layout p={page} />
-                {page.layout !== "classic" && <Container className="flex max-w-3xl flex-col gap-8 pb-14"><Details p={page} /></Container>}
+                {page.layout !== "classic" && <Container className={cx("pb-14", page.layout === "story" && "max-w-2xl")}><div className={cx("flex flex-col gap-8", page.layout !== "story" && "lg:max-w-[calc(100%-360px-2.5rem)]")}><Details p={page} /></div></Container>}
                 <MobileBar p={page} />
             </PageActions.Provider></PageContext.Provider>
             <ShareDialog isOpen={shareOpen} onClose={() => setShareOpen(false)} url={`${window.location.origin}/${key}`} title={page.title} />
