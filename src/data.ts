@@ -9,7 +9,23 @@ export const CURRENCIES: Record<string, number> = { USD: 1, EUR: 0.92, GBP: 0.78
 /** Who can hold a rank on a charity's board. */
 export const KINDS = ["Individuals", "Teams", "Companies", "Schools"];
 /** One row on the board: a supporter ranked by what they have given to the charity. */
-export interface Supporter { id: number; name: string; tagline: string; kind: string; region: string; country: string; page: string; total: number; today: number; visits: number; days: number }
+/** week = given since Monday, recruited = donors brought in through a fundraising page, streak = consecutive months of giving, match = cap a company has pledged to match gifts up to. */
+export interface Supporter { id: number; name: string; tagline: string; kind: string; region: string; country: string; page: string; total: number; today: number; week: number; recruited: number; streak: number; visits: number; days: number; match?: number }
+/** Boards saved before week, recruited and streak existed take those from the seed row, or neutral values for rows added since. */
+export const withBoards = (o: Supporter): Supporter => { const seed = SUPPORTERS.find((x) => x.id === o.id); return { ...o, week: o.week ?? Math.min(o.total, seed?.week ?? o.today), recruited: o.recruited ?? seed?.recruited ?? 0, streak: o.streak ?? seed?.streak ?? 0, match: o.match ?? MATCH[o.name] }; };
+
+/** The races a supporter can win. Money boards rank by gifts; the other two let a small donor lead. */
+export type BoardKey = "total" | "week" | "today" | "recruited" | "streak";
+export const BOARDS: { key: BoardKey; label: string; title: string; money: boolean; note: string }[] = [
+    { key: "total", label: "All-time", title: "All-time ranking", money: true, note: "" },
+    { key: "week", label: "This week", title: "This week's ranking", money: true, note: "Resets every Monday at 00:00 UTC. Each week's winner goes to the hall of fame." },
+    { key: "today", label: "Today", title: "Today's ranking", money: true, note: "Resets at 00:00 UTC." },
+    { key: "recruited", label: "Recruiters", title: "Most donors recruited", money: false, note: "Ranked by donors brought in through a fundraising page, not by money given." },
+    { key: "streak", label: "Streaks", title: "Longest monthly streak", money: false, note: "Ranked by consecutive months of giving. Any amount counts." },
+];
+/** Past weekly winners as [week of, name, USD]. Demo data only. */
+export const HALL: [string, string, number][] = [["5 Oct", "Northfield Rotary", 3120], ["28 Sep", "Amara Okafor", 2890], ["21 Sep", "St Hilda's Primary", 2415]];
+const MATCH: Record<string, number> = { "Bluefin Logistics": 5000, "Greenway Architects": 2000, "Marlow & Finch": 3000 };
 
 /** Fictional supporters of the demo charity. Demo data only. */
 const SEED: [string, string, string, string, string][] = [
@@ -49,24 +65,28 @@ const SEED: [string, string, string, string, string][] = [
 export const SUPPORTERS: Supporter[] = SEED.map((r, i) => {
     const total = Math.round(18500 * Math.pow(0.89, i) + 400 - i * 4);
     return { id: i + 1, name: r[0], tagline: r[1], kind: r[2], region: r[3], country: r[4], page: "/f/" + r[0].toLowerCase().replace(/[^a-z]+/g, "-"),
-        total, today: Math.round(total * (((i * 37) % 11) / 60 + 0.01)), visits: Math.round(total * (2.2 + ((i * 13) % 7) / 3)), days: 3 + ((i * 17) % 44) };
+        total, today: Math.round(total * (((i * 37) % 11) / 60 + 0.01)), visits: Math.round(total * (2.2 + ((i * 13) % 7) / 3)), days: 3 + ((i * 17) % 44),
+        week: Math.min(total, Math.round(total * (((i * 37) % 11) / 60 + 0.01) * (1.6 + ((i * 3) % 5) / 2)) + 40), recruited: ((i * 7) % 23) + (r[2] === "Individuals" ? 0 : 9), streak: (i * 5) % 14, match: MATCH[r[0]] };
 });
 export interface Activity { who: string; usd: number; at: number }
 const MIN = 60000;
 export const ACTIVITY: Activity[] = [{ who: "Amara Okafor", usd: 18900, at: Date.now() - 49 * MIN }, { who: "Hana Suzuki", usd: 2810, at: Date.now() - 130 * MIN }, { who: "Priya Sharma", usd: 6120, at: Date.now() - 310 * MIN }, { who: "Ben Carter", usd: 1050, at: Date.now() - 560 * MIN }];
 
-/** How the ranking is drawn. list = rows, podium = top three on a stand, race = bars relative to #1. */
-export type Variant = "list" | "podium" | "race";
-export const VARIANTS: [Variant, string][] = [["list", "List"], ["podium", "Podium"], ["race", "Race"]];
+/** How the ranking is drawn. list = rows, podium = top three on a stand, race = bars relative to #1, league = tiers with a promotion line, levels = XP cards with badges, arcade = high-score table,
+ * spotlight = top three on a tinted hero with the list as a sheet over it, spotpodium = stepped podium in a dark card, ribbons = full-colour hero with ribbon rank tags. */
+/** The nine below are drawn in Leaderboard.tsx; twenty more live in views/boards.tsx and are named by their key there. */
+export type Variant = "list" | "podium" | "race" | "league" | "levels" | "arcade" | "spotlight" | "spotpodium" | "ribbons" | (string & {});
+export const VARIANTS: [Variant, string][] = [["list", "List"], ["podium", "Podium"], ["race", "Race"], ["league", "League"], ["levels", "Levels"], ["arcade", "Arcade"], ["spotlight", "Spotlight"], ["spotpodium", "Spotlight podium"], ["ribbons", "Ribbons"]];
 export const FONTS = ["Poppins", "Inter", "DM Sans", "Nunito", "Lora"];
 /** The charity running this board. Everything a white-label customer changes lives here. */
-export interface Brand { name: string; tagline: string; logo: string; color: string; font: string; variant: Variant }
-export const DEFAULT_BRAND: Brand = { name: "Clearwell Trust", tagline: "Clean water for 40 villages", logo: "", color: "#e0603f", font: "Poppins", variant: "list" };
+/** impact = what a gift buys: the cost of one unit in USD and the unit's plural name. */
+export interface Brand { name: string; tagline: string; logo: string; color: string; font: string; variant: Variant; impact?: { usd: number; unit: string } }
+export const DEFAULT_BRAND: Brand = { name: "Clearwell Trust", tagline: "Clean water for 40 villages", logo: "", color: "#e0603f", font: "Poppins", variant: "list", impact: { usd: 6000, unit: "boreholes" } };
 export const BRAND_PRESETS: Brand[] = [
     DEFAULT_BRAND,
-    { name: "Mangrove Line", tagline: "Replanting the coast, one kilometre at a time", logo: "", color: "#1f7a4d", font: "DM Sans", variant: "race" },
-    { name: "Quiet Line", tagline: "Someone to talk to, all night", logo: "", color: "#5b4bd6", font: "Inter", variant: "podium" },
-    { name: "Little Lungs", tagline: "Paediatric asthma care in high-smog cities", logo: "", color: "#0f6fb5", font: "Nunito", variant: "list" },
+    { name: "Mangrove Line", tagline: "Replanting the coast, one kilometre at a time", logo: "", color: "#1f7a4d", font: "DM Sans", variant: "race", impact: { usd: 25, unit: "mangroves" } },
+    { name: "Quiet Line", tagline: "Someone to talk to, all night", logo: "", color: "#5b4bd6", font: "Inter", variant: "podium", impact: { usd: 8, unit: "night calls" } },
+    { name: "Little Lungs", tagline: "Paediatric asthma care in high-smog cities", logo: "", color: "#0f6fb5", font: "Nunito", variant: "list", impact: { usd: 40, unit: "inhaler kits" } },
 ];
 export const REGION_OF: Record<string, string> = { India: "Asia", Kenya: "Africa", "United Kingdom": "Europe", "United States": "North America", "United Arab Emirates": "Middle East" };
 export const NO_CHARITY = "Independent organiser";

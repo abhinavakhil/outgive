@@ -8,8 +8,8 @@ import { cx } from "@/utils/cx";
 import { CoverMedia, DescriptionView } from "@/components/outgive/media";
 import { type Activity, type Brand, type Supporter, CURRENCIES, LEVELS, PAGE_TYPES, PEOPLE, type LayoutId, type PageData, type PageUpdate, initials } from "@/data";
 
-export type View = { name: "home" } | { name: "create" } | { name: "page"; key?: string } | { name: "about" } | { name: "rules" } | { name: "faq" } | { name: "notfound" };
-export const AppContext = createContext<{ currency: string; setCurrency: (c: string) => void; go: (v: View) => void; money: (usd: number) => string; board: Supporter[]; setBoard: Dispatch<SetStateAction<Supporter[]>>; activity: Activity[]; setActivity: Dispatch<SetStateAction<Activity[]>>; brand: Brand; setBrand: (b: Brand) => void }>(null!);
+export type View = { name: "landing" } | { name: "landing-b" } | { name: "home" } | { name: "create" } | { name: "page"; key?: string } | { name: "about" } | { name: "rules" } | { name: "faq" } | { name: "terms" } | { name: "privacy" } | { name: "dashboard" } | { name: "notfound" };
+export const AppContext = createContext<{ currency: string; setCurrency: (c: string) => void; go: (v: View) => void; money: (usd: number) => string; board: Supporter[]; setBoard: Dispatch<SetStateAction<Supporter[]>>; activity: Activity[]; setActivity: Dispatch<SetStateAction<Activity[]>>; brand: Brand; setBrand: (b: Brand) => void; /** The board row this browser claimed, if any. */ me: number | null; setMe: (id: number | null) => void }>(null!);
 export const useApp = () => useContext(AppContext);
 
 /** The charity's mark: its uploaded logo, or its initials in the brand colour. */
@@ -23,9 +23,9 @@ export const BrandMark = ({ className }: { className?: string }) => {
 export const BrandLogo = ({ onClick }: { onClick?: () => void }) => {
     const { brand } = useApp();
     return (
-        <button type="button" onClick={onClick} className="flex min-w-0 cursor-pointer items-center gap-2.5 rounded-md text-left outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2">
-            <BrandMark />
-            <span className="min-w-0"><span className="block truncate text-lg leading-tight font-semibold tracking-tight text-primary">{brand.name}</span><span className="block text-[11px] leading-tight text-tertiary">Leaderboard · powered by outgive</span></span>
+        <button type="button" onClick={onClick} className="flex min-w-0 cursor-pointer items-center gap-2 rounded-md text-left outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2">
+            <BrandMark className="size-7 rounded-lg text-xs" />
+            <span className="truncate text-[22px] leading-tight font-medium tracking-[-0.04em] text-primary">{brand.name}</span>
         </button>
     );
 };
@@ -44,7 +44,7 @@ export const Logo = ({ onClick }: { onClick?: () => void }) => (
 );
 
 const useTheme = () => {
-    const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark-mode"));
+    const [dark, setDark] = useState(() => typeof document !== "undefined" && document.documentElement.classList.contains("dark-mode"));
     const toggle = () => {
         const next = !dark;
         document.documentElement.classList.toggle("dark-mode", next);
@@ -56,8 +56,8 @@ const useTheme = () => {
 export const ThemeToggle = () => {
     const [dark, toggle] = useTheme();
     return (
-        <button type="button" aria-label={dark ? "Switch to light mode" : "Switch to dark mode"} onClick={toggle} className="flex size-9 cursor-pointer items-center justify-center rounded-full text-tertiary outline-focus-ring transition hover:bg-secondary hover:text-primary focus-visible:outline-2">
-            {dark ? <Sun className="size-5" /> : <Moon01 className="size-5" />}
+        <button type="button" aria-label={dark ? "Switch to light mode" : "Switch to dark mode"} onClick={toggle} className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-tertiary outline-focus-ring transition hover:bg-secondary hover:text-primary focus-visible:outline-2">
+            {dark ? <Sun className="size-4" /> : <Moon01 className="size-4" />}
         </button>
     );
 };
@@ -67,8 +67,8 @@ export const SiteHeader = ({ right }: { right?: ReactNode }) => {
     const { go } = useApp();
     return (
         <header className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-4"><BrandLogo onClick={() => go({ name: "home" })} /></div>
-            <nav aria-label="Main" className="flex items-center gap-1 text-sm font-medium text-tertiary sm:gap-2">
+            <div className="flex min-w-0 items-center gap-4"><BrandLogo onClick={() => go({ name: "home" })} /></div>
+            <nav aria-label="Main" className="flex shrink-0 items-center gap-1 text-sm font-medium text-tertiary sm:gap-2">
                 {(["about", "rules", "faq"] as const).map((n) => (
                     <button key={n} type="button" onClick={() => go({ name: n })} className="hidden cursor-pointer rounded-full px-3 py-1.5 capitalize outline-focus-ring transition hover:text-primary focus-visible:outline-2 sm:block">{n === "faq" ? "FAQ" : n}</button>
                 ))}
@@ -109,7 +109,7 @@ export const Ring = ({ value, size = 64 }: { value: number; size?: number }) => 
 
 export const Cover = ({ className }: { className?: string }) => {
     const page = useContext(PageContext);
-    return <CoverMedia cover={page?.cover ?? { kind: "none", src: "" }} className={cx("aspect-video", className)} />;
+    return <CoverMedia cover={page?.cover ?? { kind: "none", src: "" }} className={cx("aspect-video max-w-full min-w-0", className)} />;
 };
 export const typeOf = (p: PageData) => PAGE_TYPES.find((t) => t.id === p.type)!;
 export const pct = (p: PageData) => Math.min(100, Math.round((p.raised / Math.max(1, p.goal)) * 100));
@@ -148,7 +148,7 @@ export const Donate = ({ p, cta }: { p: PageData; cta?: string }) => {
     const rank = boardRank(p, board);
     const label = cta ?? (typeOf(p).cta === "Donate" ? "Donate now" : typeOf(p).cta);
     return (
-        <Card className="flex flex-col gap-4 md:p-5 lg:sticky lg:top-20">
+        <Card className="flex flex-col gap-4 md:p-5">
             <div className="flex items-center gap-4">
                 {p.showGoal && <Ring value={pct(p)} />}
                 <div className="min-w-0">
@@ -224,13 +224,16 @@ export const OrganizerLine = ({ p }: { p: PageData }) => (
     <div className="flex items-center gap-3 border-y border-secondary py-4"><Avatar size="md" initials={initials(p.org) || "?"} /><span className="font-semibold text-primary">{p.org}</span><span className="text-sm text-tertiary">is organising this {typeOf(p).label.toLowerCase()}</span></div>
 );
 export const Protected = () => <span className="inline-flex w-fit items-center gap-1.5 rounded-md bg-brand-secondary px-2.5 py-1 text-sm font-semibold text-primary"><ShieldTick className="size-4" />Donation protected</span>;
+/** Giving levels. The sample page names what each buys; a published page offers its own gift amounts and claims nothing about them. */
 export const Levels = () => {
     const { money } = useApp();
     const { donate } = useContext(PageActions);
+    const page = useContext(PageContext);
+    const levels: [number, string, string][] = page && !page.isSample ? page.gifts.slice(0, 3).map((g) => [g, "Give once", `Goes to ${page.org || page.title}`]) : LEVELS;
     return (
         <div className="grid gap-3 sm:grid-cols-3">
-            {LEVELS.map(([amount, name, what]) => (
-                <Card key={name} className="flex flex-col gap-2 md:p-5">
+            {levels.map(([amount, name, what]) => (
+                <Card key={amount} className="flex flex-col gap-2 md:p-5">
                     <span className="text-display-xs font-semibold text-brand-secondary">{money(amount)}</span>
                     <span className="font-semibold text-primary">{name}</span>
                     <span className="flex-1 text-sm text-tertiary">{what}</span>
@@ -250,7 +253,7 @@ export const Stats = ({ items }: { items: [string, string][] }) => (
 export const TwoCol = ({ main, side, className }: { main: ReactNode; side: ReactNode; className?: string }) => (
     <div className={cx("grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-10", className)}>
         <div className="flex min-w-0 flex-col gap-7">{main}</div>
-        <div className="flex min-w-0 flex-col gap-5 lg:self-stretch">{side}</div>
+        <div className="flex min-w-0 flex-col gap-5 lg:sticky lg:top-20 lg:self-start">{side}</div>
     </div>
 );
 
