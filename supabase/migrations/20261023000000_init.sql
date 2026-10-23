@@ -538,6 +538,16 @@ create function org_stats(org uuid) returns jsonb language sql stable security d
     ) else null end from donations where org_id = org;
 $$;
 
+
+-- The thank-you page after Checkout: the session id (or a demo gift id) is the only key the browser holds.
+create function thanks_lookup(session text default null, gift uuid default null) returns jsonb language sql stable security definer set search_path = public as $$
+    select jsonb_build_object('id', d.id, 'name', d.donor_name, 'amount_cents', d.amount_cents, 'currency', d.currency, 'tip_cents', d.tip_cents, 'status', d.status, 'recurring', d.recurring, 'claimed_rank', d.claimed_rank, 'message', d.message,
+        'page', (select jsonb_build_object('type', p.type, 'slug', p.slug, 'title', p.title, 'raised_cents', p.raised_cents, 'goal_cents', p.goal_cents) from pages p where p.id = d.page_id),
+        'org', (select jsonb_build_object('slug', o.slug, 'name', o.name) from orgs o where o.id = d.org_id),
+        'supporter', (select jsonb_build_object('id', s.id, 'name', s.name) from supporters s where s.id = d.supporter_id))
+    from donations d where (session is not null and d.stripe_checkout_session_id = session) or (gift is not null and d.id = gift and d.source = 'demo') limit 1;
+$$;
+
 -- ---------------------------------------------------------------- row-level security
 alter table profiles enable row level security;
 alter table orgs enable row level security;

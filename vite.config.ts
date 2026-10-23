@@ -6,5 +6,7 @@ import { defineConfig } from "vite";
 export default defineConfig({
     plugins: [react(), tailwindcss()],
     resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } },
-    build: { target: "es2022", cssCodeSplit: false, assetsInlineLimit: 100000000, rollupOptions: { output: { inlineDynamicImports: true } } },
+    // PGlite (the in-browser Postgres behind the demo) ships WASM that must stay a separate, lazily fetched asset.
+    optimizeDeps: { exclude: ["@electric-sql/pglite"] },
+    build: { target: "es2022", cssCodeSplit: false, assetsInlineLimit: (file) => !/\.(wasm|data)$/.test(file) && undefined },
 });
