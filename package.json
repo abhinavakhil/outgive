@@ -11,6 +11,7 @@
   "dependencies": {
     "@abhinavakhil/penna-core": "^0.2.0",
     "@abhinavakhil/penna-react": "^0.2.0",
+    "@supabase/supabase-js": "^2.118.0",
     "@untitledui/file-icons": "^0.0.9",
     "@untitledui/icons": "^0.0.23",
     "motion": "^12.0.0",
@@ -22,16 +23,19 @@
     "tailwind-merge": "^3.0.0"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.11",
     "@tailwindcss/typography": "^0.5.16",
     "@tailwindcss/vite": "^4.1.0",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.4.0",
+    "deno": "^2.9.6",
     "tailwindcss": "^4.1.0",
     "tailwindcss-animate": "^1.0.7",
     "tailwindcss-react-aria-components": "^2.0.0",
     "typescript": "^5.6.0",
-    "vite": "^6.0.0"
+    "vite": "^6.0.0",
+    "vitest": "^5.0.5"
   }
 }
