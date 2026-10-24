@@ -10,6 +10,7 @@ You will add exactly three sets of keys: Supabase (frontend), Stripe (secrets), 
     npm test             # vitest: schema, SQL API, RLS, seed, money, routing (PGlite)
     npm run test:fn      # Deno: fee maths and Stripe webhook mapping
     npm run build        # dist/ with prerendered marketing pages
+    npm run test:browser # headless Chrome against the dev server: routes, flows, live screen + phone gift
 
 ## 1. Supabase project (database, auth, realtime, storage, functions)
 

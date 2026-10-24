@@ -21,6 +21,7 @@ Built with React 19, Vite, Tailwind CSS v4 and the open-source Untitled UI React
     npm test             # schema, SQL API, RLS, seed, money and routing tests on real Postgres (PGlite)
     npm run test:fn      # Deno tests for the edge functions (fee maths, webhook mapping)
     npm run build        # production build in dist/ with prerendered marketing pages
+    npm run test:browser # headless Chrome: every route, the claim/record/create flows, and a phone gift landing on the live screen
 
 Copy `.env.example` to `.env.local` and fill in the Supabase URL and anon key to run against a real backend.
 `docs/RUNBOOK.md` walks through Supabase, Stripe Connect, Resend and Vercel; the free tiers are enough to launch.
@@ -38,6 +39,11 @@ Copy `.env.example` to `.env.local` and fill in the Supabase URL and anon key to
 
 The app never queries tables directly; the SQL functions in the migration are the API, tested in `tests/db.test.ts`, and
 behave identically in demo mode because the same migration runs in the browser.
+
+Live fundraising: every organisation and page has a live screen (`/live`) in five layouts (classic, thermometer, impact, podium,
+gift wall; dark or light), an OBS overlay (`/overlay`) and a phone give screen (`/give`) behind the live screen's QR code, where a
+donor picks an impact item ("A borehole for a village, $6,000") or any amount and the gift lands on the screen in the room within a
+second. The presenter console (Admin, Live screen) sets layout, theme, goal for the night, impact items, the ask banner and confetti.
 
 Tenancy: `<slug>.outgive.org` or a charity's custom domain resolves the organisation from the host; `/o/<slug>` works on the
 bare domain. Tenant routes: `/` board, `/live` and `/overlay` (wall display and OBS overlay), `/c|/f|/t|/ch|/e|/m/<slug>` pages

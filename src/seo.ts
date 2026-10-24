@@ -18,6 +18,7 @@ export const metaFor = (name: View["name"], brand: Brand, page?: PageData): [str
         landing: ["Fundraising platform with live leaderboards, on your own brand | Outgive", "Outgive is a white-label fundraising platform: donation pages, peer-to-peer fundraising, events and a live leaderboard where every rank has a price. Free for charities; donors tip."],
         "landing-b": ["Giving, made a race | Outgive", "A second design for the Outgive product page: charity leaderboards where every rank has a price."],
         board: [`${brand.name} leaderboard: give more to take a rank`, `${brand.tagline}. See who is giving most to ${brand.name}, what it costs to pass them, and claim your own rank.`],
+        give: [`Give to ${brand.name}`, `Pick what to fund and give from your phone. Your gift shows on the live screen at once.`],
         live: [`${brand.name} live`, `Live fundraising screen for ${brand.name}: the total, the board and every gift as it lands.`],
         overlay: [`${brand.name} overlay`, "Stream overlay."],
         create: [`Start fundraising for ${brand.name}`, `Set up a fundraising page for ${brand.name} in minutes. Every gift to it counts toward your rank on the leaderboard.`],

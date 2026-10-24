@@ -115,6 +115,9 @@ describe("donations and the board", () => {
         expect(d.status).toBe("succeeded");
         const anon = await as(db, owner, () => rpc("donation_record", { p: { org_id: org.id, amount_cents: 500, currency: "USD", donor_name: "Secret", anonymous: true, supporter_name: "Northfield Rotary", supporter_kind: "Teams" } }));
         expect(anon.donor_name).toBe("Anonymous");
+        const cause = await as(db, owner, () => rpc("donation_record", { p: { org_id: org.id, amount_cents: 60000, currency: "USD", donor_name: "Cause Giver", cause: "A borehole for a village" } }));
+        expect(cause.cause).toBe("A borehole for a village");
+        expect((await as(db, null, () => rows("select cause from activity($1, 5)", [org.id]))).some((r: any) => r.cause === "A borehole for a village")).toBe(true);
         await expect(as(db, owner, () => rpc("donation_record", { p: { org_id: org.id, amount_cents: 500, currency: "USD", source: "card" } }))).rejects.toThrow(/source/);
     });
     it("the board ranks supporters by USD with today, week, recruited and streak", async () => {

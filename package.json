@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:fn": "cd supabase/functions && deno test --allow-env --allow-read",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test:browser": "node tests/browser/run.mjs"
   },
   "dependencies": {
     "@abhinavakhil/penna-core": "^0.2.0",
@@ -34,6 +35,7 @@
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.4.0",
     "deno": "^2.9.6",
+    "puppeteer-core": "^24.43.1",
     "tailwindcss": "^4.1.0",
     "tailwindcss-animate": "^1.0.7",
     "tailwindcss-react-aria-components": "^2.0.0",

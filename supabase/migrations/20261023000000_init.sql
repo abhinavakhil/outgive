@@ -169,6 +169,7 @@ create table donations (
     platform_fee_cents bigint not null default 0 check (platform_fee_cents >= 0),
     message text not null default '',
     dedication text not null default '',
+    cause text not null default '',
     recurring boolean not null default false,
     source text not null default 'card' check (source in ('card', 'offline', 'pledge', 'match', 'demo')),
     status text not null default 'pending' check (status in ('pending', 'succeeded', 'refunded', 'disputed', 'failed')),
@@ -310,7 +311,7 @@ $$;
 
 -- Public view of gifts: no emails, anonymous names hidden.
 create view public_donations with (security_invoker = false) as
-    select id, org_id, page_id, supporter_id, donor_name as name, amount_cents, currency, usd_cents, message, dedication, recurring, source, ticket_qty, created_at
+    select id, org_id, page_id, supporter_id, donor_name as name, amount_cents, currency, usd_cents, message, dedication, cause, recurring, source, ticket_qty, created_at
     from donations where status = 'succeeded';
 
 -- ---------------------------------------------------------------- SQL API (called as RPC from the app)
@@ -460,10 +461,10 @@ begin
     if pg is not null then select org_id into org from pages where id = pg; end if;
     if not is_member(org) then raise exception 'Only the organisation can record a gift' using errcode = '42501'; end if;
     if src not in ('offline', 'pledge', 'demo') then raise exception 'source must be offline, pledge or demo'; end if;
-    insert into donations (org_id, page_id, supporter_id, donor_name, donor_email, anonymous, amount_cents, currency, message, dedication, recurring, source, status, claimed_rank)
+    insert into donations (org_id, page_id, supporter_id, donor_name, donor_email, anonymous, amount_cents, currency, message, dedication, cause, recurring, source, status, claimed_rank)
     values (org, pg, supporter_for(org, p ->> 'supporter_name', p ->> 'supporter_kind', p ->> 'supporter_tagline', p ->> 'supporter_country', p ->> 'supporter_region', p ->> 'supporter_link'),
         coalesce(nullif(p ->> 'donor_name', ''), 'Anonymous'), nullif(p ->> 'donor_email', ''), coalesce((p ->> 'anonymous')::boolean, false), (p ->> 'amount_cents')::bigint, coalesce(upper(p ->> 'currency'), 'USD'),
-        coalesce(p ->> 'message', ''), coalesce(p ->> 'dedication', ''), coalesce((p ->> 'recurring')::boolean, false), src, 'succeeded', nullif(p ->> 'claimed_rank', '')::int)
+        coalesce(p ->> 'message', ''), coalesce(p ->> 'dedication', ''), left(coalesce(p ->> 'cause', ''), 80), coalesce((p ->> 'recurring')::boolean, false), src, 'succeeded', nullif(p ->> 'claimed_rank', '')::int)
     returning * into d;
     return d;
 end $$;
@@ -510,8 +511,8 @@ create function my_supporters() returns setof supporters language sql stable sec
     select * from supporters where user_id = auth.uid();
 $$;
 
-create function activity(org uuid, n integer default 20) returns table (who text, usd numeric, at timestamptz, message text, page_id uuid) language sql stable security definer set search_path = public as $$
-    select coalesce(s.name, d.name), d.usd_cents / 100.0, d.created_at, d.message, d.page_id from public_donations d left join supporters s on s.id = d.supporter_id
+create function activity(org uuid, n integer default 20) returns table (who text, usd numeric, at timestamptz, message text, page_id uuid, cause text) language sql stable security definer set search_path = public as $$
+    select coalesce(s.name, d.name), d.usd_cents / 100.0, d.created_at, d.message, d.page_id, d.cause from public_donations d left join supporters s on s.id = d.supporter_id
     where d.org_id = org and d.source <> 'match' order by d.created_at desc limit n;
 $$;
 
@@ -609,7 +610,7 @@ begin
         perform realtime.send(
             jsonb_build_object('id', new.id, 'org_id', new.org_id, 'page_id', new.page_id, 'supporter_id', new.supporter_id,
                 'donor_name', case when new.anonymous then 'Anonymous' else new.donor_name end, 'amount_cents', new.amount_cents, 'currency', new.currency,
-                'usd_cents', new.usd_cents, 'message', new.message, 'dedication', new.dedication, 'recurring', new.recurring, 'source', new.source,
+                'usd_cents', new.usd_cents, 'message', new.message, 'dedication', new.dedication, 'cause', new.cause, 'recurring', new.recurring, 'source', new.source,
                 'status', new.status, 'ticket_qty', new.ticket_qty, 'created_at', new.created_at),
             'donation', 'donations:' || new.org_id, true);
     end if;

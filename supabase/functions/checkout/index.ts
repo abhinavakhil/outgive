@@ -38,7 +38,7 @@ serve(async (req) => {
     const { data: supporterId } = await db.rpc("supporter_for", { org: org.id, s_name: b.supporter_name ?? null, s_kind: b.supporter_kind ?? null, s_tagline: b.supporter_tagline ?? null, s_country: b.supporter_country ?? null, s_region: b.supporter_region ?? null, s_link: null });
     const { data: donation, error } = await db.from("donations").insert({
         org_id: org.id, page_id: page?.id ?? null, supporter_id: supporterId ?? null, donor_name: b.anonymous || !b.donor_name?.trim() ? "Anonymous" : b.donor_name.trim(), donor_email: b.donor_email ?? null, anonymous: !!b.anonymous,
-        amount_cents: b.amount_cents, currency, tip_cents: money.tip, cover_cents: money.cover, platform_fee_cents: money.platformFee, message: b.message?.trim() ?? "", dedication: b.dedication?.trim() ?? "",
+        amount_cents: b.amount_cents, currency, tip_cents: money.tip, cover_cents: money.cover, platform_fee_cents: money.platformFee, message: b.message?.trim() ?? "", dedication: b.dedication?.trim() ?? "", cause: b.cause?.trim() ?? "",
         recurring: !!b.recurring, source: "card", status: "pending", ticket_type_id: b.ticket_type_id ?? null, ticket_qty: b.ticket_type_id ? qty : 0, claimed_rank: b.claimed_rank ?? null,
     }).select("id").single();
     if (error || !donation) return fail(error?.message ?? "Could not start the gift", 500);

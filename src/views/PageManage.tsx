@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, Check, Copy01, Plus, Trash01 } from "@untitledui/icons";
+import { Announcement01, ArrowLeft, Check, CoinsStacked01, Copy01, Edit05, Gift01, Heart, Plus, Share07, Target04, Ticket01, Trash01, Tv01, Users01 } from "@untitledui/icons";
 import QRCode from "qrcode";
 import { Badge } from "@/components/base/badges/badges";
 import { Button } from "@/components/base/buttons/button";
@@ -9,49 +9,60 @@ import { NativeSelect } from "@/components/base/select/select-native";
 import { TextArea } from "@/components/base/textarea/textarea";
 import { FileUpload } from "@/components/application/file-upload/file-upload-base";
 import { CoverMedia, DescriptionEditor, readImage, youtubeId } from "@/components/outgive/media";
-import { BrandLogo, Container, ThemeToggle, ago, useApp } from "@/components/outgive/shared";
+import { ConsoleShell, CopyRow, Empty, Fieldset, LiveConsole, Panel, Stat, Who, ago, useApp } from "@/components/outgive/shared";
 import { CAUSES, type Cover, LAYOUTS, PREFIX } from "@/data";
 import { fmt } from "@/lib/money";
-import type { DonationRow, PageBundle, PageRow, TicketType } from "@/lib/types";
+import type { DonationRow, LiveState, PageBundle, PageRow, TicketType } from "@/lib/types";
 import { persistCover } from "@/lib/media";
 import { cx } from "@/utils/cx";
 
-type Tab = "edit" | "updates" | "gifts" | "tickets" | "fundraisers" | "share";
+type Tab = "edit" | "updates" | "gifts" | "tickets" | "fundraisers" | "live" | "share";
 const field = "flex flex-col gap-1.5 text-sm font-medium text-secondary";
 
-/** Everything the owner of a page does after publishing: edit, post updates, see gifts, sell tickets, invite fundraisers, share. */
+/** Everything the owner of a page does after publishing: edit, post updates, see gifts, sell tickets, invite fundraisers, run the live screen, share. */
 export const PageManage = ({ bundle, reload }: { bundle: PageBundle; reload: () => void }) => {
     const { db, org, member, go, href, toast, money } = useApp();
     const p = bundle.page;
     const [tab, setTab] = useState<Tab>("edit");
-    const tabs: [Tab, string][] = [["edit", "Edit"], ["updates", "Updates"], ["gifts", "Gifts"], ...(p.type === "event" ? [["tickets", "Tickets"] as [Tab, string]] : []), ...(p.type === "campaign" || p.type === "team" ? [["fundraisers", p.type === "team" ? "Members" : "Fundraisers"] as [Tab, string]] : []), ["share", "Share"]];
+    const tabs: [Tab, string, typeof Heart][] = [["edit", "Edit", Edit05], ["updates", "Updates", Announcement01], ["gifts", "Gifts", Heart], ...(p.type === "event" ? [["tickets", "Tickets", Ticket01] as [Tab, string, typeof Heart]] : []), ...(p.type === "campaign" || p.type === "team" ? [["fundraisers", p.type === "team" ? "Members" : "Fundraisers", Users01] as [Tab, string, typeof Heart]] : []), ["live", "Live screen", Tv01], ["share", "Share", Share07]];
     const ref = { type: p.type, slug: p.slug };
     const url = `${window.location.origin}${href({ name: "page", org: org!.slug, page: ref })}`;
+    const pct = p.goal_cents ? Math.min(100, Math.round((p.raised_cents / p.goal_cents) * 100)) : 0;
+    const inviteUrl = `${window.location.origin}${href({ name: "create", org: org!.slug, parent: p.id })}`;
     return (
-        <div className="min-h-dvh bg-secondary">
-            <header className="sticky top-0 z-30 border-b border-secondary bg-primary"><Container className="flex flex-wrap items-center justify-between gap-3 py-3">
-                <div className="flex min-w-0 items-center gap-3"><BrandLogo onClick={() => go({ name: "home" })} /><span className="truncate text-sm text-tertiary">/ {p.title}</span><Badge type="pill-color" color={p.status === "live" ? "success" : p.status === "draft" ? "warning" : "gray"} size="sm">{p.status}</Badge></div>
-                <div className="flex items-center gap-2"><ThemeToggle /><Button size="sm" color="secondary" className="rounded-full" iconLeading={ArrowLeft} onPress={() => go({ name: "page", org: org!.slug, page: ref })}>View page</Button>{member && <Button size="sm" color="secondary" className="rounded-full" onPress={() => go({ name: "admin" })}>Organiser dashboard</Button>}</div>
-            </Container></header>
-            <Container className="grid gap-6 py-6 lg:grid-cols-[220px_minmax(0,1fr)]">
-                <nav className="no-scrollbar flex gap-1 overflow-x-auto lg:flex-col">{tabs.map(([k, l]) => <button key={k} type="button" aria-current={tab === k ? "page" : undefined} onClick={() => setTab(k)} className={cx("shrink-0 cursor-pointer rounded-xl px-3.5 py-2.5 text-left text-sm font-semibold outline-focus-ring focus-visible:outline-2", tab === k ? "bg-primary text-primary shadow-xs" : "text-tertiary hover:text-primary")}>{l}</button>)}</nav>
-                <main className="flex min-w-0 flex-col gap-5">
-                    <div className="grid grid-cols-3 gap-3">{([[fmt(p.raised_cents, p.currency), "raised"], [String(p.donor_count), "gifts"], [p.goal_cents ? `${Math.min(100, Math.round((p.raised_cents / p.goal_cents) * 100))}%` : "–", "of goal"]] as [string, string][]).map(([v, l]) => <div key={l} className="rounded-2xl bg-primary p-4 ring-1 ring-secondary ring-inset"><div className="text-xl font-semibold text-primary tabular-nums">{v}</div><div className="text-xs text-tertiary">{l}</div></div>)}</div>
-                    {tab === "edit" && <EditForm p={p} onSaved={reload} />}
-                    {tab === "updates" && <Updates bundle={bundle} reload={reload} />}
-                    {tab === "gifts" && <Gifts bundle={bundle} reload={reload} />}
-                    {tab === "tickets" && <Tickets bundle={bundle} reload={reload} />}
-                    {tab === "fundraisers" && <section className="flex flex-col gap-4 rounded-2xl bg-primary p-5 ring-1 ring-secondary ring-inset">
-                        <div><h2 className="text-lg font-semibold text-primary">{p.type === "team" ? "Team members" : "Fundraisers for this campaign"}</h2><p className="text-sm text-tertiary">Anyone with this link can start a page under yours. Everything they raise rolls up into your total.</p></div>
-                        <div className="flex items-center gap-2 rounded-full bg-secondary p-1.5 pl-4 ring-1 ring-secondary ring-inset"><span className="min-w-0 flex-1 truncate text-sm text-secondary">{window.location.origin}{href({ name: "create", org: org!.slug, parent: p.id })}</span><Button size="sm" color="primary" className="rounded-full" iconLeading={Copy01} onPress={() => { navigator.clipboard?.writeText(`${window.location.origin}${href({ name: "create", org: org!.slug, parent: p.id })}`); toast("Invite link copied"); }}>Copy</Button></div>
-                        <Checkbox size="md" isSelected={p.allow_fundraisers} onChange={async (v) => { await db.rpc("page_update", { page: p.id, p: { allow_fundraisers: v } }); reload(); }} label="Let supporters start their own pages under this one" />
-                        <ol className="flex flex-col">{bundle.children.map((c, i) => <li key={c.id} className="flex items-center gap-3 border-t border-secondary py-3"><span className="w-6 text-sm font-semibold text-tertiary">{i + 1}</span><button type="button" onClick={() => go({ name: "page", org: org!.slug, page: { type: c.type, slug: c.slug } })} className="min-w-0 flex-1 cursor-pointer truncate text-left text-sm font-semibold text-primary hover:underline">{c.title}</button><span className="text-xs text-tertiary">{c.donor_count} gifts</span><span className="text-sm font-semibold text-brand-secondary">{money(c.raised_cents / 100)}</span></li>)}{bundle.children.length === 0 && <li className="py-4 text-sm text-tertiary">No pages yet. Share the invite link.</li>}</ol>
-                    </section>}
-                    {tab === "share" && <Share url={url} p={p} />}
-                </main>
-            </Container>
-        </div>
+        <ConsoleShell nav={tabs} current={tab} onNav={(k) => setTab(k as Tab)}
+            crumb={<span className="hidden min-w-0 items-center gap-2 text-sm text-tertiary sm:flex"><span>/</span><span className="truncate font-medium text-primary">{p.title}</span></span>}
+            badges={<Badge type="pill-color" color={p.status === "live" ? "success" : p.status === "draft" ? "warning" : "gray"} size="sm">{p.status}</Badge>}
+            actions={<><Button size="sm" color="secondary" className="rounded-full" iconLeading={ArrowLeft} onPress={() => go({ name: "page", org: org!.slug, page: ref })}>View page</Button>{member && <Button size="sm" color="secondary" className="rounded-full max-sm:hidden" onPress={() => go({ name: "admin" })}>Dashboard</Button>}</>}>
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                <Stat icon={CoinsStacked01} label="Raised" value={fmt(p.raised_cents, p.currency)} trend={p.goal_cents ? `of ${fmt(p.goal_cents, p.currency)}` : "no goal set"} tone="brand" />
+                <Stat icon={Gift01} label="Gifts" value={String(p.donor_count)} trend={bundle.donations[0] ? `last ${ago(new Date(bundle.donations[0].created_at).getTime())}${ago(new Date(bundle.donations[0].created_at).getTime()) === "just now" ? "" : " ago"}` : "none yet"} />
+                <Stat icon={Target04} label="Of goal" value={p.goal_cents ? `${pct}%` : "–"} trend={p.end_date ? `ends ${new Date(p.end_date).toLocaleDateString("en", { day: "numeric", month: "short" })}` : "no end date"} />
+                <Stat icon={Users01} label={p.type === "team" ? "Members" : "Fundraisers"} value={String(bundle.children.length)} trend={bundle.children.length ? `${money(bundle.children.reduce((n, c) => n + c.raised_cents, 0) / 100)} raised by them` : "pages under this one"} />
+            </div>
+            {tab === "edit" && <EditForm p={p} onSaved={reload} />}
+            {tab === "updates" && <Updates bundle={bundle} reload={reload} />}
+            {tab === "gifts" && <Gifts bundle={bundle} reload={reload} />}
+            {tab === "tickets" && <Tickets bundle={bundle} reload={reload} />}
+            {tab === "fundraisers" && <Panel title={p.type === "team" ? "Team members" : "Fundraisers for this campaign"} sub="Anyone with this link can start a page under yours. Everything they raise rolls up into your total.">
+                <CopyRow label="Invite link" url={inviteUrl} />
+                <Checkbox size="md" isSelected={p.allow_fundraisers} onChange={async (v) => { await db.rpc("page_update", { page: p.id, p: { allow_fundraisers: v } }); reload(); }} label="Let supporters start their own pages under this one" />
+                {bundle.children.length === 0 ? <Empty icon={Users01} title="No pages yet" sub="Share the invite link. Each page a supporter makes becomes a row here and on the board." /> : <ol className="flex flex-col divide-y divide-secondary">{bundle.children.map((c, i) => <li key={c.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0"><span className="w-6 text-sm font-semibold text-tertiary tabular-nums">{i + 1}</span><Who name={c.title} /><button type="button" onClick={() => go({ name: "page", org: org!.slug, page: { type: c.type, slug: c.slug } })} className="min-w-0 flex-1 cursor-pointer truncate text-left text-sm font-semibold text-primary hover:underline">{c.title}</button><span className="text-xs text-tertiary">{c.donor_count} gifts</span><span className="text-sm font-semibold text-primary tabular-nums">{money(c.raised_cents / 100)}</span></li>)}</ol>}
+            </Panel>}
+            {tab === "live" && <PageLive p={p} reload={reload} />}
+            {tab === "share" && <Share url={url} p={p} />}
+        </ConsoleShell>
     );
+};
+
+/** The page's own presenter console. Saved on page.live; the page's live screen and give page read it. */
+const PageLive = ({ p, reload }: { p: PageRow; reload: () => void }) => {
+    const { db, org, href, toast } = useApp();
+    const live: LiveState = p.live ?? {};
+    const ref = { type: p.type, slug: p.slug };
+    const abs = (x: string) => `${window.location.origin}${x}`;
+    const push = async (patch: LiveState) => { try { await db.rpc("page_update", { page: p.id, p: { live: { ...live, ...patch } } }); reload(); } catch (e) { toast((e as Error).message); } };
+    return <LiveConsole key={p.id} live={live} push={push} scope={p.title} liveUrl={abs(href({ name: "live", org: org!.slug, page: ref }))} overlayUrl={abs(href({ name: "overlay", org: org!.slug, page: ref }))} giveUrl={abs(href({ name: "give", org: org!.slug, page: ref }))} />;
 };
 
 const EditForm = ({ p, onSaved }: { p: PageRow; onSaved: () => void }) => {
@@ -69,30 +80,39 @@ const EditForm = ({ p, onSaved }: { p: PageRow; onSaved: () => void }) => {
             toast("Saved"); onSaved();
         } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
     };
+    const saveBtn = <Button type="submit" color="primary" size="md" className="rounded-full" isDisabled={busy || !f.title.trim()}>{busy ? "Saving…" : "Save changes"}</Button>;
     return (
-        <form className="flex flex-col gap-5 rounded-2xl bg-primary p-5 ring-1 ring-secondary ring-inset" onSubmit={(e) => { e.preventDefault(); save(); }}>
-            <div className="grid gap-4 sm:grid-cols-2">
-                <Input label="Title" value={f.title} onChange={(v) => setF({ ...f, title: v })} isRequired />
-                <Input label="Organisation shown" value={f.org_name} onChange={(v) => setF({ ...f, org_name: v })} />
-                <Input label={`Goal (${p.currency})`} type="number" value={f.goal} onChange={(v) => setF({ ...f, goal: v })} />
-                <Input label="End date" type="date" value={f.end_date} onChange={(v) => setF({ ...f, end_date: v })} />
-                <NativeSelect label="Layout" value={f.layout} onChange={(e) => setF({ ...f, layout: e.target.value as PageRow["layout"] })} options={LAYOUTS.map((l) => ({ label: l.name, value: l.id }))} />
-                <NativeSelect label="Status" value={f.status} onChange={(e) => setF({ ...f, status: e.target.value as PageRow["status"] })} options={[["live", "Live: taking gifts"], ["paused", "Paused: visible, not taking gifts"], ["ended", "Ended"], ["draft", "Draft: hidden"]].map(([v, l]) => ({ label: l, value: v }))} />
-                <Input label="Suggested gifts (up to 4)" value={f.gifts} onChange={(v) => setF({ ...f, gifts: v })} hint="e.g. 10, 25, 50, 100" />
-                <div className={field}>Causes<div className="flex flex-wrap gap-1.5">{CAUSES.map((c) => <button key={c} type="button" aria-pressed={f.causes.includes(c)} onClick={() => setF({ ...f, causes: f.causes.includes(c) ? f.causes.filter((x) => x !== c) : f.causes.length < 3 ? [...f.causes, c] : f.causes })} className={cx("cursor-pointer rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset", f.causes.includes(c) ? "bg-brand-solid text-white ring-transparent" : "text-secondary ring-secondary hover:bg-secondary")}>{c}</button>)}</div></div>
-            </div>
-            <Checkbox size="md" isSelected={f.show_goal} onChange={(v) => setF({ ...f, show_goal: v })} label="Show the goal and progress bar" />
-            <div className="flex flex-col gap-3"><span className="text-sm font-medium text-secondary">Cover</span>
-                <div role="group" className="flex w-fit gap-1 rounded-full bg-secondary p-1 ring-1 ring-secondary ring-inset">{(["image", "video", "youtube"] as const).map((k) => <button key={k} type="button" aria-pressed={coverTab === k} onClick={() => { setCoverTab(k); if (cover.kind !== k) setCover({ kind: "none", src: "" }); }} className={cx("h-9 cursor-pointer rounded-full px-4 text-sm font-semibold", coverTab === k ? "bg-brand-solid text-white" : "text-tertiary")}>{k === "youtube" ? "YouTube" : k[0].toUpperCase() + k.slice(1)}</button>)}</div>
-                {coverTab === "image" && cover.kind !== "image" && <FileUpload.DropZone className="min-h-40 justify-center" hint="JPG, PNG or WebP" accept="image/*" allowsMultiple={false} onDropFiles={async (files) => setCover({ kind: "image", src: await readImage(files[0]) })} />}
-                {coverTab === "video" && cover.kind !== "video" && <FileUpload.DropZone className="min-h-40 justify-center" hint="MP4 or WebM, up to 50 MB" accept="video/mp4,video/webm,video/quicktime" allowsMultiple={false} maxSize={50 * 1024 * 1024} onDropFiles={(files) => setCover({ kind: "video", src: URL.createObjectURL(files[0]) })} />}
-                {coverTab === "youtube" && <Input aria-label="YouTube link" placeholder="https://www.youtube.com/watch?v=…" value={cover.kind === "youtube" ? cover.src : ""} onChange={(v) => setCover({ kind: "youtube", src: v })} isInvalid={cover.kind === "youtube" && !!cover.src && !youtubeId(cover.src)} />}
-                {cover.kind !== "none" && (cover.kind !== "youtube" || youtubeId(cover.src)) && <div className="flex flex-col gap-2"><CoverMedia cover={cover} className="aspect-video max-w-md" /><Button size="sm" color="secondary" className="w-fit rounded-full" iconLeading={Trash01} onPress={() => setCover({ kind: "none", src: "" })}>Remove</Button></div>}
-            </div>
-            <div className="flex flex-col gap-1.5"><span className="text-sm font-medium text-secondary">Story</span><DescriptionEditor value={f.story} onChange={(v) => setF({ ...f, story: v })} /></div>
-            <div className="flex flex-col gap-2"><span className="text-sm font-medium text-secondary">Where the money goes</span>{f.allocation.map(([l, v], i) => <div key={i} className="grid grid-cols-[1fr_6rem_auto] gap-2"><Input aria-label="Use" value={l} onChange={(x) => setF({ ...f, allocation: f.allocation.map((r, j) => (j === i ? [x, r[1]] : r)) })} /><Input aria-label="Percent" type="number" value={String(v)} onChange={(x) => setF({ ...f, allocation: f.allocation.map((r, j) => (j === i ? [r[0], Number(x) || 0] : r)) })} /><Button size="md" color="tertiary" aria-label="Remove" iconLeading={Trash01} onPress={() => setF({ ...f, allocation: f.allocation.filter((_, j) => j !== i) })} /></div>)}<Button size="sm" color="secondary" className="w-fit rounded-full" iconLeading={Plus} onPress={() => setF({ ...f, allocation: [...f.allocation, ["", 0]] })}>Add a line</Button></div>
-            {err && <p className="text-sm text-error-primary">{err}</p>}
-            <Button type="submit" color="primary" size="lg" className="w-fit rounded-full" isDisabled={busy || !f.title.trim()}>{busy ? "Saving…" : "Save changes"}</Button>
+        <form onSubmit={(e) => { e.preventDefault(); save(); }} className="contents">
+            <Panel title="Page settings" sub="Everything here is live the moment you save." action={saveBtn}>
+                <Fieldset title="Basics" sub="The title is the headline; the organisation is who the gifts go to.">
+                    <Input label="Title" value={f.title} onChange={(v) => setF({ ...f, title: v })} isRequired />
+                    <Input label="Organisation shown" value={f.org_name} onChange={(v) => setF({ ...f, org_name: v })} />
+                    <NativeSelect label="Status" value={f.status} onChange={(e) => setF({ ...f, status: e.target.value as PageRow["status"] })} options={[["live", "Live: taking gifts"], ["paused", "Paused: visible, not taking gifts"], ["ended", "Ended"], ["draft", "Draft: hidden"]].map(([v, l]) => ({ label: l, value: v }))} />
+                    <NativeSelect label="Layout" value={f.layout} onChange={(e) => setF({ ...f, layout: e.target.value as PageRow["layout"] })} options={LAYOUTS.map((l) => ({ label: l.name, value: l.id }))} />
+                </Fieldset>
+                <Fieldset title="Goal and gifts" sub="A visible goal lifts giving; suggested amounts set the anchors.">
+                    <Input label={`Goal (${p.currency})`} type="number" value={f.goal} onChange={(v) => setF({ ...f, goal: v })} />
+                    <Input label="End date" type="date" value={f.end_date} onChange={(v) => setF({ ...f, end_date: v })} />
+                    <Input label="Suggested gifts (up to 4)" value={f.gifts} onChange={(v) => setF({ ...f, gifts: v })} hint="e.g. 10, 25, 50, 100" />
+                    <div className="flex items-end pb-1"><Checkbox size="md" isSelected={f.show_goal} onChange={(v) => setF({ ...f, show_goal: v })} label="Show the goal and progress bar" /></div>
+                </Fieldset>
+                <Fieldset title="Causes" sub="Up to three. They tag the page in search and on the board." cols={1}>
+                    <div className={field}><div className="flex flex-wrap gap-1.5">{CAUSES.map((c) => <button key={c} type="button" aria-pressed={f.causes.includes(c)} onClick={() => setF({ ...f, causes: f.causes.includes(c) ? f.causes.filter((x) => x !== c) : f.causes.length < 3 ? [...f.causes, c] : f.causes })} className={cx("cursor-pointer rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ring-inset transition", f.causes.includes(c) ? "bg-brand-solid text-white ring-transparent" : "bg-primary text-secondary ring-secondary hover:bg-secondary")}>{c}</button>)}</div></div>
+                </Fieldset>
+                <Fieldset title="Cover" sub="A photo, a short video, or a YouTube link." cols={1}>
+                    <div role="group" className="flex w-fit gap-1 rounded-full bg-secondary p-1 ring-1 ring-secondary ring-inset">{(["image", "video", "youtube"] as const).map((k) => <button key={k} type="button" aria-pressed={coverTab === k} onClick={() => { setCoverTab(k); if (cover.kind !== k) setCover({ kind: "none", src: "" }); }} className={cx("h-9 cursor-pointer rounded-full px-4 text-sm font-semibold transition", coverTab === k ? "bg-brand-solid text-white shadow-xs" : "text-tertiary hover:text-primary")}>{k === "youtube" ? "YouTube" : k[0].toUpperCase() + k.slice(1)}</button>)}</div>
+                    {coverTab === "image" && cover.kind !== "image" && <FileUpload.DropZone className="min-h-40 justify-center" hint="JPG, PNG or WebP" accept="image/*" allowsMultiple={false} onDropFiles={async (files) => setCover({ kind: "image", src: await readImage(files[0]) })} />}
+                    {coverTab === "video" && cover.kind !== "video" && <FileUpload.DropZone className="min-h-40 justify-center" hint="MP4 or WebM, up to 50 MB" accept="video/mp4,video/webm,video/quicktime" allowsMultiple={false} maxSize={50 * 1024 * 1024} onDropFiles={(files) => setCover({ kind: "video", src: URL.createObjectURL(files[0]) })} />}
+                    {coverTab === "youtube" && <Input aria-label="YouTube link" placeholder="https://www.youtube.com/watch?v=…" value={cover.kind === "youtube" ? cover.src : ""} onChange={(v) => setCover({ kind: "youtube", src: v })} isInvalid={cover.kind === "youtube" && !!cover.src && !youtubeId(cover.src)} />}
+                    {cover.kind !== "none" && (cover.kind !== "youtube" || youtubeId(cover.src)) && <div className="flex flex-col gap-2"><CoverMedia cover={cover} className="aspect-video max-w-md rounded-2xl" /><Button size="sm" color="secondary" className="w-fit rounded-full" iconLeading={Trash01} onPress={() => setCover({ kind: "none", src: "" })}>Remove</Button></div>}
+                </Fieldset>
+                <Fieldset title="Story" sub="Why this matters, in your words." cols={1}><DescriptionEditor value={f.story} onChange={(v) => setF({ ...f, story: v })} /></Fieldset>
+                <Fieldset title="Where the money goes" sub="Optional split shown on the page." cols={1}>
+                    <div className="flex flex-col gap-2">{f.allocation.map(([l, v], i) => <div key={i} className="grid grid-cols-[1fr_6rem_auto] gap-2"><Input aria-label="Use" placeholder="Boreholes" value={l} onChange={(x) => setF({ ...f, allocation: f.allocation.map((r, j) => (j === i ? [x, r[1]] : r)) })} /><Input aria-label="Percent" type="number" placeholder="%" value={String(v)} onChange={(x) => setF({ ...f, allocation: f.allocation.map((r, j) => (j === i ? [r[0], Number(x) || 0] : r)) })} /><Button size="md" color="tertiary" aria-label="Remove" iconLeading={Trash01} onPress={() => setF({ ...f, allocation: f.allocation.filter((_, j) => j !== i) })} /></div>)}<Button size="sm" color="secondary" className="w-fit rounded-full" iconLeading={Plus} onPress={() => setF({ ...f, allocation: [...f.allocation, ["", 0]] })}>Add a line</Button></div>
+                </Fieldset>
+                {err && <p className="text-sm text-error-primary">{err}</p>}
+                <div className="flex justify-end border-t border-secondary pt-5">{saveBtn}</div>
+            </Panel>
         </form>
     );
 };
@@ -101,12 +121,16 @@ const Updates = ({ bundle, reload }: { bundle: PageBundle; reload: () => void })
     const { db } = useApp();
     const [t, setT] = useState(""); const [b, setB] = useState("");
     return (
-        <section className="flex flex-col gap-4 rounded-2xl bg-primary p-5 ring-1 ring-secondary ring-inset">
-            <form className="flex flex-col gap-3" onSubmit={async (e) => { e.preventDefault(); if (!t.trim()) return; await db.rpc("update_post", { page: bundle.page.id, t: t.trim(), b: b.trim() }); setT(""); setB(""); reload(); }}>
-                <h2 className="text-lg font-semibold text-primary">Post an update</h2><Input aria-label="Title" placeholder="What happened?" value={t} onChange={setT} /><TextArea aria-label="Update" rows={3} placeholder="Tell supporters how their gifts are being used." value={b} onChange={setB} /><Button type="submit" size="md" color="primary" className="w-fit rounded-full" isDisabled={!t.trim()}>Post update</Button>
-            </form>
-            <ol className="flex flex-col">{bundle.updates.map((u) => <li key={u.id} className="border-t border-secondary py-3"><div className="text-xs text-tertiary">{new Date(u.created_at).toLocaleDateString("en", { day: "numeric", month: "long", year: "numeric" })}</div><div className="font-semibold text-primary">{u.title}</div><p className="text-sm text-tertiary">{u.body}</p></li>)}</ol>
-        </section>
+        <>
+            <Panel title="Post an update" sub="Supporters who gave see it on the page; it is the best reason for them to share again.">
+                <form className="flex flex-col gap-3" onSubmit={async (e) => { e.preventDefault(); if (!t.trim()) return; await db.rpc("update_post", { page: bundle.page.id, t: t.trim(), b: b.trim() }); setT(""); setB(""); reload(); }}>
+                    <Input aria-label="Title" placeholder="What happened?" value={t} onChange={setT} /><TextArea aria-label="Update" rows={3} placeholder="Tell supporters how their gifts are being used." value={b} onChange={setB} /><Button type="submit" size="md" color="primary" className="w-fit rounded-full" isDisabled={!t.trim()}>Post update</Button>
+                </form>
+            </Panel>
+            <Panel title={<>Updates <span className="ml-1 text-tertiary">· {bundle.updates.length}</span></>}>
+                {bundle.updates.length === 0 ? <Empty icon={Announcement01} title="No updates yet" sub="Even a two-line update doubles the chance a supporter shares the page." /> : <ol className="flex flex-col gap-3">{bundle.updates.map((u) => <li key={u.id} className="rounded-2xl bg-secondary p-4"><div className="text-xs text-tertiary">{new Date(u.created_at).toLocaleDateString("en", { day: "numeric", month: "long", year: "numeric" })}</div><div className="mt-0.5 font-semibold text-primary">{u.title}</div><p className="mt-1 text-sm text-tertiary">{u.body}</p></li>)}</ol>}
+            </Panel>
+        </>
     );
 };
 
@@ -119,14 +143,14 @@ const Gifts = ({ bundle, reload }: { bundle: PageBundle; reload: () => void }) =
         setF({ donor_name: "", amount: "", source: "offline", message: "" }); toast("Gift recorded"); reload();
     };
     return (
-        <section className="flex flex-col gap-4 rounded-2xl bg-primary p-5 ring-1 ring-secondary ring-inset">
-            {member && <form className="flex flex-col gap-3 rounded-xl bg-secondary p-4" onSubmit={(e) => { e.preventDefault(); record(); }}>
-                <div><h2 className="font-semibold text-primary">Record a gift taken elsewhere</h2><p className="text-sm text-tertiary">Cash, a cheque, a bank transfer, or a pledge from the room at an event. It shows on the page and the live screen at once.</p></div>
+        <>
+            {member && <Panel title="Record a gift taken elsewhere" sub="Cash, a cheque, a bank transfer, or a pledge from the room at an event. It shows on the page and the live screen at once." action={<Button size="md" color="primary" className="rounded-full" iconLeading={Plus} isDisabled={!(Number(f.amount) > 0)} onPress={record}>Record</Button>}>
                 <div className="grid gap-3 sm:grid-cols-4"><Input label="Name" value={f.donor_name} onChange={(v) => setF({ ...f, donor_name: v })} /><Input label={`Amount (${bundle.page.currency})`} type="number" value={f.amount} onChange={(v) => setF({ ...f, amount: v })} /><NativeSelect label="Kind" value={f.source} onChange={(e) => setF({ ...f, source: e.target.value })} options={[{ label: "Offline gift", value: "offline" }, { label: "Pledge", value: "pledge" }]} /><Input label="Message" value={f.message} onChange={(v) => setF({ ...f, message: v })} /></div>
-                <Button type="submit" size="md" color="primary" className="w-fit rounded-full" isDisabled={!(Number(f.amount) > 0)}>Record</Button>
-            </form>}
-            <ul className="flex flex-col">{bundle.donations.map((d) => <li key={d.id} className="flex items-center gap-3 border-t border-secondary py-3"><span className="min-w-0 flex-1"><span className="block truncate font-medium text-primary">{d.name}{d.recurring && <Badge type="pill-color" color="brand" size="sm" className="ml-2">Monthly</Badge>}{d.source !== "card" && d.source !== "demo" && <span className="ml-2 text-xs text-tertiary">{d.source}</span>}</span>{d.message && <span className="block truncate text-sm text-tertiary">{d.message}</span>}</span><span className="text-xs text-tertiary">{ago(new Date(d.created_at).getTime())}</span><span className="font-semibold text-primary">{money(d.usd_cents / 100)}</span></li>)}{bundle.donations.length === 0 && <li className="py-4 text-sm text-tertiary">No gifts yet.</li>}</ul>
-        </section>
+            </Panel>}
+            <Panel title={<>Gifts <span className="ml-1 text-tertiary">· {bundle.page.donor_count}</span></>}>
+                {bundle.donations.length === 0 ? <Empty icon={Heart} title="No gifts yet" sub="Share the page; the first gift is the hardest and the second comes fast." /> : <ul className="flex flex-col divide-y divide-secondary">{bundle.donations.map((d) => <li key={d.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0"><Who name={d.name} /><span className="min-w-0 flex-1"><span className="flex items-center gap-2 truncate font-semibold text-primary">{d.name}{d.recurring && <Badge type="pill-color" color="brand" size="sm">Monthly</Badge>}{d.source !== "card" && d.source !== "demo" && <Badge type="pill-color" color="gray" size="sm">{d.source}</Badge>}</span>{(d.cause || d.message) && <span className="block truncate text-sm text-tertiary">{[d.cause, d.message].filter(Boolean).join(" · ")}</span>}</span><span className="text-xs text-tertiary">{ago(new Date(d.created_at).getTime())}</span><span className="font-semibold text-primary tabular-nums">{money(d.usd_cents / 100)}</span></li>)}</ul>}
+            </Panel>
+        </>
     );
 };
 
@@ -135,12 +159,10 @@ const Tickets = ({ bundle, reload }: { bundle: PageBundle; reload: () => void })
     const [items, setItems] = useState<Partial<TicketType>[]>(bundle.tickets.length ? bundle.tickets : [{ name: "Seat", description: "", price_cents: 5000, quantity: null }]);
     const set = (i: number, patch: Partial<TicketType>) => setItems((xs) => xs.map((x, j) => (j === i ? { ...x, ...patch } : x)));
     return (
-        <section className="flex flex-col gap-4 rounded-2xl bg-primary p-5 ring-1 ring-secondary ring-inset">
-            <div><h2 className="text-lg font-semibold text-primary">Ticket types</h2><p className="text-sm text-tertiary">Leave the quantity blank for unlimited. Sold tickets cannot be deleted.</p></div>
-            {items.map((t, i) => <div key={t.id ?? i} className="grid gap-2 rounded-xl bg-secondary p-3 sm:grid-cols-[1fr_1fr_7rem_6rem_auto]"><Input aria-label="Name" placeholder="Seat" value={t.name ?? ""} onChange={(v) => set(i, { name: v })} /><Input aria-label="Description" placeholder="Dinner and programme" value={t.description ?? ""} onChange={(v) => set(i, { description: v })} /><Input aria-label="Price" type="number" value={String((t.price_cents ?? 0) / 100)} onChange={(v) => set(i, { price_cents: Math.round(Number(v) * 100) || 0 })} /><Input aria-label="Quantity" type="number" placeholder="∞" value={t.quantity == null ? "" : String(t.quantity)} onChange={(v) => set(i, { quantity: v === "" ? null : Number(v) })} /><Button size="md" color="tertiary" aria-label="Remove" iconLeading={Trash01} isDisabled={!!t.sold} onPress={() => setItems((xs) => xs.filter((_, j) => j !== i))} />{!!t.sold && <span className="text-xs text-tertiary sm:col-span-5">{t.sold} sold</span>}</div>)}
-            <div className="flex gap-2"><Button size="sm" color="secondary" className="rounded-full" iconLeading={Plus} onPress={() => setItems((xs) => [...xs, { name: "", description: "", price_cents: 0, quantity: null }])}>Add a type</Button><Button size="sm" color="primary" className="rounded-full" onPress={async () => { await db.rpc("ticket_types_set", { page: bundle.page.id, items: items.filter((t) => t.name?.trim()) }); toast("Tickets saved"); reload(); }}>Save tickets</Button></div>
-            <p className="text-xs text-tertiary">Tickets are sold through the Give button on the page. A ticket counts as a gift of its price.</p>
-        </section>
+        <Panel title="Ticket types" sub="Leave the quantity blank for unlimited. Sold tickets cannot be deleted. Tickets are sold through the Give button on the page; a ticket counts as a gift of its price." action={<Button size="md" color="primary" className="rounded-full" onPress={async () => { await db.rpc("ticket_types_set", { page: bundle.page.id, items: items.filter((t) => t.name?.trim()) }); toast("Tickets saved"); reload(); }}>Save tickets</Button>}>
+            {items.map((t, i) => <div key={t.id ?? i} className="grid gap-2 rounded-2xl bg-secondary p-3 sm:grid-cols-[1fr_1fr_7rem_6rem_auto] sm:items-end"><Input label="Name" placeholder="Seat" value={t.name ?? ""} onChange={(v) => set(i, { name: v })} /><Input label="Description" placeholder="Dinner and programme" value={t.description ?? ""} onChange={(v) => set(i, { description: v })} /><Input label="Price" type="number" value={String((t.price_cents ?? 0) / 100)} onChange={(v) => set(i, { price_cents: Math.round(Number(v) * 100) || 0 })} /><Input label="Quantity" type="number" placeholder="∞" value={t.quantity == null ? "" : String(t.quantity)} onChange={(v) => set(i, { quantity: v === "" ? null : Number(v) })} /><Button size="md" color="tertiary" aria-label="Remove" iconLeading={Trash01} isDisabled={!!t.sold} onPress={() => setItems((xs) => xs.filter((_, j) => j !== i))} />{!!t.sold && <span className="text-xs text-tertiary sm:col-span-5">{t.sold} sold</span>}</div>)}
+            <Button size="sm" color="secondary" className="w-fit rounded-full" iconLeading={Plus} onPress={() => setItems((xs) => [...xs, { name: "", description: "", price_cents: 0, quantity: null }])}>Add a type</Button>
+        </Panel>
     );
 };
 
@@ -148,15 +170,17 @@ const Share = ({ url, p }: { url: string; p: PageRow }) => {
     const { toast, org, href } = useApp();
     const [qr, setQr] = useState("");
     useEffect(() => { QRCode.toDataURL(url, { width: 480, margin: 2 }).then(setQr).catch(() => setQr("")); }, [url]);
-    const embed = `<iframe src="${window.location.origin}${href({ name: "embed", org: org!.slug, page: { type: p.type, slug: p.slug } })}" width="360" height="220" style="border:0;border-radius:16px" title="${p.title}"></iframe>`;
-    const copy = (s: string, what: string) => { navigator.clipboard?.writeText(s); toast(`${what} copied`); };
+    const ref = { type: p.type, slug: p.slug };
+    const embed = `<iframe src="${window.location.origin}${href({ name: "embed", org: org!.slug, page: ref })}" width="360" height="220" style="border:0;border-radius:16px" title="${p.title}"></iframe>`;
     return (
-        <section className="flex flex-col gap-5 rounded-2xl bg-primary p-5 ring-1 ring-secondary ring-inset">
-            <div className="flex items-center gap-2 rounded-full bg-secondary p-1.5 pl-4 ring-1 ring-secondary ring-inset"><span className="min-w-0 flex-1 truncate text-sm text-secondary">{url}</span><Button size="sm" color="primary" className="rounded-full" iconLeading={Copy01} onPress={() => copy(url, "Link")}>Copy</Button></div>
-            <div className="flex flex-wrap items-center gap-5">{qr && <img src={qr} alt="QR code" className="size-36 rounded-xl bg-white p-1.5 ring-1 ring-secondary" />}<div className="flex flex-col gap-2"><div className="font-semibold text-primary">QR code</div><p className="text-sm text-tertiary">Print it on a poster or show it on screen.</p>{qr && <a href={qr} download={`${p.slug}-qr.png`} className="w-fit rounded-full bg-secondary px-3.5 py-2 text-sm font-semibold text-secondary ring-1 ring-primary ring-inset hover:bg-tertiary">Download PNG</a>}</div></div>
-            <div className="flex flex-col gap-2"><div className="font-semibold text-primary">Embed on your website</div><pre className="overflow-x-auto rounded-xl bg-secondary p-3 text-xs text-secondary">{embed}</pre><Button size="sm" color="secondary" className="w-fit rounded-full" iconLeading={Copy01} onPress={() => copy(embed, "Embed code")}>Copy embed code</Button></div>
-            <div className="flex flex-col gap-2"><div className="font-semibold text-primary">Live screen and stream overlay</div><p className="text-sm text-tertiary">Put <a className="font-semibold text-primary underline" href={`${window.location.origin}${href({ name: "live", org: org!.slug, page: { type: p.type, slug: p.slug } })}`} target="_blank" rel="noopener">the live screen</a> on a projector, or add <code className="rounded bg-secondary px-1">{`${window.location.origin}${href({ name: "overlay", org: org!.slug, page: { type: p.type, slug: p.slug } })}`}</code> as a browser source in OBS.</p></div>
-            <p className="flex items-center gap-1.5 text-xs text-tertiary"><Check className="size-3.5" />Address: /{PREFIX[p.type]}/{p.slug}</p>
-        </section>
+        <>
+            <Panel title="Share the page" sub={<span className="flex items-center gap-1.5"><Check className="size-3.5" />Address: /{PREFIX[p.type]}/{p.slug}</span>}>
+                <div className="flex flex-wrap items-center gap-5">{qr && <img src={qr} alt="QR code" className="size-32 shrink-0 rounded-2xl bg-white p-1.5 ring-1 ring-secondary" />}<div className="flex min-w-0 flex-1 flex-col gap-2"><CopyRow label="Page" url={url} /><CopyRow label="Give page (phone)" url={`${window.location.origin}${href({ name: "give", org: org!.slug, page: ref })}`} />{qr && <a href={qr} download={`${p.slug}-qr.png`} className="text-xs font-semibold text-brand-secondary hover:underline">Download QR as PNG</a>}</div></div>
+            </Panel>
+            <div className="grid gap-5 lg:grid-cols-2">
+                <Panel title="Embed on your website"><pre className="rounded-2xl bg-secondary p-4 text-xs leading-relaxed break-all whitespace-pre-wrap text-secondary">{embed}</pre><Button size="sm" color="secondary" className="w-fit rounded-full" iconLeading={Copy01} onPress={() => { navigator.clipboard?.writeText(embed); toast("Embed code copied"); }}>Copy embed code</Button></Panel>
+                <Panel title="Screens" sub="For a projector or a stream. Configure them under Live screen."><CopyRow label="Live screen" url={`${window.location.origin}${href({ name: "live", org: org!.slug, page: ref })}`} /><CopyRow label="Stream overlay" url={`${window.location.origin}${href({ name: "overlay", org: org!.slug, page: ref })}`} /></Panel>
+            </div>
+        </>
     );
 };

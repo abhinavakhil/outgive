@@ -8,15 +8,29 @@ export interface Org {
     stripe_account_id: string | null; stripe_charges_enabled: boolean; stripe_payouts_enabled: boolean; platform_fee_bps: number; tips_enabled: boolean;
     live: LiveState; owner_id: string | null; created_at: string;
 }
-/** What the presenter console pushes to every live screen. */
-export interface LiveState { ask?: string; ask_usd?: number; mode?: "board" | "thermo" | "ticker"; page_id?: string | null; show_qr?: boolean; confetti_at?: number; paused?: boolean; variant?: string }
+/** Layouts of the live screen (wall display). Each is a different composition of total, thermometer, board, impact items and gift feed. */
+export const LIVE_LAYOUTS = [
+    ["classic", "Classic", "Big total and thermometer beside the leaderboard"],
+    ["thermo", "Thermometer", "Only the total, the goal bar and the QR code, as large as the screen allows"],
+    ["impact", "Impact", "The impact items as tiles with how many were funded tonight"],
+    ["podium", "Podium", "The top three on a podium, the rest as a strip"],
+    ["wall", "Gift wall", "Every gift as a card cascading down the screen"],
+] as const;
+export type LiveLayout = (typeof LIVE_LAYOUTS)[number][0];
+/** One thing a donor can fund from the give screen: "A borehole for a village", 6000. */
+export interface LiveItem { label: string; usd: number }
+/** What the presenter console pushes to every live screen and to the phone give screen behind its QR code. Stored as JSON on the org and on each page. */
+export interface LiveState {
+    ask?: string; ask_usd?: number; layout?: LiveLayout; theme?: "dark" | "light"; goal_usd?: number; items?: LiveItem[];
+    page_id?: string | null; show_qr?: boolean; confetti_at?: number; paused?: boolean; variant?: string;
+}
 
 export interface PageRow {
     id: string; org_id: string; owner_id: string | null; parent_id: string | null; supporter_id: string | null; type: PageType; slug: string; title: string; org_name: string; country: string;
     story: string; cover: Cover; layout: LayoutId; goal_cents: number; currency: string; end_date: string | null; show_goal: boolean; causes: string[]; details: Record<string, string>;
     gifts: number[]; allocation: [string, number][]; allow_fundraisers: boolean; status: "draft" | "live" | "paused" | "ended"; raised_cents: number; donor_count: number; live: LiveState; created_at: string; updated_at: string;
 }
-export interface PublicDonation { id: string; org_id: string; page_id: string | null; supporter_id: string | null; name: string; amount_cents: number; currency: string; usd_cents: number; message: string; dedication: string; recurring: boolean; source: string; ticket_qty: number; created_at: string }
+export interface PublicDonation { id: string; org_id: string; page_id: string | null; supporter_id: string | null; name: string; amount_cents: number; currency: string; usd_cents: number; message: string; dedication: string; cause: string; recurring: boolean; source: string; ticket_qty: number; created_at: string }
 export interface DonationRow extends Omit<PublicDonation, "name"> { donor_name: string; donor_email: string | null; donor_id: string | null; anonymous: boolean; tip_cents: number; cover_cents: number; platform_fee_cents: number; status: string; stripe_payment_intent_id: string | null; stripe_subscription_id: string | null; ticket_type_id: string | null; claimed_rank: number | null; receipt_sent_at: string | null }
 export interface UpdateRow { id: string; page_id: string; title: string; body: string; created_at: string }
 export interface TicketType { id: string; page_id: string; name: string; description: string; price_cents: number; quantity: number | null; sold: number; sort: number }

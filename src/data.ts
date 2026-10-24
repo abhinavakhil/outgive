@@ -68,7 +68,7 @@ export const SUPPORTERS: Supporter[] = SEED.map((r, i) => {
         total, today: Math.round(total * (((i * 37) % 11) / 60 + 0.01)), visits: Math.round(total * (2.2 + ((i * 13) % 7) / 3)), days: 3 + ((i * 17) % 44),
         week: Math.min(total, Math.round(total * (((i * 37) % 11) / 60 + 0.01) * (1.6 + ((i * 3) % 5) / 2)) + 40), recruited: ((i * 7) % 23) + (r[2] === "Individuals" ? 0 : 9), streak: (i * 5) % 14, match: MATCH[r[0]] };
 });
-export interface Activity { who: string; usd: number; at: number }
+export interface Activity { who: string; usd: number; at: number; cause?: string; message?: string }
 const MIN = 60000;
 export const ACTIVITY: Activity[] = [{ who: "Amara Okafor", usd: 18900, at: Date.now() - 49 * MIN }, { who: "Hana Suzuki", usd: 2810, at: Date.now() - 130 * MIN }, { who: "Priya Sharma", usd: 6120, at: Date.now() - 310 * MIN }, { who: "Ben Carter", usd: 1050, at: Date.now() - 560 * MIN }];
 

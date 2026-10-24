@@ -78,6 +78,8 @@ export const ShareDialog = ({ isOpen, onClose, url, title }: { isOpen: boolean; 
 /** Who or what a gift is for, and how the donor wants to appear on the board. */
 export interface DonateTarget {
     org: Org; page?: PageRow | null; title: string; gifts: number[]; tickets?: TicketType[];
+    /** What the gift funds, chosen on the give screen ("A borehole for a village"). Stored on the gift and shown on live screens. */
+    cause?: string;
     /** Prefilled board identity, from the leaderboard's claim flow. */
     supporter?: { name?: string; kind?: string; tagline?: string; country?: string; region?: string; link?: string; claimedRank?: number; anonymous?: boolean; lockKind?: boolean };
 }
@@ -127,7 +129,7 @@ export const DonateDialog = ({ target, isOpen, initial, onClose, onShare, onLoca
             const boardName = kind === "Individuals" ? (anon ? "" : name.trim()) : team.trim();
             const res = await db.fn<{ url: string; donation?: { id: string; supporter_id: string | null } }>("checkout", {
                 org_id: org.id, page_id: page?.id, amount_cents: cents, currency, recurring: monthly, tip_pct: org.tips_enabled ? tip : 0, cover,
-                donor_name: name.trim(), donor_email: email.trim() || undefined, anonymous: anon, message: message.trim(), dedication: dedication.trim(),
+                donor_name: name.trim(), donor_email: email.trim() || undefined, anonymous: anon, message: message.trim(), dedication: dedication.trim(), cause: target.cause ?? "",
                 supporter_name: boardName || undefined, supporter_kind: kind, supporter_tagline: target.supporter?.tagline || message.trim().slice(0, 80) || undefined, supporter_country: target.supporter?.country, supporter_region: target.supporter?.region, supporter_link: target.supporter?.link, claimed_rank: target.supporter?.claimedRank,
                 ticket_type_id: ticket?.id, ticket_qty: ticket ? qty : undefined, return_to: window.location.pathname, origin: window.location.origin,
             });
@@ -151,13 +153,13 @@ export const DonateDialog = ({ target, isOpen, initial, onClose, onShare, onLoca
     return (
         <Shell isOpen={isOpen} onClose={onClose} label="Give">
             <form className="flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); submit(); }}>
-                <Head title={target.title} sub={`${page ? `${cta} to ${page.org_name || org.name}` : `Give to ${org.name}`}. Paid straight to ${org.name}'s own account.`} />
+                <Head title={target.cause ?? target.title} sub={target.cause ? `${money(initial)} funds this for ${target.title}. Paid straight to ${org.name}'s own account.` : `${page ? `${cta} to ${page.org_name || org.name}` : `Give to ${org.name}`}. Paid straight to ${org.name}'s own account.`} />
                 {!canPay && <p className="rounded-xl bg-warning-primary px-4 py-3 text-sm text-warning-primary">{org.name} has not connected payouts yet, so gifts cannot be taken here for the moment.</p>}
                 {target.tickets && target.tickets.length > 0 && <div className="flex flex-col gap-2"><span className="text-sm font-medium text-secondary">Tickets</span>{target.tickets.map((t) => { const left = t.quantity === null ? null : t.quantity - t.sold; const on = ticket?.id === t.id; return <button key={t.id} type="button" aria-pressed={on} disabled={left !== null && left <= 0} onClick={() => { setTicket(on ? null : t); setMonthly(false); }} className={cx("flex cursor-pointer items-center justify-between rounded-xl px-3.5 py-3 text-left ring-1 ring-inset disabled:cursor-not-allowed disabled:opacity-50", on ? "bg-brand-primary ring-brand" : "ring-secondary hover:bg-secondary")}><span><span className="block font-semibold text-primary">{t.name}</span><span className="text-sm text-tertiary">{t.description}{left !== null && ` · ${left} left`}</span></span><span className="font-semibold text-brand-secondary">{t.price_cents ? show(t.price_cents) : "Free"}</span></button>; })}
                     {ticket && <label className="flex items-center gap-3 text-sm text-secondary">How many<input type="number" min={1} max={20} value={qty} onChange={(e) => setQty(Math.max(1, Math.min(20, Number(e.target.value) || 1)))} className="h-9 w-20 rounded-lg px-3 ring-1 ring-primary ring-inset" /></label>}
                     <span className="text-xs text-tertiary">Or give without a ticket:</span></div>}
                 {!ticket && <>
-                    <div className="flex flex-wrap gap-2">{target.gifts.map((g) => { const v = String(Math.round(g * rate)); return <button key={g} type="button" aria-pressed={amount === v} onClick={() => setAmount(v)} className={chip(amount === v)}>{money(g)}</button>; })}</div>
+                    {!target.cause && <div className="flex flex-wrap gap-2">{target.gifts.map((g) => { const v = String(Math.round(g * rate)); return <button key={g} type="button" aria-pressed={amount === v} onClick={() => setAmount(v)} className={chip(amount === v)}>{money(g)}</button>; })}</div>}
                     <div className="grid gap-3 sm:grid-cols-[1fr_auto]"><Input label={`Amount (${currency})`} type="number" value={amount} onChange={setAmount} isInvalid={!!error && !(cents >= 100)} />
                         <div role="group" aria-label="Frequency" className="flex h-fit gap-1 self-end rounded-full bg-secondary p-1 ring-1 ring-secondary ring-inset">{([[false, "Once"], [true, "Monthly"]] as const).map(([v, l]) => <button key={l} type="button" aria-pressed={monthly === v} onClick={() => setMonthly(v)} className={cx("h-9 cursor-pointer rounded-full px-4 text-sm font-semibold outline-focus-ring focus-visible:outline-2", monthly === v ? "bg-brand-solid text-white" : "text-tertiary hover:text-primary")}>{l}</button>)}</div></div>
                 </>}

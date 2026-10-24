@@ -13,6 +13,7 @@ import { Info } from "@/views/Info";
 import { Leaderboard } from "@/views/Leaderboard";
 import { Landing } from "@/views/Landing";
 import { LandingB } from "@/views/LandingB";
+import { Give } from "@/views/Give";
 import { Live, Overlay } from "@/views/Live";
 import { Login } from "@/views/Login";
 import { NotFound } from "@/views/NotFound";
@@ -98,6 +99,7 @@ export const App = () => {
             case "admin": return "org" in g ? g : { name: "admin", org: o, tab: g.tab };
             case "live": return "org" in g ? g : { name: "live", org: o };
             case "overlay": return "org" in g ? g : { name: "overlay", org: o };
+            case "give": return "org" in g ? g : { name: "give", org: o, page: g.page };
             case "thanks": return "org" in g ? g : { name: "thanks", org: o };
             default: return g;
         }
@@ -141,6 +143,7 @@ export const App = () => {
             case "board": return <Leaderboard />;
             case "live": return <Live pageRef={view.page} />;
             case "overlay": return <Overlay pageRef={view.page} />;
+            case "give": return <Give pageRef={view.page} />;
             case "create": return <CreateFlow parent={view.parent} />;
             case "admin": return <Admin tab={view.tab} />;
             case "thanks": return <Thanks />;

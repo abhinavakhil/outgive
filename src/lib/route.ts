@@ -22,7 +22,7 @@ export type PageRef = { type: PageType; slug: string };
 export type View =
     | { name: "landing" } | { name: "landing-b" } | { name: "layouts" } | { name: "pricing" } | { name: "start" } | { name: "login" } | { name: "dashboard" }
     | { name: "about" } | { name: "rules" } | { name: "faq" } | { name: "terms" } | { name: "privacy" } | { name: "notfound" }
-    | { name: "board"; org: string } | { name: "live"; org: string; page?: PageRef } | { name: "overlay"; org: string; page?: PageRef }
+    | { name: "board"; org: string } | { name: "live"; org: string; page?: PageRef } | { name: "give"; org: string; page?: PageRef } | { name: "overlay"; org: string; page?: PageRef }
     | { name: "create"; org: string; parent?: string } | { name: "admin"; org: string; tab?: string } | { name: "thanks"; org: string }
     | { name: "page"; org: string; page: PageRef; sub?: "manage" } | { name: "embed"; org: string; page?: PageRef };
 
@@ -37,6 +37,7 @@ const orgView = (org: string, rest: string, query: URLSearchParams): View => {
     const [a, b, c] = seg;
     if (a === "live" && seg.length === 1) return { name: "live", org };
     if (a === "overlay" && seg.length === 1) return { name: "overlay", org };
+    if (a === "give" && seg.length === 1) return { name: "give", org };
     if (a === "create" && seg.length === 1) return { name: "create", org, parent: query.get("for") ?? undefined };
     if (a === "admin" && seg.length <= 2) return { name: "admin", org, tab: b };
     if (a === "thanks" && seg.length === 1) return { name: "thanks", org };
@@ -47,6 +48,7 @@ const orgView = (org: string, rest: string, query: URLSearchParams): View => {
         if (seg.length === 3 && c === "manage") return { name: "page", org, page, sub: "manage" };
         if (seg.length === 3 && c === "live") return { name: "live", org, page };
         if (seg.length === 3 && c === "overlay") return { name: "overlay", org, page };
+        if (seg.length === 3 && c === "give") return { name: "give", org, page };
     }
     return { name: "notfound" };
 };
@@ -74,6 +76,7 @@ export const pathOf = (v: View, tenant: Tenant): string => {
         case "board": return prefix(v.org) || "/";
         case "live": return `${prefix(v.org)}${v.page ? pg(v.page) : ""}/live`;
         case "overlay": return `${prefix(v.org)}${v.page ? pg(v.page) : ""}/overlay`;
+        case "give": return `${prefix(v.org)}${v.page ? pg(v.page) : ""}/give`;
         case "create": return `${prefix(v.org)}/create${v.parent ? `?for=${encodeURIComponent(v.parent)}` : ""}`;
         case "admin": return `${prefix(v.org)}/admin${v.tab ? `/${v.tab}` : ""}`;
         case "thanks": return `${prefix(v.org)}/thanks`;
