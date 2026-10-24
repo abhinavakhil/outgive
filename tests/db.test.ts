@@ -126,6 +126,14 @@ describe("donations and the board", () => {
         expect(Number(b[1].streak)).toBe(1);
         expect(b[2].kind).toBe("Teams");
     });
+    it("every gift change is broadcast to the org channel with public-safe fields only", async () => {
+        const sent = await rows("select payload, topic, private from realtime.sent where topic = $1 order by (payload->>'created_at')", [`donations:${org.id}`]);
+        expect(sent.length).toBeGreaterThanOrEqual(4);
+        expect(sent.every((m: any) => m.private === true)).toBe(true);
+        expect(sent.some((m: any) => m.payload.donor_name === "Anonymous")).toBe(true);
+        expect(sent.some((m: any) => m.payload.donor_name === "Secret" || "donor_email" in m.payload || "stripe_payment_intent_id" in m.payload)).toBe(false);
+        expect(sent.map((m: any) => m.payload.status)).toContain("refunded");
+    });
     it("public_donations never exposes emails or anonymous names", async () => {
         const cols = (await rows("select column_name from information_schema.columns where table_name = 'public_donations'")).map((c: any) => c.column_name);
         expect(cols).not.toContain("donor_email");

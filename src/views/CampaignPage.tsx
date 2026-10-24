@@ -1,12 +1,16 @@
-import { type FC, type ReactNode, useContext, useMemo, useState } from "react";
-import { Check, Flag01, Heart, Link01, Share07 } from "@untitledui/icons";
+import { type FC, type ReactNode, createContext, useContext, useMemo, useState } from "react";
+
+const ChildrenContext = createContext<PageBundle["children"] | undefined>(undefined);
+import { Check, Flag01, Heart, Link01, Settings01, Share07, Tv01 } from "@untitledui/icons";
 import { Tab, TabList, TabPanel, Tabs } from "@/components/application/tabs/tabs";
 import { Badge } from "@/components/base/badges/badges";
 import { Button } from "@/components/base/buttons/button";
 import { ProgressBarBase } from "@/components/base/progress-indicators/progress-indicators";
-import { Board, Card, Container, Cover, Donate, Levels, Logo, OrgLine, OrganizerLine, PageActions, PageContext, PillSelect, Protected, Raised, Ring, ago, dateOf, Stats, Story, ThemeToggle, TwoCol, TypeBadge, daysLeft, pct, typeOf, useApp } from "@/components/outgive/shared";
+import { Board, BrandLogo, Card, Container, Cover, Donate, Levels, Logo, OrgLine, OrganizerLine, PageActions, PageContext, PillSelect, Protected, Raised, Ring, ago, dateOf, Stats, Story, ThemeToggle, TwoCol, TypeBadge, daysLeft, pct, typeOf, useApp } from "@/components/outgive/shared";
 import { DonateDialog, DonationsDialog, ShareDialog, shareTargets } from "@/components/outgive/dialogs";
-import { DEFAULT_ALLOCATION, type Donation, LAYOUTS, type LayoutId, type PageData, type PageUpdate, initials, pageKey } from "@/data";
+import { PREFIX, DEFAULT_ALLOCATION, type Donation, LAYOUTS, type LayoutId, type PageData, type PageUpdate, initials, pageKey } from "@/data";
+import type { Org, PageBundle, PageRow, TicketType } from "@/lib/types";
+import { LEGAL } from "@/seo";
 import { Input } from "@/components/base/input/input";
 import { TextArea } from "@/components/base/textarea/textarea";
 import { Avatar } from "@/components/base/avatar/avatar";
@@ -35,7 +39,7 @@ const ActionRow = ({ p }: { p: PageData }) => {
 const Classic: L = ({ p }) => (
     <Container className="flex flex-col gap-5 py-8">
         <H1 className="max-w-none text-display-sm md:text-display-lg">{p.title}</H1>
-        <TwoCol main={<><Cover className="aspect-video min-h-64" /><OrganizerLine p={p} /><Protected /><Story p={p} bare /><ActionRow p={p} /><Details p={p} /></>} side={<Donate p={p} />} />
+        <TwoCol main={<><Cover className="aspect-video min-h-64" /><OrganizerLine p={p} /><Protected /><Story p={p} bare /><ActionRow p={p} /><Details p={p} childPages={useContext(ChildrenContext)} /></>} side={<Donate p={p} />} />
     </Container>
 );
 
@@ -184,14 +188,13 @@ const Block = ({ title, count, children }: { title: string; count?: number; chil
 );
 
 /** The sections under the story, in the order a donor expects: details, updates, sharing, organiser, comments, report. */
-const Details = ({ p }: { p: PageData }) => {
+const Details = ({ p, childPages }: { p: PageData; childPages?: PageBundle["children"] }) => {
     const { money, go } = useApp();
     const { share, donate, postUpdate } = useContext(PageActions);
     const [copied, setCopied] = useState(false);
     const [liked, setLiked] = useState<number[]>([]);
-    const [messaged, setMessaged] = useState(false);
-    const [reported, setReported] = useState(false);
-    const url = `${window.location.origin}/${pageKey(p)}`;
+    const { href } = useApp();
+    const url = `${window.location.origin}${href({ name: "page", key: pageKey(p) })}`;
     const copy = async () => { try { await navigator.clipboard.writeText(url); setCopied(true); } catch { setCopied(false); } };
     const facts: [string, string][] = [
         ["Charity", p.org || "Not added"], ["Country", p.country],
@@ -218,6 +221,7 @@ const Details = ({ p }: { p: PageData }) => {
             </Block>}
             {(p.updates.length > 0 || postUpdate) && <Block title="Updates" count={p.updates.length}>{p.updates.length > 0 && <ol className="flex flex-col border-l border-secondary pl-5">{p.updates.map((u) => <li key={`${u.at}-${u.title}`} className="relative pb-6 last:pb-0"><span className="absolute top-1.5 -left-[1.6rem] size-2.5 rounded-full bg-brand-solid" /><div className="text-xs text-tertiary">{dateOf(u.at)}</div><div className="font-semibold text-primary">{u.title}</div><p className="mt-0.5 max-w-prose text-sm text-tertiary">{u.body}</p></li>)}</ol>}
                 {postUpdate && <form className="flex flex-col gap-3 rounded-2xl bg-secondary p-4" onSubmit={(e) => { e.preventDefault(); publishUpdate(); }}><div className="font-semibold text-primary">Post an update</div><Input aria-label="Update title" placeholder="What happened?" value={uTitle} onChange={setUTitle} /><TextArea aria-label="Update" rows={3} placeholder="Tell supporters how their gifts are being used." value={uBody} onChange={setUBody} /><Button type="submit" size="md" color="primary" className="w-fit rounded-full" isDisabled={!uTitle.trim()}>Post update</Button></form>}</Block>}
+            {childPages && childPages.length > 0 && <Block title="Fundraising for this page" count={childPages.length}><ol className="flex flex-col gap-1">{childPages.slice(0, 10).map((c, i) => <li key={c.id}><button type="button" onClick={() => go({ name: "page", key: `${PREFIX[c.type]}/${c.slug}` })} className={cx("flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-left outline-focus-ring hover:bg-secondary focus-visible:outline-2", i < 3 && "bg-brand-primary")}><span className={cx("w-8 font-semibold", i < 3 ? "text-brand-secondary" : "text-tertiary")}>#{i + 1}</span><Avatar size="sm" initials={initials(c.title)} /><span className="min-w-0 flex-1"><span className="block truncate font-medium text-primary">{c.title}</span><span className="block text-xs text-tertiary">{c.donor_count} supporters</span></span><span className="font-semibold text-brand-secondary">{money(c.raised_cents / 100)}</span></button></li>)}</ol></Block>}
             {supporters.length > 0 && <Block title="Top supporters"><ol className="flex flex-col gap-1">{supporters.map(([name, usd], i) => <li key={name} className={cx("flex items-center gap-3 rounded-xl px-3 py-2.5", i < 3 && "bg-brand-primary")}><span className={cx("w-8 font-semibold", i < 3 ? "text-brand-secondary" : "text-tertiary")}>#{i + 1}</span><Avatar size="sm" initials={initials(name)} /><span className="flex-1 font-medium text-primary">{name}</span><span className="font-semibold text-brand-secondary">{money(usd)}</span></li>)}</ol></Block>}
 
 
@@ -239,8 +243,7 @@ const Details = ({ p }: { p: PageData }) => {
             <Block title="Organizer">
                 <div className="flex items-start gap-4"><Avatar size="xl" initials={initials(p.org) || "?"} />
                     <div className="flex flex-col items-start gap-1"><span className="text-lg font-semibold text-primary">{p.org}</span><span className="text-sm text-tertiary">Organizer · {p.country}</span>
-                        <Button size="md" color="secondary" className="mt-2 rounded-full" onPress={() => setMessaged(true)}>Message</Button>
-                        {messaged && <p className="text-sm text-tertiary">Messaging is not live in this demo.</p>}</div></div>
+                        {p.details["Registration number"] && <span className="text-sm text-tertiary">Registered {p.details["Registration number"]}</span>}</div></div>
             </Block>
 
             <Block title="Comments" count={comments.length}>
@@ -255,8 +258,7 @@ const Details = ({ p }: { p: PageData }) => {
             <div className="flex flex-col gap-4 border-t border-secondary pt-6">
                 <p className="text-sm text-tertiary">Created {dateOf(p.created)} · <span className="underline underline-offset-2">{p.causes[0] ?? typeOf(p).label}</span></p>
                 <div className="flex flex-wrap items-center gap-4 border-t border-secondary pt-4">
-                    <button type="button" onClick={() => setReported(true)} className="flex cursor-pointer items-center gap-2 text-sm font-medium text-secondary outline-focus-ring hover:text-primary focus-visible:outline-2"><Flag01 className="size-4" />Report fundraiser</button>
-                    {reported && <span className="text-sm text-tertiary">Thanks. Our team will take a look. (Demo)</span>}
+                    <a href={`mailto:${LEGAL.email}?subject=${encodeURIComponent(`Report: ${p.title}`)}&body=${encodeURIComponent(url)}`} className="flex items-center gap-2 text-sm font-medium text-secondary outline-focus-ring hover:text-primary focus-visible:outline-2"><Flag01 className="size-4" />Report this page</a>
                     <span className="flex-1" /><Button size="sm" color="link-gray" onPress={() => go({ name: "create" })}>Start your own page</Button>
                 </div>
             </div>
@@ -264,31 +266,34 @@ const Details = ({ p }: { p: PageData }) => {
     );
 };
 
-export const CampaignPage = ({ pageKey: key, page, setPage, give, addUpdate }: { pageKey: string; page: PageData; setPage: (p: PageData) => void; give: (d: Donation) => void; addUpdate: (u: PageUpdate) => void }) => {
-    const { go } = useApp();
+export const CampaignPage = ({ pageKey: key, page, row, org, tickets, childPages, parent, canEdit, setPage, give, addUpdate }: { pageKey: string; page: PageData; row?: PageRow; org: Org | null; tickets?: TicketType[]; childPages?: PageBundle["children"]; parent?: PageBundle["parent"]; canEdit: boolean; setPage: (p: PageData) => Promise<void>; give?: (d: Donation) => void; addUpdate?: (u: PageUpdate) => void }) => {
+    const { go, href, isDemo } = useApp();
     const [shareOpen, setShareOpen] = useState(false);
     const [gift, setGift] = useState<number | null>(null);
     const [list, setList] = useState<"all" | "top" | null>(null);
     const Layout = LAYOUT_COMPONENTS[page.layout];
-    const actions = useMemo(() => ({ donate: (usd?: number) => setGift(usd ?? page.gifts[1] ?? 25), share: () => setShareOpen(true), donations: (m: "all" | "top") => setList(m), postUpdate: addUpdate }), [page.gifts, addUpdate]);
+    const actions = useMemo(() => ({ donate: (usd?: number) => setGift(usd ?? page.gifts[1] ?? 25), share: () => setShareOpen(true), donations: (m: "all" | "top") => setList(m), postUpdate: addUpdate ?? null }), [page.gifts, addUpdate]);
+    const fundraise = () => go(row?.type === "campaign" && row.allow_fundraisers ? { name: "create", parent: row.id } : { name: "create" });
     return (
         <div className="min-h-dvh bg-primary">
             <header className="sticky top-0 z-30 border-b border-secondary bg-primary/90 backdrop-blur"><Container className="flex flex-wrap items-center justify-between gap-3 py-3">
-                <div className="flex items-center gap-3"><Logo onClick={() => go({ name: "home" })} />{page.isSample && <Badge type="pill-color" color="gray" size="sm">Sample page</Badge>}</div>
+                <div className="flex min-w-0 items-center gap-3">{org && !page.isSample ? <BrandLogo onClick={() => go({ name: "home" })} /> : <Logo onClick={() => go({ name: "home" })} />}{page.isSample && <Badge type="pill-color" color="gray" size="sm">Sample page</Badge>}{row?.status === "draft" && <Badge type="pill-color" color="warning" size="sm">Draft</Badge>}{row?.status === "ended" && <Badge type="pill-color" color="gray" size="sm">Ended</Badge>}{parent && <a href={href({ name: "page", key: `${PREFIX[parent.type]}/${parent.slug}` })} onClick={(e) => { e.preventDefault(); go({ name: "page", key: `${PREFIX[parent.type]}/${parent.slug}` }); }} className="hidden truncate text-sm text-tertiary hover:text-primary md:block">part of {parent.title}</a>}</div>
                 <div className="flex items-center gap-2">
-                    {page.isSample && <PillSelect label="Layout" size="sm" className="w-44" value={LAYOUTS.find((l) => l.id === page.layout)!.name} onChange={(v) => setPage({ ...page, layout: LAYOUTS.find((l) => l.name === v)!.id })} options={LAYOUTS.map((l) => l.name)} />}
+                    {(page.isSample || canEdit) && <PillSelect label="Layout" size="sm" className="w-40 max-sm:hidden" value={LAYOUTS.find((l) => l.id === page.layout)!.name} onChange={(v) => setPage({ ...page, layout: LAYOUTS.find((l) => l.name === v)!.id })} options={LAYOUTS.map((l) => l.name)} />}
                     <ThemeToggle />
+                    {row && <Button size="sm" color="secondary" className="rounded-full max-sm:hidden" iconLeading={Tv01} onPress={() => go({ name: "live", org: org!.slug, page: { type: row.type, slug: row.slug } })}>Live</Button>}
+                    {canEdit && row && <Button size="sm" color="secondary" className="rounded-full" iconLeading={Settings01} onPress={() => go({ name: "page", org: org!.slug, page: { type: row.type, slug: row.slug }, sub: "manage" })}>Manage</Button>}
                     <Button size="sm" color="secondary" className="rounded-full" iconLeading={Share07} onPress={() => setShareOpen(true)}>Share</Button>
-                    <Button size="sm" color="primary" className="rounded-full max-sm:hidden" onPress={() => go({ name: "create" })}>Start fundraising</Button>
+                    {(!row || row.type === "campaign") && <Button size="sm" color="primary" className="rounded-full max-sm:hidden" onPress={fundraise}>{row ? "Fundraise for this" : "Start fundraising"}</Button>}
                 </div>
             </Container></header>
-            <PageContext.Provider value={page}><PageActions.Provider value={actions}>
+            <PageContext.Provider value={page}><PageActions.Provider value={actions}><ChildrenContext.Provider value={childPages}>
                 <Layout p={page} />
-                {page.layout !== "classic" && <Container className={cx("pb-14", page.layout === "story" && "max-w-2xl")}><div className={cx("flex flex-col gap-8", page.layout !== "story" && "lg:max-w-[calc(100%-360px-2.5rem)]")}><Details p={page} /></div></Container>}
+                {page.layout !== "classic" && <Container className={cx("pb-14", page.layout === "story" && "max-w-2xl")}><div className={cx("flex flex-col gap-8", page.layout !== "story" && "lg:max-w-[calc(100%-360px-2.5rem)]")}><Details p={page} childPages={childPages} /></div></Container>}
                 <MobileBar p={page} />
-            </PageActions.Provider></PageContext.Provider>
-            <ShareDialog isOpen={shareOpen} onClose={() => setShareOpen(false)} url={`${window.location.origin}/${key}`} title={page.title} />
-            <DonateDialog p={page} isOpen={gift !== null} initial={gift ?? 25} onClose={() => setGift(null)} onGive={give} onShare={() => setShareOpen(true)} />
+            </ChildrenContext.Provider></PageActions.Provider></PageContext.Provider>
+            <ShareDialog isOpen={shareOpen} onClose={() => setShareOpen(false)} url={`${window.location.origin}${href({ name: "page", key })}`} title={page.title} />
+            {org && <DonateDialog target={{ org, page: row ?? null, title: page.title, gifts: page.gifts, tickets }} isOpen={gift !== null} initial={gift ?? 25} onClose={() => setGift(null)} onShare={() => setShareOpen(true)} onLocal={row ? undefined : give} />}
             <DonationsDialog p={page} mode={list} onClose={() => setList(null)} />
         </div>
     );

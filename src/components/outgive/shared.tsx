@@ -1,5 +1,5 @@
 import { ChevronDown, Moon01, ShieldTick, Star01, Sun, TrendUp01 } from "@untitledui/icons";
-import { type Dispatch, type ReactNode, type SetStateAction, createContext, useContext, useState } from "react";
+import { type ReactNode, createContext, useContext, useState } from "react";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { Badge } from "@/components/base/badges/badges";
 import { Button } from "@/components/base/buttons/button";
@@ -8,8 +8,24 @@ import { cx } from "@/utils/cx";
 import { CoverMedia, DescriptionView } from "@/components/outgive/media";
 import { type Activity, type Brand, type Supporter, CURRENCIES, LEVELS, PAGE_TYPES, PEOPLE, type LayoutId, type PageData, type PageUpdate, initials } from "@/data";
 
-export type View = { name: "landing" } | { name: "landing-b" } | { name: "home" } | { name: "create" } | { name: "page"; key?: string } | { name: "about" } | { name: "rules" } | { name: "faq" } | { name: "terms" } | { name: "privacy" } | { name: "dashboard" } | { name: "notfound" };
-export const AppContext = createContext<{ currency: string; setCurrency: (c: string) => void; go: (v: View) => void; money: (usd: number) => string; board: Supporter[]; setBoard: Dispatch<SetStateAction<Supporter[]>>; activity: Activity[]; setActivity: Dispatch<SetStateAction<Activity[]>>; brand: Brand; setBrand: (b: Brand) => void; /** The board row this browser claimed, if any. */ me: number | null; setMe: (id: number | null) => void }>(null!);
+import type { DB } from "@/lib/db";
+import type { Org, User } from "@/lib/types";
+import { type Tenant, type View } from "@/lib/route";
+export type { View } from "@/lib/route";
+
+/** Navigation targets. Short forms leave out the organisation: it is the one on screen (or the demo). */
+export type Go = View | { name: "home" } | { name: "create"; parent?: string } | { name: "page"; key: string } | { name: "admin"; tab?: string } | { name: "live" } | { name: "overlay" } | { name: "thanks" };
+export interface AppCtx {
+    db: DB; user: User | null; tenant: Tenant; org: Org | null; member: boolean; isDemo: boolean;
+    currency: string; setCurrency: (c: string) => void; money: (usd: number) => string;
+    go: (v: Go) => void; href: (v: Go) => string;
+    board: Supporter[]; activity: Activity[]; hall: [string, string, number][]; refresh: () => void;
+    brand: Brand; setBrand: (b: Brand) => void; setOrg: (o: Org) => void;
+    /** The board row this browser claimed, if any. */
+    me: string | null; setMe: (id: string | null) => void;
+    toast: (m: string) => void;
+}
+export const AppContext = createContext<AppCtx>(null!);
 export const useApp = () => useContext(AppContext);
 
 /** The charity's mark: its uploaded logo, or its initials in the brand colour. */

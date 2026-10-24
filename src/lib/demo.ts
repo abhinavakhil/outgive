@@ -11,7 +11,7 @@ import { DEFAULT_BRAND, SAMPLE_PAGE, SUPPORTERS, type Supporter } from "@/data";
 
 export const DEMO_USER: User = { id: "00000000-0000-4000-8000-000000000001", email: "demo@outgive.org", name: "Demo organiser" };
 export const DEMO_SLUG = "clearwell";
-const DATA_DIR = "idb://outgive-demo-v1";
+const DATA_DIR = "idb://outgive-demo-v2";
 
 const STUB = `
 create schema if not exists auth;
@@ -25,11 +25,13 @@ do $$ begin
 end $$;`;
 
 const MIN = 60000; const DAY = 86400000;
+/** name -> [weeks ago, USD] */
+const HALL_WEEKS: Record<string, [number, number]> = { "Northfield Rotary": [1, 3120], "Amara Okafor": [2, 2890], "St Hilda's Primary": [3, 2415] };
 const iso = (t: number) => new Date(t).toISOString();
 const slugOf = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
 /** Builds the sample charity so the board shows the same supporters as the original demo, with gifts dated to give each row its today, week, streak and recruited figures. */
-const seed = async (pg: PGlite) => {
+export const seed = async (pg: Pick<PGlite, "query" | "exec">) => {
     await pg.query("insert into auth.users (id, email, raw_user_meta_data) values ($1, $2, $3)", [DEMO_USER.id, DEMO_USER.email, { full_name: DEMO_USER.name }]);
     await pg.query("select set_config('request.jwt.claim.sub', $1, false)", [DEMO_USER.id]);
     const org = (await pg.query<Org>("select * from org_create($1)", [{ slug: DEMO_SLUG, name: DEFAULT_BRAND.name, tagline: DEFAULT_BRAND.tagline, color: DEFAULT_BRAND.color, font: DEFAULT_BRAND.font, variant: DEFAULT_BRAND.variant, impact_usd: DEFAULT_BRAND.impact?.usd, impact_unit: DEFAULT_BRAND.impact?.unit, currency: "USD", country: "Kenya", registration_number: "CT-20418 (sample)", description: "Clean water for 40 villages in Kitui county." }])).rows[0];
@@ -57,26 +59,24 @@ const seed = async (pg: PGlite) => {
         const friends = pageId ? Math.min(o.recruited, Math.floor(left / 10)) : 0;
         for (let k = 0; k < friends; k++) { await gift(pageId, sid, `Supporter ${k + 1}`, 5, joined + ((k * 37) % Math.max(1, o.days)) * DAY + k * MIN); left -= 5; }
         // Today and the rest of this week.
-        const today = Math.min(o.today, left); if (today > 0) { await gift(pageId, sid, o.name, today, now - (((o.id * 7) % 50) + 3) * MIN); left -= today; }
+        const today = Math.min(o.today, left); if (today > 0) { await gift(pageId, sid, o.name, today, now - (((Number(o.id) * 7) % 50) + 3) * MIN); left -= today; }
         const weekRest = Math.min(Math.max(0, o.week - o.today), left); const weekAt = monday.getTime() + 9 * 3600000;
-        if (weekRest > 0 && weekAt < now - 2 * MIN) { await gift(pageId, sid, o.name, weekRest, weekAt + o.id * MIN); left -= weekRest; }
+        if (weekRest > 0 && weekAt < now - 2 * MIN) { await gift(pageId, sid, o.name, weekRest, weekAt + Number(o.id) * MIN); left -= weekRest; }
         // One gift per month of the streak, then whatever is left on the day they joined.
+        // Past weekly winners for the hall of fame: part of their total, given in an earlier week.
+        const hall = HALL_WEEKS[o.name]; if (hall && left > hall[1]) { await gift(pageId, sid, o.name, hall[1], monday.getTime() - hall[0] * 7 * DAY + 2 * DAY); left -= hall[1]; }
         for (let m = 1; m < o.streak && left > 1; m++) { const d = new Date(now); d.setUTCMonth(d.getUTCMonth() - m, 15); const usd = Math.min(left - 1, Math.max(1, Math.round(left / (o.streak - m + 1)))); await gift(pageId, sid, o.name, usd, d.getTime()); left -= usd; }
         if (left > 0) await gift(pageId, sid, o.name, left, joined + 2 * 3600000);
     }
     for (const d of s.donations) await gift(camp.id, null, d.name, d.usd, d.at, d.message);
-    // Past weekly winners for the hall of fame.
-    for (const [w, who, usd] of [[1, "Northfield Rotary", 3120], [2, "Amara Okafor", 2890], [3, "St Hilda's Primary", 2415]] as [number, string, number][]) {
-        const sid = (await pg.query<{ id: string }>("select id from supporters where org_id = $1 and name = $2", [org.id, who])).rows[0]?.id;
-        if (sid) await gift(null, sid, who, usd, monday.getTime() - w * 7 * DAY + 2 * DAY);
-    }
 };
 
 export const demoDb = async (): Promise<DB> => {
     const { PGlite } = await import("@electric-sql/pglite");
     const pg = await PGlite.create({ dataDir: DATA_DIR });
     const ready = (await pg.query<{ ok: boolean }>("select exists (select 1 from pg_tables where tablename = 'orgs') as ok")).rows[0].ok;
-    if (!ready) { await pg.exec(STUB); await pg.exec(init); await pg.exec(storage); await seed(pg); }
+    // One transaction, so a reload mid-way leaves nothing behind and the next load starts clean.
+    if (!ready) await pg.transaction(async (tx) => { await tx.exec(STUB); await tx.exec(init); await tx.exec(storage); await seed(tx as unknown as PGlite); });
     await pg.query("select set_config('request.jwt.claim.sub', $1, false)", [DEMO_USER.id]);
     const setof = new Map<string, boolean>();
     const isSetof = async (name: string) => { if (!setof.has(name)) setof.set(name, (await pg.query<{ proretset: boolean }>("select proretset from pg_proc where proname = $1 limit 1", [name])).rows[0]?.proretset ?? false); return setof.get(name)!; };
@@ -90,8 +90,8 @@ export const demoDb = async (): Promise<DB> => {
             const data = (await isSetof(name))
                 ? (await pg.query<{ v: T }>(`select to_jsonb(x) as v from ${call} x`, params)).rows.map((r) => r.v) as T
                 : (await pg.query<{ v: T }>(`select to_jsonb(${call}) as v`, params)).rows[0]?.v as T;
-            if (name === "donation_record" && data) { donationListeners.forEach((cb) => cb(data as DonationRow)); const d = data as DonationRow; if (d.match_pledge_id === undefined) { /* matching rows arrive via trigger */ } }
-            if ((name === "org_update") && data) orgListeners.forEach((cb) => cb(data as Org));
+            if (name === "donation_record" && data) donationListeners.forEach((cb) => cb(data as unknown as DonationRow));
+            if (name === "org_update" && data) orgListeners.forEach((cb) => cb(data as unknown as Org));
             return data;
         } catch (e) { throw new Error((e as Error).message.replace(/^error: /, "")); }
     };
@@ -102,13 +102,13 @@ export const demoDb = async (): Promise<DB> => {
         signInEmail: async () => {}, signInGoogle: async () => {}, signOut: async () => {},
         onDonations: (_org, cb) => { donationListeners.add(cb); return () => donationListeners.delete(cb); },
         onOrg: (_org, cb) => { orgListeners.add(cb); return () => orgListeners.delete(cb); },
-        fn: async (name, body) => {
+        fn: async <T,>(name: string, body: Record<string, unknown>): Promise<T> => {
             if (name === "checkout") {
                 // No card in the demo: the gift is recorded straight away as a demo gift.
                 const d = await rpc<DonationRow>("donation_record", { p: { ...body, source: "demo" } });
-                return { url: `/thanks?demo=1&donation=${d.id}` };
+                return { url: `/thanks?demo=1&donation=${d.id}`, donation: d } as T;
             }
-            if (name === "connect") { const o = await rpc<Org>("org_update", { org: body.org_id, p: {} }); await pg.query("update orgs set stripe_account_id = 'acct_demo', stripe_charges_enabled = true, stripe_payouts_enabled = true where id = $1", [o.id]); await emitOrg(o.id); return { url: "", demo: true }; }
+            if (name === "connect") { const o = await rpc<Org>("org_update", { org: body.org_id, p: {} }); await pg.query("update orgs set stripe_account_id = 'acct_demo', stripe_charges_enabled = true, stripe_payouts_enabled = true where id = $1", [o.id]); await emitOrg(o.id); return { url: "", demo: true } as T; }
             throw new Error(`No demo for function ${name}`);
         },
         upload: (file) => new Promise((resolve, reject) => { const r = new FileReader(); r.onload = () => resolve(String(r.result)); r.onerror = () => reject(new Error("Could not read the file")); r.readAsDataURL(file); }),

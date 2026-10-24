@@ -19,7 +19,7 @@ export interface BoardCtx {
     /** What the row needs to pass the one above it, as a number in the board's own unit. */
     gap: (o: Row) => number;
     fmt: (n: number) => string;
-    you: number | null;
+    you: string | null;
     metric: BoardKey;
     canClaim: boolean;
     label: string;

@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && node scripts/prerender.mjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:fn": "cd supabase/functions && deno test --allow-env --allow-read",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
     "@abhinavakhil/penna-core": "^0.2.0",

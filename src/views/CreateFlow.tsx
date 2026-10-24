@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, Copy01, Eye, Share07, Trash01, Trophy01, Users01 } from "@untitledui/icons";
 import { FileUpload } from "@/components/application/file-upload/file-upload-base";
 import { Badge } from "@/components/base/badges/badges";
@@ -12,7 +12,11 @@ import { ShareDialog } from "@/components/outgive/dialogs";
 import { CoverMedia, DescriptionEditor, readImage, youtubeId } from "@/components/outgive/media";
 import { LayoutThumb, Logo, ThemeToggle, useApp } from "@/components/outgive/shared";
 import { CAUSES, CURRENCIES, DEFAULT_ALLOCATION, type Cover, LAYOUTS, PAGE_TYPES, PREFIX, type LayoutId, type PageData, type PageType } from "@/data";
+import { persistCover } from "@/lib/media";
+import type { PageRow } from "@/lib/types";
+import { SignIn } from "@/views/Login";
 import { cx } from "@/utils/cx";
+import { track } from "@/analytics";
 
 const STEPS = ["Type", "Details", "Goal", "Cover and story", "Name", "Layout", "Review"];
 const TIPS: [string, string][] = [
@@ -42,31 +46,39 @@ const Seg = ({ items, value, onChange, label }: { items: [string, string][]; val
     </div>
 );
 
-export const CreateFlow = ({ onPublish }: { onPublish: (p: PageData) => string }) => {
-    const { go, money, currency, setCurrency } = useApp();
-    const [step, setStep] = useState(1); // 1 to 7, then 8 = live
-    const [type, setType] = useState<PageType>("fundraiser");
-    const [org, setOrg] = useState("");
+const DRAFT = "outgive.draft";
+/** The seven steps. A draft is kept in the browser so signing in at the last step loses nothing; `parent` nests the page under a campaign. */
+export const CreateFlow = ({ parent }: { parent?: string }) => {
+    const { db, go, href, money, currency, setCurrency, org, user, isDemo, toast } = useApp();
+    const draft = (() => { try { return JSON.parse(localStorage.getItem(DRAFT) ?? "null") ?? {}; } catch { return {}; } })() as Record<string, unknown>;
+    const [parentRow, setParentRow] = useState<PageRow | null>(null);
+    useEffect(() => { if (parent && org) db.rpc<PageRow[]>("pages_list", { org: org.id }).then((rows) => setParentRow(rows.find((r) => r.id === parent) ?? null)); }, [db, org, parent]);
+    const [step, setStep] = useState((draft.step as number) ?? 1); // 1 to 7, then 8 = live
+    const [type, setType] = useState<PageType>((draft.type as PageType) ?? (parent ? "fundraiser" : "fundraiser"));
+    const [orgName, setOrg] = useState((draft.orgName as string) ?? org?.name ?? "");
     const [country, setCountry] = useState("India");
     const [d, setD] = useState<Record<string, string>>({});
-    const [goal, setGoal] = useState(5000);
+    const [goal, setGoal] = useState((draft.goal as number) ?? 5000);
     const [gifts, setGifts] = useState([10, 25, 50, 100]);
     const [endDate, setEndDate] = useState("");
     const [showGoal, setShowGoal] = useState(true);
     const [alloc, setAlloc] = useState<[string, number][]>(DEFAULT_ALLOCATION);
     const [autoGoal, setAutoGoal] = useState(false);
-    const [story, setStory] = useState("");
+    const [story, setStory] = useState((draft.story as string) ?? "");
     const [cover, setCover] = useState<Cover>({ kind: "none", src: "" });
     const [coverTab, setCoverTab] = useState<"image" | "video" | "youtube">("image");
     const [coverError, setCoverError] = useState("");
-    const [title, setTitle] = useState("");
-    const [slug, setSlug] = useState("");
+    const [title, setTitle] = useState((draft.title as string) ?? "");
+    const [slug, setSlug] = useState((draft.slug as string) ?? "");
+    const [busy, setBusy] = useState(false);
+    const [publishError, setPublishError] = useState("");
     const [causes, setCauses] = useState<string[]>([]);
     const [layout, setLayout] = useState<LayoutId>("classic");
     const [agree, setAgree] = useState(false);
     const [copied, setCopied] = useState(false);
     const [shareOpen, setShareOpen] = useState(false);
     const [key, setKey] = useState("");
+    useEffect(() => { if (!live) { try { localStorage.setItem(DRAFT, JSON.stringify({ step, type, orgName, goal, story, title, slug })); } catch { /* storage unavailable */ } } }, [step, type, orgName, goal, story, title, slug]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const t = PAGE_TYPES.find((x) => x.id === type)!;
     const L = LAYOUTS.find((x) => x.id === layout)!;
@@ -76,13 +88,25 @@ export const CreateFlow = ({ onPublish }: { onPublish: (p: PageData) => string }
     const rate = CURRENCIES[currency];
     const hasStory = story.replace(/<[^>]*>/g, "").trim().length > 0;
     const hasCover = cover.kind === "image" || cover.kind === "video" || (cover.kind === "youtube" && !!youtubeId(cover.src));
-    const missing = [!title.trim() && "a title", !agree && "your agreement to the terms"].filter(Boolean) as string[];
-    const page: PageData = { type, slug: address, title: title.trim() || "[Your title]", org: org.trim() || "[Your charity]", country, goal, raised: 0, supporters: 0, story, cover: hasCover ? cover : { kind: "none", src: "" }, layout, isSample: false, causes, details: { ...d, Charity: org.trim() }, gifts, endDate, showGoal, created: Date.now(), donations: [], updates: [], allocation: alloc.filter(([l, v]) => l.trim() && v > 0) };
-    const url = `${window.location.origin}/${key || path}`;
+    const missing = [!title.trim() && "a title", !agree && "your agreement to the terms", !user && !isDemo && "a sign-in"].filter(Boolean) as string[];
+    const page: PageData = { type, slug: address, title: title.trim() || "[Your title]", org: orgName.trim() || "[Your charity]", country, goal, raised: 0, supporters: 0, story, cover: hasCover ? cover : { kind: "none", src: "" }, layout, isSample: false, causes, details: { ...d, Charity: orgName.trim() }, gifts, endDate, showGoal, created: Date.now(), donations: [], updates: [], allocation: alloc.filter(([l, v]) => l.trim() && v > 0) };
+    const url = `${window.location.origin}${href({ name: "page", key: key || path })}`;
+    /** Saves the page: uploads the cover, then one page_create call. The address comes back with a suffix if it was taken. */
+    const publish = async () => {
+        if (!org) return;
+        setBusy(true); setPublishError("");
+        try {
+            const c = await persistCover(db, page.cover, `covers/${org.id}/${address}`);
+            const row = await db.rpc<PageRow>("page_create", { p: { org_id: org.id, parent_id: parentRow?.id ?? parent ?? null, type, slug: address, title: page.title, org_name: orgName.trim() || org.name, country, story, cover: c, layout, goal_cents: Math.round(goal * rate * 100), currency, end_date: endDate, show_goal: showGoal, causes, details: page.details, gifts, allocation: page.allocation, allow_fundraisers: d["Supporter fundraisers"] !== "Not allowed" } });
+            track("page-published", { type: row.type, layout: row.layout });
+            setKey(`${PREFIX[row.type]}/${row.slug}`); try { localStorage.removeItem(DRAFT); } catch { /* ignore */ }
+            setStep(8); window.scrollTo(0, 0);
+        } catch (e) { setPublishError((e as Error).message); toast((e as Error).message); } finally { setBusy(false); }
+    };
 
     const next = () => {
-        if (step === 7) { if (missing.length) return; setKey(onPublish({ ...page, org: org.trim() || "Independent organiser" })); }
-        setStep((s) => Math.min(8, s + 1));
+        if (step === 7) { if (missing.length) return; publish(); return; }
+        setStep((s) => Math.min(7, s + 1));
         window.scrollTo(0, 0);
     };
     const toggleCause = (c: string) => setCauses((cs) => (cs.includes(c) ? cs.filter((x) => x !== c) : cs.length < 3 ? [...cs, c] : cs));
@@ -97,7 +121,7 @@ export const CreateFlow = ({ onPublish }: { onPublish: (p: PageData) => string }
 
     const I = (label: string, k: string, props: { placeholder?: string; type?: string } = {}) => <Input label={label} value={d[k] ?? ""} onChange={(v) => setD((o) => ({ ...o, [k]: v }))} {...props} />;
     const Sel = (label: string, k: string, opts: string[]) => <NativeSelect label={label} value={d[k] ?? opts[0]} onChange={(e) => setD((o) => ({ ...o, [k]: e.target.value }))} options={opts.map((o) => ({ label: o, value: o }))} />;
-    const charity = <Input label={type === "team" ? "Charity the team raises for" : "Charity"} placeholder="Search registered charities" value={org} onChange={setOrg} />;
+    const charity = <Input label={type === "team" ? "Charity the team raises for" : "Charity"} placeholder={org?.name} value={orgName} onChange={setOrg} hint={parentRow ? `Part of ${parentRow.title}` : undefined} />;
     const countrySel = <NativeSelect label="Country" options={COUNTRIES} value={country} onChange={(e) => setCountry(e.target.value)} />;
 
     return (
@@ -141,7 +165,7 @@ export const CreateFlow = ({ onPublish }: { onPublish: (p: PageData) => string }
                     {step === 2 && <>
                         <StepHead title={t.detailTitle} sub="This is the only step that differs between page types." />
                         {type === "fundraiser" && <>{charity}<Row>{Sel("Occasion", "Occasion", ["Just because", "Birthday", "Wedding", "Sporting event", "Religious giving"])}{countrySel}</Row></>}
-                        {type === "campaign" && <>{charity}<Row>{I("Registration number", "Registration number", { placeholder: "From your national regulator" })}{countrySel}</Row><Checkbox size="md" isSelected={d["Supporter fundraisers"] !== "Not allowed"} onChange={(v) => setD((o) => ({ ...o, "Supporter fundraisers": v ? "Allowed" : "Not allowed" }))} label="Let supporters start their own fundraisers for this campaign" /></>}
+                        {type === "campaign" && !org && null}{type === "campaign" && <>{charity}<Row>{I("Registration number", "Registration number", { placeholder: "From your national regulator" })}{countrySel}</Row><Checkbox size="md" isSelected={d["Supporter fundraisers"] !== "Not allowed"} onChange={(v) => setD((o) => ({ ...o, "Supporter fundraisers": v ? "Allowed" : "Not allowed" }))} label="Let supporters start their own fundraisers for this campaign" /></>}
                         {type === "team" && <>{I("Team name", "Team name", { placeholder: "e.g. Harbour Runners" })}{charity}<Row>{I("Campaign or challenge to join", "Joins", { placeholder: "Search by name" })}{I("Members you are aiming for", "Target members", { placeholder: "10", type: "number" })}</Row>{countrySel}</>}
                         {type === "challenge" && <><Row>{Sel("Activity", "Activity", ["Walk", "Run", "Cycle", "Swim", "Fast", "Something else"])}<div className="grid grid-cols-2 gap-3">{I("Target", "Target", { placeholder: "100", type: "number" })}{Sel("Unit", "Unit", ["km", "miles", "steps", "days", "hours"])}</div></Row><Row>{I("Starts", "Starts", { type: "date" })}{I("Ends", "Ends", { type: "date" })}</Row>{charity}{countrySel}</>}
                         {type === "event" && <><Row>{I("Date and time", "When", { type: "datetime-local" })}{Sel("Where", "Format", ["In person", "Online", "Both"])}</Row>{I("Venue or link", "Venue", { placeholder: "Address or stream link" })}<Row>{Sel("Tickets", "Tickets", ["Free, donations welcome", "Paid tickets", "No tickets"])}{I("Capacity", "Capacity", { placeholder: "120", type: "number" })}</Row>{charity}{countrySel}</>}
@@ -187,7 +211,7 @@ export const CreateFlow = ({ onPublish }: { onPublish: (p: PageData) => string }
                     {step === 5 && <>
                         <StepHead title="What should we call it?" sub="Shown wherever your page is shared." />
                         <Input label="Title" isRequired placeholder="e.g. Clean water for 40 villages" value={title} onChange={setTitle} />
-                        <Input label="Page address" placeholder={slugify(title) || "your-page"} value={slug} onChange={(v) => setSlug(slugify(v))} hint={`outgive.org/${path}`} />
+                        <Input label="Page address" placeholder={slugify(title) || "your-page"} value={slug} onChange={(v) => setSlug(slugify(v))} hint={`${window.location.host}${href({ name: "page", key: path })}`} />
                         <div className="flex flex-col gap-2"><span className="text-sm font-medium text-secondary">Causes · choose up to 3 ({causes.length}/3)</span>
                             <div className="flex flex-wrap gap-2">{CAUSES.slice(0, 10).map((c) => <Button key={c} size="lg" color={causes.includes(c) ? "primary" : "secondary"} className="rounded-full" onPress={() => toggleCause(c)}>{c}</Button>)}</div>
                         </div>
@@ -209,7 +233,7 @@ export const CreateFlow = ({ onPublish }: { onPublish: (p: PageData) => string }
 
                     {step === 7 && <>
                         <StepHead title="Review and publish" sub="Check each part, then publish." />
-                        <div className="rounded-2xl ring-1 ring-secondary ring-inset">{([["Type", t.label, 1, true], ["Charity", org || "Not added", 2, !!org], ["Goal", `${money(goal)}${endDate ? ` by ${endDate}` : ""}`, 3, true], ["Cover", !hasCover ? "No cover yet" : cover.kind === "youtube" ? "YouTube video" : cover.kind === "video" ? "Video" : "Image", 4, hasCover], ["Story", hasStory ? `${story.replace(/<[^>]*>/g, " ").trim().split(/\s+/).length} words` : "Not written yet", 4, hasStory], ["Title", title || "Missing", 5, !!title], ["Address", `/${path}`, 5, true], ["Layout", L.name, 6, true]] as [string, string, number, boolean][]).map(([label, value, n, ok]) => (
+                        <div className="rounded-2xl ring-1 ring-secondary ring-inset">{([["Type", t.label, 1, true], ["Charity", orgName || "Not added", 2, !!orgName], ["Goal", `${money(goal)}${endDate ? ` by ${endDate}` : ""}`, 3, true], ["Cover", !hasCover ? "No cover yet" : cover.kind === "youtube" ? "YouTube video" : cover.kind === "video" ? "Video" : "Image", 4, hasCover], ["Story", hasStory ? `${story.replace(/<[^>]*>/g, " ").trim().split(/\s+/).length} words` : "Not written yet", 4, hasStory], ["Title", title || "Missing", 5, !!title], ["Address", `/${path}`, 5, true], ["Layout", L.name, 6, true]] as [string, string, number, boolean][]).map(([label, value, n, ok]) => (
                             <div key={label} className="flex items-center gap-3 border-b border-secondary px-4 py-3 last:border-b-0">
                                 <span className="w-20 shrink-0 text-sm text-tertiary">{label}</span>
                                 <span className="min-w-0 flex-1 truncate font-medium text-primary">{value}</span>
@@ -218,14 +242,16 @@ export const CreateFlow = ({ onPublish }: { onPublish: (p: PageData) => string }
                             </div>
                         ))}</div>
                         <Checkbox size="md" isSelected={agree} onChange={setAgree} label={<>I agree to the Outgive <a href="/terms" target="_blank" rel="noopener" className="underline underline-offset-2">terms</a> and <a href="/privacy" target="_blank" rel="noopener" className="underline underline-offset-2">privacy policy</a></>} />
+                        {!user && !isDemo && <div className="rounded-2xl bg-secondary p-5"><SignIn next={window.location.pathname + window.location.search} title="Sign in to publish" sub="Your draft is saved in this browser. After signing in you come straight back here." /></div>}
                         {missing.length > 0 && <p className="text-sm text-error-primary">To publish, add {missing.join(" and ")}.</p>}
+                        {publishError && <p className="text-sm text-error-primary">{publishError}</p>}
                     </>}
 
                     {live && <>
                         <StepHead title={`Your ${t.label.toLowerCase()} page is live`} sub="Share it to get your first gift." />
                         <div className="flex flex-wrap items-center gap-4 rounded-2xl bg-brand-primary p-5">
                             <FeaturedIcon icon={Check} color="brand" theme="dark" size="lg" />
-                            <div className="min-w-0 flex-1"><div className="truncate text-lg font-semibold text-primary">outgive.org/{key}</div><div className="text-sm text-tertiary">Published just now · {L.name} layout</div></div>
+                            <div className="min-w-0 flex-1"><div className="truncate text-lg font-semibold text-primary">{url.replace(/^https?:\/\//, "")}</div><div className="text-sm text-tertiary">Published just now · {L.name} layout</div></div>
                             <Button size="md" color="secondary" className="rounded-full" iconLeading={Copy01} onPress={copy}>{copied ? "Copied" : "Copy link"}</Button>
                             <Button size="md" color="primary" className="rounded-full" iconLeading={Eye} onPress={() => go({ name: "page", key })}>View page</Button>
                         </div>
@@ -246,7 +272,7 @@ export const CreateFlow = ({ onPublish }: { onPublish: (p: PageData) => string }
                     </>}
                     <span className="flex-1 max-sm:hidden" />
                     {step === 4 && <Button size="xl" color="tertiary" className="rounded-full" onPress={next}><span className="max-sm:hidden">Skip for now</span><span className="sm:hidden">Skip</span></Button>}
-                    {!live && <Button size="xl" color="primary" iconTrailing={step === 7 ? undefined : ArrowRight} isDisabled={step === 7 && missing.length > 0} onPress={next} className="rounded-full max-sm:flex-1">{step === 7 ? "Publish" : "Continue"}</Button>}
+                    {!live && <Button size="xl" color="primary" iconTrailing={step === 7 ? undefined : ArrowRight} isDisabled={(step === 7 && missing.length > 0) || busy} onPress={next} className="rounded-full max-sm:flex-1">{step === 7 ? (busy ? "Publishing…" : "Publish") : "Continue"}</Button>}
                     {live && <Button size="xl" color="secondary" className="rounded-full" onPress={() => go({ name: "home" })}>Go to the leaderboard</Button>}
                 </div></div>
             </main>
@@ -255,7 +281,7 @@ export const CreateFlow = ({ onPublish }: { onPublish: (p: PageData) => string }
                 <div className="mx-auto flex w-full max-w-md flex-col gap-4">
                     <div className="flex items-center justify-between"><span className="text-xs font-semibold tracking-widest text-brand-secondary uppercase">Live preview</span><span className="text-sm font-medium text-secondary">{L.name} layout</span></div>
                     <div className="overflow-hidden rounded-2xl bg-primary shadow-xl ring-1 ring-secondary">
-                        <div className="flex items-center gap-1.5 bg-secondary px-4 py-3"><span className="size-2.5 rounded-full bg-quaternary" /><span className="size-2.5 rounded-full bg-quaternary" /><span className="size-2.5 rounded-full bg-quaternary" /><span className="ml-2 flex-1 truncate rounded-full bg-primary px-3 py-1 text-xs text-tertiary">outgive.org/{key || path}</span></div>
+                        <div className="flex items-center gap-1.5 bg-secondary px-4 py-3"><span className="size-2.5 rounded-full bg-quaternary" /><span className="size-2.5 rounded-full bg-quaternary" /><span className="size-2.5 rounded-full bg-quaternary" /><span className="ml-2 flex-1 truncate rounded-full bg-primary px-3 py-1 text-xs text-tertiary">{window.location.host}{href({ name: "page", key: key || path })}</span></div>
                         <div className="flex flex-col gap-3.5 p-5">
                             {hasCover ? <CoverMedia cover={cover} className="aspect-video w-full" /> : <LayoutThumb id={layout} className="h-56" />}
                             <div className="flex flex-wrap gap-2"><Badge type="pill-color" color="brand" size="sm">{t.label}</Badge>{causes.map((c) => <Badge key={c} type="pill-color" color="gray" size="sm">{c}</Badge>)}</div>

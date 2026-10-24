@@ -43,7 +43,8 @@ const supabaseDb = async (): Promise<DB> => {
         signInGoogle: async (redirect) => { const { error } = await sb.auth.signInWithOAuth({ provider: "google", options: { redirectTo: redirect } }); if (error) throw err(error); },
         signOut: async () => { await sb.auth.signOut(); },
         onDonations: (orgId, cb) => {
-            const ch = sb.channel(`donations:${orgId}`).on("postgres_changes", { event: "*", schema: "public", table: "donations", filter: `org_id=eq.${orgId}` }, (p) => { if (p.new && "id" in p.new) cb(p.new as DonationRow); }).subscribe();
+            // Broadcast by the donations_broadcast trigger (public-safe fields only), so viewers who cannot read the table still see gifts land.
+            const ch = sb.channel(`donations:${orgId}`, { config: { private: true } }).on("broadcast", { event: "donation" }, (m) => cb(m.payload as DonationRow)).subscribe();
             return () => { sb.removeChannel(ch); };
         },
         onOrg: (orgId, cb) => {

@@ -1,5 +1,5 @@
 import { type FC, type ReactNode, createElement, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowRight, ArrowUp, Award01, Brush03, Building07, Calendar, Diamond01, GraduationHat01, Grid01, Minus, Plus, Shield01, TrendUp01, Trophy01, User01, Users01, XClose, Zap } from "@untitledui/icons";
+import { ArrowRight, ArrowUp, Award01, Brush03, Building07, Calendar, Diamond01, GraduationHat01, Grid01, Minus, Plus, Settings01, Shield01, TrendUp01, Trophy01, Tv01, User01, Users01, XClose, Zap } from "@untitledui/icons";
 import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/modal";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { Badge } from "@/components/base/badges/badges";
@@ -8,8 +8,8 @@ import { Checkbox } from "@/components/base/checkbox/checkbox";
 import { Input } from "@/components/base/input/input";
 import { NativeSelect } from "@/components/base/select/select-native";
 import { BrandPanel } from "@/components/outgive/BrandPanel";
-import { BrandLogo, Container, FIELD, PillSelect, ThemeToggle, useApp } from "@/components/outgive/shared";
-import { BOARDS, type BoardKey, CURRENCIES, HALL, KINDS, REGIONS, type Supporter, VARIANTS, type Variant, initials } from "@/data";
+import { BrandLogo, Container, FIELD, type Go, PillSelect, ThemeToggle, useApp } from "@/components/outgive/shared";
+import { BOARDS, type BoardKey, CURRENCIES, KINDS, REGIONS, type Supporter, initials } from "@/data";
 import { ALL_VARIANTS, type BoardCtx, MORE_BOARDS } from "@/views/boards";
 import { cx } from "@/utils/cx";
 import { track } from "@/analytics";
@@ -42,24 +42,23 @@ const NAME = "transition-colors group-hover:text-brand-secondary";
 const one = (kind: string) => ({ Individuals: "Individual", Teams: "Team", Companies: "Company", Schools: "School" })[kind] ?? kind;
 
 export const Leaderboard = () => {
-    const { go, money, currency, setCurrency, board, setBoard, activity, setActivity, brand, setBrand, me: you, setMe: setYou } = useApp();
+    const { db, go, money, currency, setCurrency, board, activity, hall, brand, setBrand, me: you, setMe: setYou, org, member, isDemo, user, refresh, toast: showToast } = useApp();
     const [period, setPeriod] = useState<BoardKey>("total");
     const [kind, setKind] = useState("All");
     const [region, setRegion] = useState("Worldwide");
-    const [open, setOpen] = useState<number | null>(null);
+    const [open, setOpen] = useState<string | null>(null);
     const [bump, setBump] = useState(1);
     const [heroName, setHeroName] = useState("");
     const [heroKind, setHeroKind] = useState("");
     const [claim, setClaim] = useState<{ usd: number; rank: number } | null>(null);
-    const [form, setForm] = useState({ name: "", tagline: "", page: "", country: "", kind: KINDS[0], region: REGIONS[0], amount: "", show: true, alerts: false });
+    const [form, setForm] = useState({ name: "", email: "", tagline: "", page: "", country: "", kind: KINDS[0], region: REGIONS[0], amount: "", show: true, alerts: false });
+    const [busy, setBusy] = useState(false);
     const [error, setError] = useState("");
-    const [toast, setToast] = useState("");
     /** Set by a claim so the page scrolls to the new row once, not on every visit. */
     const justClaimed = useRef(false);
     const [branding, setBranding] = useState(false);
     const variant = brand.variant;
 
-    useEffect(() => { if (!toast) return; const id = setTimeout(() => setToast(""), 4000); return () => clearTimeout(id); }, [toast]);
     useEffect(() => { if (!justClaimed.current || you === null) return; justClaimed.current = false; document.getElementById(`row-${you}`)?.scrollIntoView({ behavior: "smooth", block: "center" }); }, [you, board]);
 
     const rate = CURRENCIES[currency];
@@ -79,23 +78,31 @@ export const Leaderboard = () => {
 
     /** gift is what goes in the amount field: the full price for a newcomer, or only the difference for someone already ranked. */
     const openClaim = (usd: number, rank: number, name = "", kindName = "", gift = usd) => {
-        setForm({ name, tagline: "", page: "", country: "", kind: kindName || KINDS[0], region: REGIONS[0], amount: String(Math.ceil(gift * rate)), show: true, alerts: false });
+        setForm((f) => ({ name, email: f.email || user?.email || "", tagline: "", page: "", country: "", kind: kindName || KINDS[0], region: REGIONS[0], amount: String(Math.ceil(gift * rate)), show: true, alerts: false }));
         setError(""); setClaim({ usd, rank }); track("claim-opened", { rank });
     };
-    const submit = () => {
-        if (!claim) return;
+    /** Sends the gift to checkout. In the demo it is recorded at once; on the live platform the donor pays on Stripe and the row appears when the payment clears. */
+    const submit = async () => {
+        if (!claim || !org) return;
         const gift = Math.round(Number(form.amount) / rate); const name = form.show ? form.name.trim() : "Anonymous";
-        if (!name) return setError("Enter your name, or your team's.");
+        if (form.show && !name) return setError("Enter your name, or your team's.");
         if (!(gift > 0)) return setError("Enter a gift amount.");
-        const total = (existing?.total ?? 0) + gift;
-        const id = existing?.id ?? Date.now();
-        setBoard((prev) => existing
-            ? prev.map((o) => (o.id === existing.id ? { ...o, total, today: o.today + gift, week: o.week + gift } : o))
-            : [...prev, { id, name, tagline: form.show ? form.tagline.trim() || "Newly listed" : "Giving privately", kind: form.kind, region: form.region, country: form.country.trim() || form.region, page: form.show ? form.page.trim().replace(/^https?:\/\//, "") : "", total: gift, today: gift, week: gift, recruited: 0, streak: 0, visits: 0, days: 0 }]);
-        setActivity((a) => [{ who: name, usd: gift, at: Date.now() }, ...a]);
-        track("claim-completed", { rank: landing, usd: gift, anonymous: form.show ? 0 : 1 });
-        setClaim(null); setBump(1); setPeriod("total"); setKind("All"); setRegion("Worldwide"); setHeroName(""); justClaimed.current = true; setYou(id);
-        setToast(`${name} took #${landing} with ${money(total)}${form.alerts ? ". We'll tell you if you're overtaken." : ""}`);
+        if (!isDemo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return setError("Add your email for the receipt.");
+        setBusy(true); setError("");
+        try {
+            const res = await db.fn<{ url: string; donation?: { id: string; supporter_id: string | null } }>("checkout", {
+                org_id: org.id, amount_cents: Math.round(Number(form.amount) * 100), currency, recurring: false, tip_pct: 0, cover: false,
+                donor_name: form.show ? name : "", donor_email: form.email.trim() || undefined, anonymous: !form.show, message: form.tagline.trim(),
+                supporter_name: form.show ? name : (form.kind !== KINDS[0] ? form.name.trim() : undefined), supporter_kind: form.kind, supporter_tagline: form.tagline.trim() || undefined, supporter_country: form.country.trim() || form.region, supporter_region: form.region, supporter_link: form.page.trim().replace(/^https?:\/\//, "") || undefined, claimed_rank: landing,
+                return_to: window.location.pathname, origin: window.location.origin,
+            });
+            track("claim-completed", { rank: landing, usd: gift, anonymous: form.show ? 0 : 1 });
+            if (res.donation) {
+                setClaim(null); setBump(1); setPeriod("total"); setKind("All"); setRegion("Worldwide"); setHeroName(""); justClaimed.current = true;
+                if (res.donation.supporter_id) setYou(res.donation.supporter_id);
+                refresh(); showToast(`${name} took #${landing} with ${money(newTotal)}${form.alerts ? ". We'll tell you if you're overtaken." : ""}`);
+            } else if (res.url) window.location.assign(res.url);
+        } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
     };
 
     /** Live figures for the claim dialog: what the typed amount comes to, the rank it lands on, and the price of the ranks just above. */
@@ -397,9 +404,11 @@ export const Leaderboard = () => {
                         </div>
                         <div className="flex shrink-0 items-center gap-2 sm:gap-4">
                             <nav aria-label="Main" className="flex items-center gap-3 text-xs font-medium text-tertiary sm:gap-6 sm:text-sm">
-                                {([["dashboard", "Dashboard"], ["page", "Layouts"], ["about", "About"], ["rules", "Rules"]] as const).map(([n, l]) => <button key={n} type="button" onClick={() => go({ name: n })} className="cursor-pointer rounded outline-focus-ring transition-colors hover:text-primary focus-visible:outline-2 max-md:last:hidden">{l}</button>)}
+                                {([["dashboard", "Dashboard"], ["about", "About"], ["rules", "Rules"]] as const).map(([n, l]) => <button key={n} type="button" onClick={() => go({ name: n })} className="cursor-pointer rounded outline-focus-ring transition-colors hover:text-primary focus-visible:outline-2 max-md:last:hidden">{l}</button>)}
                             </nav>
                             <div className="flex items-center gap-1">
+                                <button type="button" aria-label="Live screen" title="Live screen" onClick={() => go({ name: "live" })} className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-tertiary outline-focus-ring transition hover:bg-secondary hover:text-primary focus-visible:outline-2"><Tv01 className="size-4" /></button>
+                                {member && <button type="button" aria-label="Organiser dashboard" title="Organiser dashboard" onClick={() => go({ name: "admin" })} className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-tertiary outline-focus-ring transition hover:bg-secondary hover:text-primary focus-visible:outline-2"><Settings01 className="size-4" /></button>}
                                 <button type="button" aria-label="Your branding" title="Your branding" onClick={() => setBranding(true)} className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-tertiary outline-focus-ring transition hover:bg-secondary hover:text-primary focus-visible:outline-2"><Brush03 className="size-4" /></button>
                                 <ThemeToggle />
                             </div>
@@ -464,7 +473,8 @@ export const Leaderboard = () => {
                             <Button color="secondary" size="sm" className="rounded-full" onPress={() => openClaim(rival[0].total + 1, byTotal.findIndex((x) => x.id === rival[0].id) + 1, rival[1].name, rival[1].kind, rival[0].total + 1 - rival[1].total)}>Back the challenger</Button>
                         </section>}
                         <section className="flex flex-col gap-2.5"><h2 className="flex items-center gap-1.5 text-sm font-semibold text-primary"><Award01 aria-hidden="true" className="size-4 text-brand-secondary" />Hall of fame</h2>
-                            <ol className="flex flex-col gap-2 text-xs text-tertiary">{HALL.map(([week, who, usd]) => (<li key={week} className="flex items-baseline justify-between gap-2"><span className="min-w-0 truncate"><span className="font-semibold text-primary">{who}</span> · week of {week}</span><span className="shrink-0 font-semibold text-brand-secondary tabular-nums">{money(usd)}</span></li>))}</ol>
+                            {hall.length === 0 && <p className="text-xs text-tertiary">The first full week's winner appears here.</p>}
+                            <ol className="flex flex-col gap-2 text-xs text-tertiary">{hall.map(([week, who, usd]) => (<li key={week} className="flex items-baseline justify-between gap-2"><span className="min-w-0 truncate"><span className="font-semibold text-primary">{who}</span> · week of {week}</span><span className="shrink-0 font-semibold text-brand-secondary tabular-nums">{money(usd)}</span></li>))}</ol>
                         </section>
                         <div className="flex flex-col items-start gap-2 rounded-2xl bg-brand-primary p-4">
                             <h2 className="text-sm font-semibold text-primary">Fundraising for {brand.name}?</h2>
@@ -480,9 +490,9 @@ export const Leaderboard = () => {
                 </div>
                 <footer className="mt-6 flex flex-col items-center gap-3 border-t border-secondary pt-6 pb-4 text-center text-sm text-tertiary">
                     <p><span className="font-semibold text-primary">{board.length}</span> supporters have given <span className="font-semibold text-primary">{money(board.reduce((n, o) => n + o.total, 0))}</span> to {brand.name} through this board{impact(board.reduce((n, o) => n + o.total, 0)) && <>, enough for <span className="font-semibold text-primary">{impact(board.reduce((n, o) => n + o.total, 0))}</span></>}.</p>
-                    <p className="text-xs">Demo with fictional supporters. No payments are taken. White-label leaderboard by <a href="/" data-umami-event="board-to-product" onClick={(e) => { e.preventDefault(); go({ name: "landing" }); }} className="font-semibold text-primary underline-offset-2 hover:underline">Outgive</a>.</p>
+                    <p className="text-xs">{isDemo ? "Demo with fictional supporters. No payments are taken. " : org?.remove_branding ? "" : "Gifts are paid to the charity through Stripe. "}{!org?.remove_branding && <>Leaderboard by <a href="/" data-umami-event="board-to-product" onClick={(e) => { e.preventDefault(); go({ name: "landing" }); }} className="font-semibold text-primary underline-offset-2 hover:underline">Outgive</a>.</>}</p>
                     <nav aria-label="Footer" className="flex flex-wrap items-center justify-center gap-x-1 text-xs font-medium">
-                        {([["rules", "Rules"], ["faq", "FAQ"], ["about", "About"], ["create", "Start fundraising"]] as const).map(([n, l], i) => <span key={n} className="flex items-center gap-1">{i > 0 && <span>·</span>}<button type="button" onClick={() => go({ name: n })} className="cursor-pointer rounded px-1 hover:text-primary hover:underline">{l}</button></span>)}
+                        {([["rules", "Rules"], ["faq", "FAQ"], ["about", "About"], ["create", "Start fundraising"]] as const).map(([n, l], i) => <span key={n} className="flex items-center gap-1">{i > 0 && <span>·</span>}<button type="button" onClick={() => go({ name: n } as Go)} className="cursor-pointer rounded px-1 hover:text-primary hover:underline">{l}</button></span>)}
                         <span className="flex items-center gap-1"><span>·</span><button type="button" onClick={() => setBranding(true)} className="cursor-pointer rounded px-1 hover:text-primary hover:underline">Run your own board</button></span>
                         {(["terms", "privacy"] as const).map((n) => <span key={n} className="flex items-center gap-1"><span>·</span><a href={`/${n}`} onClick={(e) => { e.preventDefault(); go({ name: n }); }} className="rounded px-1 capitalize hover:text-primary hover:underline">{n}</a></span>)}
                     </nav>
@@ -516,6 +526,7 @@ export const Leaderboard = () => {
                         </div>
 
                         {form.show && <Input label="Name on the board" autoFocus placeholder="You, your team or your company" value={form.name} onChange={(v) => { setForm({ ...form, name: v }); setError(""); }} />}
+                        <Input label="Email" type="email" placeholder="For your receipt" value={form.email} onChange={(v) => { setForm({ ...form, email: v }); setError(""); }} isRequired={!isDemo} />
                         {existing ? <Badge type="pill-color" color="success" size="md">Already on the board. This gift is added to your total.</Badge> : <>
                             <div role="group" aria-label="Giving as" className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
                                 {KINDS.map((k) => <button key={k} type="button" aria-pressed={form.kind === k} onClick={() => setForm({ ...form, kind: k })} className={cx("cursor-pointer rounded-xl px-2 py-2 text-sm font-semibold ring-1 outline-focus-ring transition ring-inset focus-visible:outline-2", form.kind === k ? "bg-brand-primary text-brand-secondary ring-brand" : "text-secondary ring-secondary hover:bg-secondary")}>{one(k)}</button>)}
@@ -537,13 +548,12 @@ export const Leaderboard = () => {
 
                         {/* On phones the form is taller than the screen, so the action stays pinned to the bottom of the dialog. */}
                         <div className="sticky bottom-0 -mx-5 -mb-5 flex flex-col gap-2 bg-primary px-5 pt-3 pb-5 md:static md:m-0 md:p-0">
-                            <Button size="lg" color="primary" type="submit" className="w-full rounded-full" isDisabled={!(giftUsd > 0)}>{giftUsd > 0 ? `Give ${money(giftUsd)} and take #${landing}` : "Enter an amount"}</Button>
-                            <p className="text-center text-xs text-tertiary">Demo only. No payment is taken. On a live board your rank appears once the payment clears.</p>
+                            <Button size="lg" color="primary" type="submit" className="w-full rounded-full" isDisabled={!(giftUsd > 0) || busy}>{busy ? "One moment…" : giftUsd > 0 ? `Give ${money(giftUsd)} and take #${landing}` : "Enter an amount"}</Button>
+                            <p className="text-center text-xs text-tertiary">{isDemo ? "Demo only. No payment is taken. On a live board your rank appears once the payment clears." : `Paid to ${brand.name} through Stripe. Your rank appears once the payment clears.`}</p>
                         </div>
                     </form>
                 </Dialog></Modal>
             </ModalOverlay>
-            {toast && <div role="status" className="fixed bottom-5 left-1/2 z-40 max-w-[calc(100%-2rem)] -translate-x-1/2 rounded-full bg-primary-solid px-4 py-2.5 text-sm font-medium text-white shadow-lg">{toast}</div>}
         </div>
     );
 };

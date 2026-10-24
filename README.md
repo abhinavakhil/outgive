@@ -1,8 +1,11 @@
 # Outgive
 
-A white-label leaderboard for a charity. Supporters hold ranks by what they have given to the charity, and anyone can
-take a rank by giving more than the person above them. Seeing your own name on the board, and exactly what it takes to
-climb, is what makes people give again.
+A white-label fundraising platform with a live-fundraising layer. A charity signs up, connects Stripe, brands its board and runs
+campaigns, fundraiser pages, teams, challenges, events and in-memory pages on its own domain. Supporters hold ranks by what they
+have given; anyone can take a rank by giving more than the person above them. Donors pay by card, Apple Pay, Google Pay or Link
+through Stripe Checkout, get an emailed receipt, and watch their name climb a live board or wall display.
+
+Design: `docs/superpowers/specs/2026-10-23-platform-design.md`. Deployment: `docs/RUNBOOK.md`.
 
 ![Outgive demo: switching layouts, applying a charity's branding, claiming #1](docs/demo.gif)
 
@@ -14,8 +17,31 @@ Built with React 19, Vite, Tailwind CSS v4 and the open-source Untitled UI React
 ## Run it
 
     npm install
-    npm run dev      # local dev server
-    npm run build    # production build in dist/
+    npm run dev          # http://localhost:5173: with no .env the app runs the demo on an in-browser Postgres (PGlite)
+    npm test             # schema, SQL API, RLS, seed, money and routing tests on real Postgres (PGlite)
+    npm run test:fn      # Deno tests for the edge functions (fee maths, webhook mapping)
+    npm run build        # production build in dist/ with prerendered marketing pages
+
+Copy `.env.example` to `.env.local` and fill in the Supabase URL and anon key to run against a real backend.
+`docs/RUNBOOK.md` walks through Supabase, Stripe Connect, Resend and Vercel; the free tiers are enough to launch.
+
+## How it is put together
+
+    Browser (React SPA)
+      └─ src/lib/db.ts       one interface: rpc(name,args), auth, realtime, functions, uploads
+           ├─ supabase mode   supabase-js (PostgREST RPC, Realtime, Auth, Storage)   when VITE_SUPABASE_URL is set
+           └─ demo mode       PGlite in the browser, seeded with a sample charity    otherwise (/demo)
+    Supabase
+      ├─ Postgres: supabase/migrations/*.sql   tables, triggers, the SQL API (every read/write is a function), RLS
+      └─ Edge functions: checkout, stripe-webhook, connect
+    Stripe Connect ── webhooks ──▶ stripe-webhook ──▶ donations ──▶ realtime broadcast ──▶ boards and live screens
+
+The app never queries tables directly; the SQL functions in the migration are the API, tested in `tests/db.test.ts`, and
+behave identically in demo mode because the same migration runs in the browser.
+
+Tenancy: `<slug>.outgive.org` or a charity's custom domain resolves the organisation from the host; `/o/<slug>` works on the
+bare domain. Tenant routes: `/` board, `/live` and `/overlay` (wall display and OBS overlay), `/c|/f|/t|/ch|/e|/m/<slug>` pages
+(plus `/live`, `/overlay`, `/manage`), `/create`, `/admin`, `/thanks`, `/embed`.
 
 ## White label
 
@@ -34,7 +60,14 @@ After you claim a rank, your row is marked **You** and scrolled into view in whi
 
 ## Where things are
 
-- `src/App.tsx`: view switching and shared state (currency, brand, the board, published pages)
+- `src/App.tsx`: router (tenant from host or `/o/<slug>`), organisation loading, realtime refresh, shared state
+- `src/lib/db.ts`: the data interface; `src/lib/demo.ts` is the in-browser PGlite implementation with the sample charity
+- `src/lib/route.ts`: path parsing and tenant resolution; `src/lib/types.ts`: SQL API row types and adapters
+- `src/views/Admin.tsx`: organiser dashboard (stats, donations, refunds, members, branding, domain, Stripe, pledges)
+- `src/views/Live.tsx`: wall display and OBS overlay; `src/views/PageManage.tsx`: page owner tools and presenter console
+- `src/views/Dashboard.tsx`: donor dashboard; `Start`, `Login`, `Pricing`, `Thanks`, `Embed`: the remaining screens
+- `supabase/migrations/`: schema, triggers, SQL API, RLS; `supabase/functions/`: checkout, stripe-webhook, connect
+- `tests/db.test.ts`: the schema and API on real Postgres; `tests/seed.test.ts`: the demo seed
 - `src/brand.ts`: turns one hex colour and a font into the CSS variables the whole app uses
 - `src/views/Leaderboard.tsx`: the ranking in three layouts, the claim dialog, filters
 - `src/components/outgive/BrandPanel.tsx`: the "see it with your branding" dialog
@@ -55,9 +88,7 @@ Only the components the app imports end up in the build. Some unused component f
 One change was made to the copied source: in `src/components/base/select/select-native.tsx` the select only sets
 `aria-labelledby` when a visible label is rendered, so an `aria-label` passed by the caller is respected.
 
-## What is not real yet
+## Not built yet
 
-- All supporters, people and amounts are fictional sample data, held in `localStorage`.
-- No payments, accounts, uploads or charity verification. The claim dialog and donate buttons only update the screen.
-- Currency rates in `src/data.ts` are fixed placeholder values.
-- A logo is stored as a data URL in `localStorage`, so it is capped at 400 KB in this demo.
+Auctions, raffles, text-to-give, crypto and stock gifts, Gift Aid claims, employer-match databases, SMS, CRM integrations.
+Each is a table and a screen; nothing in the schema blocks them. Charity verification is a flag set by hand (see the runbook).

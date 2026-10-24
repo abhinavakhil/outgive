@@ -548,6 +548,23 @@ create function thanks_lookup(session text default null, gift uuid default null)
     from donations d where (session is not null and d.stripe_checkout_session_id = session) or (gift is not null and d.id = gift and d.source = 'demo') limit 1;
 $$;
 
+
+create function my_profile() returns setof profiles language sql stable security definer set search_path = public as $$ select * from profiles where id = auth.uid() $$;
+create function profile_update(p jsonb) returns profiles language plpgsql security definer set search_path = public as $$
+declare r profiles;
+begin
+    update profiles set name = coalesce(p ->> 'name', name), country = coalesce(p ->> 'country', country), avatar_url = coalesce(p ->> 'avatar_url', avatar_url) where id = auth.uid() returning * into r;
+    if r.id is null then raise exception 'Sign in first' using errcode = '42501'; end if;
+    return r;
+end $$;
+-- The donor's own gifts with the names a receipt list needs.
+create function my_giving() returns table (id uuid, org_id uuid, org_name text, org_slug text, page_id uuid, page_title text, page_type text, page_slug text, amount_cents bigint, currency text, usd_cents bigint, tip_cents bigint, recurring boolean, status text, source text, message text, created_at timestamptz, receipt_sent_at timestamptz)
+language sql stable security definer set search_path = public as $$
+    select d.id, d.org_id, o.name, o.slug, d.page_id, p.title, p.type, p.slug, d.amount_cents, d.currency, d.usd_cents, d.tip_cents, d.recurring, d.status, d.source, d.message, d.created_at, d.receipt_sent_at
+    from donations d join orgs o on o.id = d.org_id left join pages p on p.id = d.page_id
+    where d.donor_id = auth.uid() and d.status <> 'pending' order by d.created_at desc;
+$$;
+
 -- ---------------------------------------------------------------- row-level security
 alter table profiles enable row level security;
 alter table orgs enable row level security;
@@ -584,11 +601,27 @@ revoke all on function apply_match(donations) from public, anon, authenticated;
 revoke all on function page_recount(uuid) from public, anon, authenticated;
 revoke all on function supporter_for(uuid, text, text, text, text, text, text) from public, anon, authenticated;
 
--- Live boards listen for new gifts.
+-- Live boards listen for new gifts. Donation rows are private under RLS, so a public-safe copy of each change is broadcast on a
+-- per-org channel that anyone may read and nobody may write. Orgs and pages are public rows and stream as table changes.
+create function donation_broadcast() returns trigger language plpgsql security definer as $$
+begin
+    if to_regproc('realtime.send') is not null then
+        perform realtime.send(
+            jsonb_build_object('id', new.id, 'org_id', new.org_id, 'page_id', new.page_id, 'supporter_id', new.supporter_id,
+                'donor_name', case when new.anonymous then 'Anonymous' else new.donor_name end, 'amount_cents', new.amount_cents, 'currency', new.currency,
+                'usd_cents', new.usd_cents, 'message', new.message, 'dedication', new.dedication, 'recurring', new.recurring, 'source', new.source,
+                'status', new.status, 'ticket_qty', new.ticket_qty, 'created_at', new.created_at),
+            'donation', 'donations:' || new.org_id, true);
+    end if;
+    return new;
+end $$;
+create trigger donations_broadcast after insert or update on donations for each row execute function donation_broadcast();
 do $$ begin
     if exists (select 1 from pg_publication where pubname = 'supabase_realtime') then
-        alter publication supabase_realtime add table donations;
         alter publication supabase_realtime add table orgs;
         alter publication supabase_realtime add table pages;
+    end if;
+    if to_regclass('realtime.messages') is not null then
+        execute 'create policy "anyone follows gifts" on realtime.messages for select to anon, authenticated using (extension = ''broadcast'' and realtime.topic() like ''donations:%'')';
     end if;
 end $$;
