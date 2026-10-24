@@ -125,7 +125,10 @@ export const demoDb = async (): Promise<DB> => {
         fn: async <T,>(name: string, body: Record<string, unknown>): Promise<T> => {
             if (name === "checkout") {
                 // No card in the demo: the gift is recorded straight away as a demo gift.
-                const d = await rpc<DonationRow>("donation_record", { p: { ...body, source: "demo" } });
+                // Same tip and fee maths as the real checkout, so the receipt page shows what would have been charged.
+                const { breakdown } = await import("@/lib/money");
+                const m = breakdown(Number(body.amount_cents), { tipPct: Number(body.tip_pct) || 0, cover: !!body.cover });
+                const d = await rpc<DonationRow>("donation_record", { p: { ...body, tip_cents: m.tip, cover_cents: m.cover, source: "demo" } });
                 return { url: `/thanks?demo=1&donation=${d.id}`, donation: d } as T;
             }
             if (name === "connect") { const o = await rpc<Org>("org_update", { org: body.org_id, p: {} }); await pg.query("update orgs set stripe_account_id = 'acct_demo', stripe_charges_enabled = true, stripe_payouts_enabled = true where id = $1", [o.id]); await emitOrg(o.id); return { url: "", demo: true } as T; }

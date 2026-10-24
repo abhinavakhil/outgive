@@ -461,9 +461,9 @@ begin
     if pg is not null then select org_id into org from pages where id = pg; end if;
     if not is_member(org) then raise exception 'Only the organisation can record a gift' using errcode = '42501'; end if;
     if src not in ('offline', 'pledge', 'demo') then raise exception 'source must be offline, pledge or demo'; end if;
-    insert into donations (org_id, page_id, supporter_id, donor_name, donor_email, anonymous, amount_cents, currency, message, dedication, cause, recurring, source, status, claimed_rank)
+    insert into donations (org_id, page_id, supporter_id, donor_name, donor_email, anonymous, amount_cents, currency, tip_cents, cover_cents, message, dedication, cause, recurring, source, status, claimed_rank)
     values (org, pg, supporter_for(org, p ->> 'supporter_name', p ->> 'supporter_kind', p ->> 'supporter_tagline', p ->> 'supporter_country', p ->> 'supporter_region', p ->> 'supporter_link'),
-        coalesce(nullif(p ->> 'donor_name', ''), 'Anonymous'), nullif(p ->> 'donor_email', ''), coalesce((p ->> 'anonymous')::boolean, false), (p ->> 'amount_cents')::bigint, coalesce(upper(p ->> 'currency'), 'USD'),
+        coalesce(nullif(p ->> 'donor_name', ''), 'Anonymous'), nullif(p ->> 'donor_email', ''), coalesce((p ->> 'anonymous')::boolean, false), (p ->> 'amount_cents')::bigint, coalesce(upper(p ->> 'currency'), 'USD'), coalesce((p ->> 'tip_cents')::bigint, 0), coalesce((p ->> 'cover_cents')::bigint, 0),
         coalesce(p ->> 'message', ''), coalesce(p ->> 'dedication', ''), left(coalesce(p ->> 'cause', ''), 80), coalesce((p ->> 'recurring')::boolean, false), src, 'succeeded', nullif(p ->> 'claimed_rank', '')::int)
     returning * into d;
     return d;
@@ -542,7 +542,8 @@ $$;
 
 -- The thank-you page after Checkout: the session id (or a demo gift id) is the only key the browser holds.
 create function thanks_lookup(session text default null, gift uuid default null) returns jsonb language sql stable security definer set search_path = public as $$
-    select jsonb_build_object('id', d.id, 'name', d.donor_name, 'amount_cents', d.amount_cents, 'currency', d.currency, 'tip_cents', d.tip_cents, 'status', d.status, 'recurring', d.recurring, 'claimed_rank', d.claimed_rank, 'message', d.message,
+    select jsonb_build_object('id', d.id, 'name', d.donor_name, 'amount_cents', d.amount_cents, 'currency', d.currency, 'tip_cents', d.tip_cents, 'cover_cents', d.cover_cents, 'status', d.status, 'recurring', d.recurring, 'claimed_rank', d.claimed_rank, 'message', d.message, 'cause', d.cause, 'created_at', d.created_at,
+        'email_hint', case when d.donor_email is null then null else left(d.donor_email, 1) || '***' || substring(d.donor_email from '@.*$') end,
         'page', (select jsonb_build_object('type', p.type, 'slug', p.slug, 'title', p.title, 'raised_cents', p.raised_cents, 'goal_cents', p.goal_cents) from pages p where p.id = d.page_id),
         'org', (select jsonb_build_object('slug', o.slug, 'name', o.name) from orgs o where o.id = d.org_id),
         'supporter', (select jsonb_build_object('id', s.id, 'name', s.name) from supporters s where s.id = d.supporter_id))
