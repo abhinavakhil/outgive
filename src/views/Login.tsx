@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Mail01 } from "@untitledui/icons";
 import { Button } from "@/components/base/buttons/button";
 import { Input } from "@/components/base/input/input";
@@ -34,7 +34,7 @@ export const SignIn = ({ next, title = "Sign in", sub = "A link by email, or you
 export const Login = () => {
     const { user, go } = useApp();
     const next = new URLSearchParams(window.location.search).get("next") ?? "/dashboard";
-    if (user) go({ name: "dashboard" });
+    useEffect(() => { if (user) go({ name: "dashboard" }); }, [user, go]);
     return (
         <div className="min-h-dvh bg-primary"><Container className="flex max-w-md flex-col gap-10 py-5"><SiteHeader /><div className="rounded-3xl p-6 ring-1 ring-secondary ring-inset"><SignIn next={next} /></div></Container></div>
     );
