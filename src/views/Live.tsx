@@ -94,17 +94,16 @@ const Rank = ({ o, s, size = "md" }: { o: { id: string; name: string; total: num
     </motion.li>
 );
 
-export const Live = ({ pageRef }: { pageRef?: PageRef }) => {
+export const Live = ({ pageRef, layout: linkLayout, theme: linkTheme }: { pageRef?: PageRef; layout?: LiveLayout; theme?: "dark" | "light" }) => {
     const { org, brand, board, money, currency, href } = useApp();
     const { bundle, gifts, last, state, recent, totalUsd, goalUsd, items, fundedToday } = useLive(pageRef);
     const [qr, setQr] = useState("");
     const [confetti, setConfetti] = useState(0);
     const [milestone, setMilestone] = useState<number | null>(null);
     const seenPct = useRef(-1);
-    // ?layout= and ?theme= preview a composition without changing what the console pushed; the console's own previews use them.
-    const q = new URLSearchParams(window.location.search);
-    const theme = (q.get("theme") as "dark" | "light" | null) ?? state.theme ?? "dark"; const s = skin(theme);
-    const layout: LiveLayout = (q.get("layout") as LiveLayout | null) ?? state.layout ?? "classic";
+    // A link like /live/podium/light previews a composition without changing what the console pushed.
+    const theme = linkTheme ?? state.theme ?? "dark"; const s = skin(theme);
+    const layout: LiveLayout = linkLayout ?? state.layout ?? "classic";
     const giveUrl = `${window.location.origin}${pageRef ? href({ name: "give", org: org!.slug, page: pageRef }) : href({ name: "give" })}`;
     useEffect(() => { QRCode.toDataURL(giveUrl, { width: 480, margin: 1, color: { dark: "#000000", light: "#ffffff" } }).then(setQr).catch(() => setQr("")); }, [giveUrl]);
     useEffect(() => { if (last) setConfetti(Date.now()); }, [last]);
@@ -225,11 +224,11 @@ export const Live = ({ pageRef }: { pageRef?: PageRef }) => {
     );
 };
 
-/** Transparent overlay for OBS or any browser source: goal bar, running total and a pop-up for each gift. ?theme=bar|alert|ticker */
-export const Overlay = ({ pageRef }: { pageRef?: PageRef }) => {
+/** Transparent overlay for OBS or any browser source: goal bar, running total and a pop-up for each gift. /overlay, /overlay/alert, /overlay/ticker */
+export const Overlay = ({ pageRef, style }: { pageRef?: PageRef; style?: "bar" | "alert" | "ticker" }) => {
     const { org, brand, money } = useApp();
     const { bundle, last, gifts, totalUsd, goalUsd } = useLive(pageRef);
-    const theme = new URLSearchParams(window.location.search).get("theme") ?? "bar";
+    const theme = style ?? "bar";
     const [show, setShow] = useState<DonationRow | null>(null);
     useEffect(() => { if (!last) return; setShow(last); const id = setTimeout(() => setShow(null), 7000); return () => clearTimeout(id); }, [last]);
     useEffect(() => { document.documentElement.style.background = "transparent"; document.body.style.background = "transparent"; return () => { document.documentElement.style.background = ""; document.body.style.background = ""; }; }, []);

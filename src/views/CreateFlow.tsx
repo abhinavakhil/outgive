@@ -52,7 +52,7 @@ export const CreateFlow = ({ parent }: { parent?: string }) => {
     const { db, go, href, money, currency, setCurrency, org, user, isDemo, toast } = useApp();
     const draft = (() => { try { return JSON.parse(localStorage.getItem(DRAFT) ?? "null") ?? {}; } catch { return {}; } })() as Record<string, unknown>;
     const [parentRow, setParentRow] = useState<PageRow | null>(null);
-    useEffect(() => { if (parent && org) db.rpc<PageRow[]>("pages_list", { org: org.id }).then((rows) => setParentRow(rows.find((r) => r.id === parent) ?? null)); }, [db, org, parent]);
+    useEffect(() => { if (parent && org) db.rpc<PageRow[]>("pages_list", { org: org.id }).then((rows) => setParentRow(rows.find((r) => r.id === parent || `${PREFIX[r.type]}/${r.slug}` === parent) ?? null)); }, [db, org, parent]);
     const [step, setStep] = useState((draft.step as number) ?? 1); // 1 to 7, then 8 = live
     const [type, setType] = useState<PageType>((draft.type as PageType) ?? (parent ? "fundraiser" : "fundraiser"));
     const [orgName, setOrg] = useState((draft.orgName as string) ?? org?.name ?? "");
@@ -97,7 +97,7 @@ export const CreateFlow = ({ parent }: { parent?: string }) => {
         setBusy(true); setPublishError("");
         try {
             const c = await persistCover(db, page.cover, `covers/${org.id}/${address}`);
-            const row = await db.rpc<PageRow>("page_create", { p: { org_id: org.id, parent_id: parentRow?.id ?? parent ?? null, type, slug: address, title: page.title, org_name: orgName.trim() || org.name, country, story, cover: c, layout, goal_cents: Math.round(goal * rate * 100), currency, end_date: endDate, show_goal: showGoal, causes, details: page.details, gifts, allocation: page.allocation, allow_fundraisers: d["Supporter fundraisers"] !== "Not allowed" } });
+            const row = await db.rpc<PageRow>("page_create", { p: { org_id: org.id, parent_id: parentRow?.id ?? (parent && /^[0-9a-f-]{36}$/.test(parent) ? parent : null), type, slug: address, title: page.title, org_name: orgName.trim() || org.name, country, story, cover: c, layout, goal_cents: Math.round(goal * rate * 100), currency, end_date: endDate, show_goal: showGoal, causes, details: page.details, gifts, allocation: page.allocation, allow_fundraisers: d["Supporter fundraisers"] !== "Not allowed" } });
             track("page-published", { type: row.type, layout: row.layout });
             setKey(`${PREFIX[row.type]}/${row.slug}`); try { localStorage.removeItem(DRAFT); } catch { /* ignore */ }
             setStep(8); window.scrollTo(0, 0);

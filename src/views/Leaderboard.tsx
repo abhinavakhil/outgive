@@ -42,7 +42,7 @@ const NAME = "transition-colors group-hover:text-brand-secondary";
 const one = (kind: string) => ({ Individuals: "Individual", Teams: "Team", Companies: "Company", Schools: "School" })[kind] ?? kind;
 
 export const Leaderboard = () => {
-    const { db, go, money, currency, setCurrency, board, activity, hall, brand, setBrand, me: you, setMe: setYou, org, member, isDemo, user, refresh, toast: showToast } = useApp();
+    const { db, go, href, money, currency, setCurrency, board, activity, hall, brand, setBrand, me: you, setMe: setYou, org, member, isDemo, user, refresh, toast: showToast } = useApp();
     const [period, setPeriod] = useState<BoardKey>("total");
     const [kind, setKind] = useState("All");
     const [region, setRegion] = useState("Worldwide");
@@ -94,7 +94,7 @@ export const Leaderboard = () => {
                 org_id: org.id, amount_cents: Math.round(Number(form.amount) * 100), currency, recurring: false, tip_pct: 0, cover: false,
                 donor_name: form.show ? name : "", donor_email: form.email.trim() || undefined, anonymous: !form.show, message: form.tagline.trim(),
                 supporter_name: form.show ? name : (form.kind !== KINDS[0] ? form.name.trim() : undefined), supporter_kind: form.kind, supporter_tagline: form.tagline.trim() || undefined, supporter_country: form.country.trim() || form.region, supporter_region: form.region, supporter_link: form.page.trim().replace(/^https?:\/\//, "") || undefined, claimed_rank: landing,
-                return_to: window.location.pathname, origin: window.location.origin,
+                return_to: window.location.pathname, thanks_path: href({ name: "thanks" }), origin: window.location.origin,
             });
             track("claim-completed", { rank: landing, usd: gift, anonymous: form.show ? 0 : 1 });
             if (res.donation) {

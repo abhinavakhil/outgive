@@ -18,7 +18,7 @@ import { type Tenant, type View } from "@/lib/route";
 export type { View } from "@/lib/route";
 
 /** Navigation targets. Short forms leave out the organisation: it is the one on screen (or the demo). */
-export type Go = View | { name: "home" } | { name: "create"; parent?: string } | { name: "page"; key: string } | { name: "admin"; tab?: string } | { name: "live" } | { name: "overlay" } | { name: "give"; page?: PageRef } | { name: "thanks" };
+export type Go = View | { name: "home" } | { name: "create"; parent?: string } | { name: "page"; key: string } | { name: "admin"; tab?: string } | { name: "live" } | { name: "overlay" } | { name: "give"; page?: PageRef } | { name: "thanks"; ref?: string };
 export interface AppCtx {
     db: DB; user: User | null; tenant: Tenant; org: Org | null; member: boolean; isDemo: boolean;
     currency: string; setCurrency: (c: string) => void; money: (usd: number) => string;
@@ -423,7 +423,7 @@ export const LiveConsole = ({ live, push, liveUrl, overlayUrl, giveUrl, scope }:
                 </div>
             </Panel>
             <Panel title="Stream overlay" sub="Transparent browser source for OBS, Streamlabs or any streaming tool. 1280×200 works well.">
-                <div className="grid gap-2 md:grid-cols-3"><CopyRow label="Goal bar" url={overlayUrl} /><CopyRow label="Alerts only" url={`${overlayUrl}?theme=alert`} /><CopyRow label="Bar + recent gifts" url={`${overlayUrl}?theme=ticker`} /></div>
+                <div className="grid gap-2 md:grid-cols-3"><CopyRow label="Goal bar" url={overlayUrl} /><CopyRow label="Alerts only" url={`${overlayUrl}/alert`} /><CopyRow label="Bar + recent gifts" url={`${overlayUrl}/ticker`} /></div>
             </Panel>
         </>
     );

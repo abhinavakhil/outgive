@@ -41,12 +41,23 @@ The app never queries tables directly; the SQL functions in the migration are th
 behave identically in demo mode because the same migration runs in the browser.
 
 Live fundraising: every organisation and page has a live screen (`/live`) in five layouts (classic, thermometer, impact, podium,
-gift wall; dark or light), an OBS overlay (`/overlay`) and a phone give screen (`/give`) behind the live screen's QR code, where a
+gift wall; dark or light), an OBS overlay (`/overlay`) and a phone give screen (`/donate`, or `/give` on a page) behind the live screen's QR code, where a
 donor picks an impact item ("A borehole for a village, $6,000") or any amount and the gift lands on the screen in the room within a
 second. The presenter console (Admin, Live screen) sets layout, theme, goal for the night, impact items, the ask banner and confetti.
 
-Donate links: add `?donate` to any page address to open the gift form on arrival, and `&amount=50` to prefill it, for emails,
-posters and buttons on a charity's own site. The embed widget's Give button uses it.
+Links are plain paths. On a charity's own domain (or after `/o/<slug>` on the platform):
+
+    /donate                        give screen: pick an impact item or any amount
+    /c/<slug>/donate               the page with the gift form open; /donate/50 prefills 50
+    /c/<slug>/live                 live screen; /live/podium/light picks a layout and theme
+    /c/<slug>/overlay              OBS overlay; /overlay/alert or /overlay/ticker for the other styles
+    /c/<slug>/give                 the page's phone give screen (behind its live screen QR code)
+    /c/<slug>/fundraise            start a fundraiser under this campaign
+    /c/<slug>/embed                widget for another site; /embed/dark/10 on the board widget
+    /thanks/<reference>            receipt after a gift
+
+The same suffixes work on every page type (`/f`, `/t`, `/ch`, `/e`, `/m`) and org-wide (`/live`, `/overlay`, `/embed`).
+Older query-string links (`?donate&amount=`, `?theme=`, `?layout=`, `?for=`, `?session_id=`) still resolve.
 
 Tenancy: `<slug>.outgive.org` or a charity's custom domain resolves the organisation from the host; `/o/<slug>` works on the
 bare domain. Tenant routes: `/` board, `/live` and `/overlay` (wall display and OBS overlay), `/c|/f|/t|/ch|/e|/m/<slug>` pages

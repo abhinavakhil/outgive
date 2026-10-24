@@ -25,8 +25,47 @@ describe("parse", () => {
         expect(parse("/login", sub)).toEqual({ name: "login" });
     });
 });
+describe("action links are paths", () => {
+    const water = { type: "campaign" as const, slug: "water" };
+    it("donate, with an optional amount", () => {
+        expect(parse("/demo/c/water/donate", bare)).toEqual({ name: "page", org: "clearwell", page: water, sub: "donate" });
+        expect(parse("/demo/c/water/donate/50", bare)).toEqual({ name: "page", org: "clearwell", page: water, sub: "donate", amount: 50 });
+        expect(parse("/demo/c/water/donate/abc", bare)).toEqual({ name: "notfound" });
+        expect(parse("/demo/donate", bare)).toEqual({ name: "give", org: "clearwell" });
+        expect(parse("/donate", sub)).toEqual({ name: "give", org: "clearwell" });
+    });
+    it("live layout and theme, overlay style, embed options", () => {
+        expect(parse("/demo/live/podium/light", bare)).toEqual({ name: "live", org: "clearwell", layout: "podium", theme: "light" });
+        expect(parse("/demo/c/water/live/dark", bare)).toEqual({ name: "live", org: "clearwell", page: water, theme: "dark" });
+        expect(parse("/demo/live/sparkles", bare)).toEqual({ name: "notfound" });
+        expect(parse("/demo/overlay/ticker", bare)).toEqual({ name: "overlay", org: "clearwell", style: "ticker" });
+        expect(parse("/demo/embed/dark/10", bare)).toEqual({ name: "embed", org: "clearwell", theme: "dark", limit: 10 });
+        expect(parse("/demo/c/water/embed", bare)).toEqual({ name: "embed", org: "clearwell", page: water });
+    });
+    it("fundraise under a campaign, receipts", () => {
+        expect(parse("/demo/c/water/fundraise", bare)).toEqual({ name: "create", org: "clearwell", parent: "c/water" });
+        expect(parse("/demo/thanks/cs_test_123", bare)).toEqual({ name: "thanks", org: "clearwell", ref: "cs_test_123" });
+    });
+    it("older query-string links still resolve", () => {
+        expect(parse("/demo/c/water", bare, "?donate&amount=25")).toEqual({ name: "page", org: "clearwell", page: water, sub: "donate", amount: 25 });
+        expect(parse("/demo/live", bare, "?layout=wall&theme=light")).toEqual({ name: "live", org: "clearwell", layout: "wall", theme: "light" });
+        expect(parse("/demo/overlay", bare, "?theme=alert")).toEqual({ name: "overlay", org: "clearwell", style: "alert" });
+        expect(parse("/demo/thanks", bare, "?session_id=cs_x")).toEqual({ name: "thanks", org: "clearwell", ref: "cs_x" });
+        expect(parse("/demo/embed/c/water", bare, "?limit=8")).toEqual({ name: "embed", org: "clearwell", page: water, limit: 8 });
+    });
+    it("links are written as paths", () => {
+        expect(pathOf({ name: "page", org: "clearwell", page: water, sub: "donate", amount: 50 }, bare)).toBe("/demo/c/water/donate/50");
+        expect(pathOf({ name: "give", org: "clearwell" }, sub)).toBe("/donate");
+        expect(pathOf({ name: "give", org: "clearwell", page: water }, sub)).toBe("/c/water/give");
+        expect(pathOf({ name: "live", org: "mangrove", page: water, layout: "impact", theme: "light" }, bare)).toBe("/o/mangrove/c/water/live/impact/light");
+        expect(pathOf({ name: "overlay", org: "clearwell", style: "alert" }, sub)).toBe("/overlay/alert");
+        expect(pathOf({ name: "create", org: "clearwell", parent: "c/water" }, sub)).toBe("/c/water/fundraise");
+        expect(pathOf({ name: "thanks", org: "clearwell", ref: "abc" }, bare)).toBe("/demo/thanks/abc");
+        expect(pathOf({ name: "embed", org: "clearwell", page: water, theme: "dark" }, sub)).toBe("/c/water/embed/dark");
+    });
+});
 describe("pathOf round-trips", () => {
-    const views = [parse("/demo", bare), parse("/o/mangrove/f/plant-trees", bare), parse("/demo/e/gala/manage", bare), parse("/demo/admin/payments", bare), parse("/demo/overlay", bare), parse("/demo/c/water/live", bare), parse("/pricing", bare), parse("/demo/create", bare, "?for=abc")];
+    const views = [parse("/demo", bare), parse("/o/mangrove/f/plant-trees", bare), parse("/demo/e/gala/manage", bare), parse("/demo/admin/payments", bare), parse("/demo/overlay", bare), parse("/demo/c/water/live", bare), parse("/pricing", bare), parse("/demo/create", bare, "?for=abc"), parse("/demo/c/water/donate/50", bare), parse("/demo/live/wall/light", bare), parse("/demo/overlay/ticker", bare), parse("/demo/c/water/fundraise", bare), parse("/demo/thanks/cs_1", bare), parse("/demo/embed/dark/10", bare), parse("/demo/donate", bare)];
     for (const v of views) it(JSON.stringify(v), () => { const p = pathOf(v, bare); const [path, q] = p.split("?"); expect(parse(path, bare, q ? `?${q}` : "")).toEqual(v); });
     it("drops the prefix on a tenant host", () => { expect(pathOf({ name: "board", org: "clearwell" }, sub)).toBe("/"); expect(pathOf({ name: "live", org: "clearwell" }, sub)).toBe("/live"); expect(pathOf({ name: "page", org: "x", page: { type: "team", slug: "a b" } }, custom)).toBe("/t/a%20b"); });
 });

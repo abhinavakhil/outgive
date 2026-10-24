@@ -7,12 +7,11 @@ import type { PageBundle } from "@/lib/types";
 import { cx } from "@/utils/cx";
 
 /** Widgets for other sites: the top of the board, or one page's progress and give button. Links open the full page in the parent window. */
-export const Embed = ({ pageRef }: { pageRef?: PageRef }) => {
+export const Embed = ({ pageRef, theme, limit: rowCount }: { pageRef?: PageRef; theme?: "dark"; limit?: number }) => {
     const { db, org, brand, board, money, href } = useApp();
     const [bundle, setBundle] = useState<PageBundle | null>(null);
-    const q = new URLSearchParams(window.location.search);
-    const limit = Math.max(3, Math.min(25, Number(q.get("limit")) || 5));
-    useEffect(() => { if (q.get("theme") === "dark") document.documentElement.classList.add("dark-mode"); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    const limit = Math.max(3, Math.min(25, rowCount || 5));
+    useEffect(() => { if (theme === "dark") document.documentElement.classList.add("dark-mode"); }, [theme]);
     useEffect(() => { if (org && pageRef) db.rpc<PageBundle | null>("page_get", { org: org.id, t: pageRef.type, s: pageRef.slug }).then(setBundle); }, [db, org, pageRef?.type, pageRef?.slug]); // eslint-disable-line react-hooks/exhaustive-deps
     useEffect(() => { if (!org) return; return db.onDonations(org.id, () => { if (pageRef) db.rpc<PageBundle | null>("page_get", { org: org.id, t: pageRef.type, s: pageRef.slug }).then(setBundle); }); }, [db, org, pageRef]);
     if (!org) return null;
@@ -26,7 +25,7 @@ export const Embed = ({ pageRef }: { pageRef?: PageRef }) => {
                 <div className="flex items-center gap-3"><BrandMark className="size-9 rounded-xl text-sm" /><div className="min-w-0"><div className="truncate font-semibold">{p.title}</div><div className="text-xs text-tertiary">{p.org_name || brand.name}</div></div></div>
                 <div><span className="text-xl font-semibold text-brand-secondary">{money(raised)}</span>{p.show_goal && goal > 0 && <span className="text-sm text-tertiary"> raised of {money(goal)}</span>}</div>
                 {p.show_goal && goal > 0 && <div className="h-2 overflow-hidden rounded-full bg-tertiary"><div className="h-full rounded-full bg-brand-solid" style={{ width: `${pct}%` }} /></div>}
-                <div className="flex items-center justify-between gap-3 text-xs text-tertiary"><span>{p.donor_count} supporters</span>{link(`${href({ name: "page", org: org.slug, page: pageRef })}?donate`)}</div>
+                <div className="flex items-center justify-between gap-3 text-xs text-tertiary"><span>{p.donor_count} supporters</span>{link(href({ name: "page", org: org.slug, page: pageRef, sub: "donate" }))}</div>
             </div>
         );
     }

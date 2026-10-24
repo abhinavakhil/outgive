@@ -33,7 +33,7 @@ serve(async (req) => {
             acct = a.id;
             await db.from("orgs").update({ stripe_account_id: acct }).eq("id", org.id);
         }
-        const link = await s.accountLinks.create({ account: acct, refresh_url: `${back}?stripe=refresh`, return_url: `${back}?stripe=return`, type: "account_onboarding" });
+        const link = await s.accountLinks.create({ account: acct, refresh_url: back, return_url: back, type: "account_onboarding" });
         return json({ url: link.url });
     }
     if (!org.stripe_account_id) return json({ connected: false });

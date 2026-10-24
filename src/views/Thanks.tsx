@@ -17,16 +17,15 @@ interface Lookup {
  * After Checkout (or a demo gift): a receipt the donor can keep, what the gift did, where they stand on the board and the one next
  * step that matters. The webhook may land a moment after the redirect, so a pending gift is polled a few times.
  */
-export const Thanks = () => {
+export const Thanks = ({ gref }: { gref?: string }) => {
     const { db, org, brand, go, href, setMe, board, isDemo, toast } = useApp();
-    const q = new URLSearchParams(window.location.search);
     const [d, setD] = useState<Lookup | null | undefined>(undefined);
     const [share, setShare] = useState(false);
     const [confetti, setConfetti] = useState(0);
     useEffect(() => {
         let tries = 0; let stop = false;
         const look = async () => {
-            const r = await db.rpc<Lookup | null>("thanks_lookup", { session: q.get("session_id"), gift: q.get("donation") }).catch(() => null);
+            const r = await db.rpc<Lookup | null>("thanks_lookup", { session: gref?.startsWith("cs_") ? gref : null, gift: gref && !gref.startsWith("cs_") ? gref : null }).catch(() => null);
             if (stop) return;
             setD(r);
             if (r?.status === "pending" && tries++ < 10) setTimeout(look, 1500);

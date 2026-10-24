@@ -266,20 +266,20 @@ const Details = ({ p, childPages }: { p: PageData; childPages?: PageBundle["chil
     );
 };
 
-export const CampaignPage = ({ pageKey: key, page, row, org, tickets, childPages, parent, canEdit, setPage, give, addUpdate }: { pageKey: string; page: PageData; row?: PageRow; org: Org | null; tickets?: TicketType[]; childPages?: PageBundle["children"]; parent?: PageBundle["parent"]; canEdit: boolean; setPage: (p: PageData) => Promise<void>; give?: (d: Donation) => void; addUpdate?: (u: PageUpdate) => void }) => {
+export const CampaignPage = ({ donate, pageKey: key, page, row, org, tickets, childPages, parent, canEdit, setPage, give, addUpdate }: { donate?: number | true; pageKey: string; page: PageData; row?: PageRow; org: Org | null; tickets?: TicketType[]; childPages?: PageBundle["children"]; parent?: PageBundle["parent"]; canEdit: boolean; setPage: (p: PageData) => Promise<void>; give?: (d: Donation) => void; addUpdate?: (u: PageUpdate) => void }) => {
     const { go, href, isDemo } = useApp();
     const [shareOpen, setShareOpen] = useState(false);
     const [gift, setGift] = useState<number | null>(null);
-    // A link ending in ?donate (optionally &amount=50) opens the gift form straight away: embeds, emails and posters use it.
+    // /c/<slug>/donate (or /donate/50) opens the gift form on arrival; the address then settles back to the page itself.
     useEffect(() => {
-        const q = new URLSearchParams(window.location.search); if (!q.has("donate")) return;
-        const amount = Number(q.get("amount")); setGift(amount >= 1 ? amount : page.gifts[1] ?? 25);
-        q.delete("donate"); q.delete("amount"); window.history.replaceState(null, "", window.location.pathname + (q.size ? `?${q}` : ""));
+        if (donate === undefined) return;
+        setGift(typeof donate === "number" && donate >= 1 ? donate : page.gifts[1] ?? 25);
+        window.history.replaceState(null, "", href({ name: "page", key }));
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
     const [list, setList] = useState<"all" | "top" | null>(null);
     const Layout = LAYOUT_COMPONENTS[page.layout];
     const actions = useMemo(() => ({ donate: (usd?: number) => setGift(usd ?? page.gifts[1] ?? 25), share: () => setShareOpen(true), donations: (m: "all" | "top") => setList(m), postUpdate: addUpdate ?? null }), [page.gifts, addUpdate]);
-    const fundraise = () => go(row?.type === "campaign" && row.allow_fundraisers ? { name: "create", parent: row.id } : { name: "create" });
+    const fundraise = () => go(row?.type === "campaign" && row.allow_fundraisers ? { name: "create", parent: `${PREFIX[row.type]}/${row.slug}` } : { name: "create" });
     return (
         <div className="min-h-dvh bg-primary">
             <header className="sticky top-0 z-30 border-b border-secondary bg-primary/90 backdrop-blur"><Container className="flex flex-wrap items-center justify-between gap-3 py-3">

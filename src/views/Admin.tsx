@@ -254,7 +254,7 @@ const Domain = () => {
                 <label className="flex items-center justify-between gap-4 rounded-2xl bg-secondary px-4 py-3"><span><span className="block text-sm font-semibold text-primary">Remove "by Outgive"</span><span className="block text-[13px] text-tertiary">Hides the Outgive line on your board, pages and live screen.</span></span><Toggle aria-label="Remove branding" isSelected={org!.remove_branding} onChange={async (v) => { const o = await db.rpc<Org>("org_update", { org: org!.id, p: { remove_branding: v } }); setOrg(o); }} /></label>
             </Panel>
             <div className="grid gap-5 lg:grid-cols-2">
-                <Panel title="Embed the board" sub="Drop this into any website. ?limit=10 shows more rows; ?theme=dark for a dark widget.">
+                <Panel title="Embed the board" sub="Drop this into any website. End the address with /10 to show ten rows, or /dark for a dark widget.">
                     <pre className="rounded-2xl bg-secondary p-4 text-xs leading-relaxed break-all whitespace-pre-wrap text-secondary">{embed}</pre>
                     <Button size="sm" color="secondary" className="w-fit rounded-full" onPress={() => { navigator.clipboard?.writeText(embed); toast("Embed code copied"); }}>Copy embed code</Button>
                 </Panel>

@@ -24,7 +24,7 @@ const visit = async (path, waitFor, label) => {
 const ready = (re) => new Function("return " + `!/Starting the demo|Loading…/.test(document.body.innerText) && ${re}.test(document.body.innerText)`);
 await visit("/demo/live", ready(/\$[1-9][\d,]{3,}/), "live total");
 await visit("/demo/c/clean-water-for-40-villages/live", ready(/\$[1-9][\d,]{3,}/), "page live total");
-await visit("/demo/overlay?theme=ticker", ready(/\$[1-9][\d,]{2,}/), "overlay total");
+await visit("/demo/overlay/ticker", ready(/\$[1-9][\d,]{2,}/), "overlay total");
 await visit("/demo/embed", ready(/\$[1-9]/), "embed rows");
 await browser.close();
 const unique = [...new Set(errors)];

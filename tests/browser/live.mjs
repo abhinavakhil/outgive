@@ -15,7 +15,7 @@ const fill = async (p, re, value) => { const ok = await p.evaluate((src, flags) 
 // 1. Every layout in both themes renders with the total, the QR and no errors.
 const live = await browser.newPage(); wire(live, "live"); await live.setViewport({ width: 1600, height: 900 });
 for (const layout of ["classic", "thermo", "impact", "podium", "wall"]) for (const theme of ["dark", "light"]) {
-    await live.goto(`${base}/demo/live?layout=${layout}&theme=${theme}`, { waitUntil: "domcontentloaded" });
+    await live.goto(`${base}/demo/live/${layout}/${theme}`, { waitUntil: "domcontentloaded" });
     const ok = await ready(live, /\$1[\d,]{2,}/, `${layout} ${theme} total`);
     await sleep(900); await live.screenshot({ path: `${shots}/live-${layout}-${theme}.png` });
     const hasQr = await live.evaluate(() => !!document.querySelector('img[alt^="QR code"]'));
@@ -29,7 +29,7 @@ check(/A borehole for a village/.test(await text(live)), "campaign live screen l
 // 2. Phone give flow while the org live screen is open: the gift must land on the live screen without a reload.
 await live.goto(`${base}/demo/live`, { waitUntil: "domcontentloaded" }); await ready(live, /\$1[\d,]{2,}/, "org live");
 const phone = await browser.newPage(); wire(phone, "phone"); await phone.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
-await phone.goto(`${base}/demo/give`, { waitUntil: "domcontentloaded" });
+await phone.goto(`${base}/demo/donate`, { waitUntil: "domcontentloaded" });
 await ready(phone, /What will you fund/, "give screen");
 await sleep(800); await phone.screenshot({ path: `${shots}/give-phone.png`, fullPage: true });
 const items = await text(phone);
@@ -46,7 +46,7 @@ await sleep(1500); await live.screenshot({ path: `${shots}/live-after-phone-gift
 const lt = await text(live);
 check(/Phone Giver/.test(lt), "org live screen shows the phone gift without reload");
 check(/hand-pump repair/i.test(lt), "live screen names the cause the phone chose");
-await live.goto(`${base}/demo/live?layout=impact`, { waitUntil: "domcontentloaded" }); await ready(live, /funded today/i, "impact layout");
+await live.goto(`${base}/demo/live/impact`, { waitUntil: "domcontentloaded" }); await ready(live, /funded today/i, "impact layout");
 await sleep(600); await live.screenshot({ path: `${shots}/live-impact-after.png` });
 const counts = await live.evaluate(() => [...document.querySelectorAll("li")].map((l) => l.innerText.replace(/\s+/g, " ")).find((t) => /hand-pump repair/i.test(t)) ?? "");
 check(/\b[1-9]\d* funded today/.test(counts), `impact tile counts tonight's pump repair (${counts.slice(0, 80)})`);

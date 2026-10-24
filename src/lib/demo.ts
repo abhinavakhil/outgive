@@ -129,7 +129,7 @@ export const demoDb = async (): Promise<DB> => {
                 const { breakdown } = await import("@/lib/money");
                 const m = breakdown(Number(body.amount_cents), { tipPct: Number(body.tip_pct) || 0, cover: !!body.cover });
                 const d = await rpc<DonationRow>("donation_record", { p: { ...body, tip_cents: m.tip, cover_cents: m.cover, source: "demo" } });
-                return { url: `/thanks?demo=1&donation=${d.id}`, donation: d } as T;
+                return { url: "", donation: d } as T; // the dialog opens /thanks/<id> itself
             }
             if (name === "connect") { const o = await rpc<Org>("org_update", { org: body.org_id, p: {} }); await pg.query("update orgs set stripe_account_id = 'acct_demo', stripe_charges_enabled = true, stripe_payouts_enabled = true where id = $1", [o.id]); await emitOrg(o.id); return { url: "", demo: true } as T; }
             throw new Error(`No demo for function ${name}`);

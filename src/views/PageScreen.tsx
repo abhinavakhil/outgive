@@ -23,7 +23,7 @@ export const usePage = (ref: PageRef) => {
     return { bundle, setBundle, reload: load };
 };
 
-export const PageScreen = ({ pageRef, manage }: { pageRef: PageRef; manage: boolean }) => {
+export const PageScreen = ({ pageRef, manage, donate }: { pageRef: PageRef; manage: boolean; donate?: number | true }) => {
     const { db, org } = useApp();
     const { bundle, setBundle, reload } = usePage(pageRef);
     useEffect(() => { if (bundle?.page.id) db.rpc("visit", { page: bundle.page.id }).catch(() => {}); }, [db, bundle?.page.id]);
@@ -34,7 +34,7 @@ export const PageScreen = ({ pageRef, manage }: { pageRef: PageRef; manage: bool
     const page = toPageData(bundle, usdRate);
     const addUpdate = async (u: PageUpdate) => { const row = await db.rpc<UpdateRow>("update_post", { page: bundle.page.id, t: u.title, b: u.body }); setBundle({ ...bundle, updates: [row, ...bundle.updates] }); };
     const setPage = async (p: PageData) => { if (p.layout !== page.layout) { await db.rpc("page_update", { page: bundle.page.id, p: { layout: p.layout } }); reload(); } };
-    return <CampaignPage pageKey={pageKey(page)} page={page} row={bundle.page} org={org} tickets={bundle.tickets} childPages={bundle.children} parent={bundle.parent} canEdit={bundle.can_edit} setPage={setPage} addUpdate={bundle.can_edit ? addUpdate : undefined} />;
+    return <CampaignPage donate={donate} pageKey={pageKey(page)} page={page} row={bundle.page} org={org} tickets={bundle.tickets} childPages={bundle.children} parent={bundle.parent} canEdit={bundle.can_edit} setPage={setPage} addUpdate={bundle.can_edit ? addUpdate : undefined} />;
 };
 
 /** The layouts showcase at /layouts: the sample page, kept in memory, with a layout switcher. */

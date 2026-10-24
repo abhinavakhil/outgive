@@ -28,13 +28,16 @@ for (const [path, re] of inPlace) { await go(path); const found = await clickTex
 // Embeds hand off straight to a gift form.
 await go("/demo/embed/c/clean-water-for-40-villages"); await clickText(/^Give$/); await ready(); await sleep(600);
 let d = await waitDialog(); check(!!d && /clean-water-for-40-villages/.test(p.url()), `page embed Give lands on the page with the gift form open [${d}]`);
-check(!/donate/.test(p.url()), "the ?donate flag is removed from the address once the form is open");
+check(/\/c\/clean-water-for-40-villages$/.test(p.url()), "the address settles back to the page once the form is open");
 await go("/demo/embed"); await clickText(/^Give$/); await ready(); await sleep(400);
-check(/\/demo\/give$/.test(p.url()) && /What will you fund/.test(await text()), "board embed Give lands on the phone give screen");
+check(/\/demo\/donate$/.test(p.url()) && /What will you fund/.test(await text()), "board embed Give lands on the give screen at /donate");
 
-// ?donate&amount= deep link prefills the amount.
-await go("/demo/f/amara-okafor?donate&amount=100"); d = await waitDialog();
-check(d === "Give $110", `?donate&amount=100 opens the form at $100 plus the default 10% tip [${d}]`);
+// /donate/<amount> prefills the amount; the older ?donate&amount= form still works.
+await go("/demo/f/amara-okafor/donate/100"); d = await waitDialog();
+check(d === "Give $110", `/donate/100 opens the form at $100 plus the default 10% tip [${d}]`);
+await go("/demo/f/amara-okafor?donate&amount=40"); d = await waitDialog();
+check(d === "Give $44", `the older ?donate&amount=40 link still opens the form [${d}]`);
+await go("/demo/donate"); check(/What will you fund/.test(await text()), "/demo/donate opens the give screen");
 
 // The sample page records an in-memory gift and shows it.
 await go("/layouts"); await clickText(/^Donate now$/); await waitDialog();

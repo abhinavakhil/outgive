@@ -50,7 +50,7 @@ serve(async (req) => {
     const name = ticketName ? `${ticketName} · ${title}` : `${b.recurring ? "Monthly gift" : "Gift"} to ${title}`;
     const cur = currency.toLowerCase();
     const meta = { donation_id: donation.id, org_id: org.id, page_id: page?.id ?? "" };
-    const common = { success_url: `${origin}/thanks?session_id={CHECKOUT_SESSION_ID}`, cancel_url: `${origin}${back}`, customer_email: b.donor_email || undefined, metadata: meta, client_reference_id: donation.id, submit_type: "donate" as const };
+    const common = { success_url: `${origin}${b.thanks_path ?? "/thanks"}/{CHECKOUT_SESSION_ID}`, cancel_url: `${origin}${back}`, customer_email: b.donor_email || undefined, metadata: meta, client_reference_id: donation.id, submit_type: "donate" as const };
     const session = b.recurring
         ? await s.checkout.sessions.create({
             ...common, mode: "subscription",

@@ -28,7 +28,7 @@ export const PageManage = ({ bundle, reload }: { bundle: PageBundle; reload: () 
     const ref = { type: p.type, slug: p.slug };
     const url = `${window.location.origin}${href({ name: "page", org: org!.slug, page: ref })}`;
     const pct = p.goal_cents ? Math.min(100, Math.round((p.raised_cents / p.goal_cents) * 100)) : 0;
-    const inviteUrl = `${window.location.origin}${href({ name: "create", org: org!.slug, parent: p.id })}`;
+    const inviteUrl = `${window.location.origin}${href({ name: "create", org: org!.slug, parent: `${PREFIX[p.type]}/${p.slug}` })}`;
     return (
         <ConsoleShell nav={tabs} current={tab} onNav={(k) => setTab(k as Tab)}
             crumb={<span className="hidden min-w-0 items-center gap-2 text-sm text-tertiary sm:flex"><span>/</span><span className="truncate font-medium text-primary">{p.title}</span></span>}

@@ -100,7 +100,7 @@ export const App = () => {
             case "live": return "org" in g ? g : { name: "live", org: o };
             case "overlay": return "org" in g ? g : { name: "overlay", org: o };
             case "give": return "org" in g ? g : { name: "give", org: o, page: g.page };
-            case "thanks": return "org" in g ? g : { name: "thanks", org: o };
+            case "thanks": return "org" in g ? g : { name: "thanks", org: o, ref: g.ref };
             default: return g;
         }
     }, [slug]);
@@ -141,14 +141,14 @@ export const App = () => {
             case "dashboard": return <Dashboard />;
             case "about": case "rules": case "faq": case "terms": case "privacy": return <Info kind={view.name} />;
             case "board": return <Leaderboard />;
-            case "live": return <Live pageRef={view.page} />;
-            case "overlay": return <Overlay pageRef={view.page} />;
+            case "live": return <Live pageRef={view.page} layout={view.layout} theme={view.theme} />;
+            case "overlay": return <Overlay pageRef={view.page} style={view.style} />;
             case "give": return <Give pageRef={view.page} />;
             case "create": return <CreateFlow parent={view.parent} />;
             case "admin": return <Admin tab={view.tab} />;
-            case "thanks": return <Thanks />;
-            case "page": return <PageScreen key={`${view.page.type}/${view.page.slug}`} pageRef={view.page} manage={view.sub === "manage"} />;
-            case "embed": return <Embed pageRef={view.page} />;
+            case "thanks": return <Thanks gref={view.ref} />;
+            case "page": return <PageScreen key={`${view.page.type}/${view.page.slug}`} pageRef={view.page} manage={view.sub === "manage"} donate={view.sub === "donate" ? view.amount ?? true : undefined} />;
+            case "embed": return <Embed pageRef={view.page} theme={view.theme} limit={view.limit} />;
             default: return <NotFound />;
         }
     };

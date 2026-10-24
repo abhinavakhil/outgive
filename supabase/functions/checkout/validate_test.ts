@@ -13,3 +13,11 @@ Deno.test("checkout input validation", () => {
     assertMatch(validate({ ...ok, recurring: true, ticket_type_id: "t" })!, /Tickets/);
     assertMatch(validate({ ...ok, message: "x".repeat(501) })!, /too long/);
 });
+
+Deno.test("the receipt path must be a site path ending in /thanks", () => {
+    const ok = { org_id: "o", amount_cents: 500, currency: "usd" };
+    assertEquals(validate({ ...ok, thanks_path: "/o/mangrove/thanks" }), null);
+    assertEquals(validate({ ...ok, thanks_path: "/thanks" }), null);
+    assertEquals(validate({ ...ok, thanks_path: "https://evil.example/thanks" }), "thanks_path must be a site path ending in /thanks");
+    assertEquals(validate({ ...ok, thanks_path: "//evil.example/thanks" }), "thanks_path must be a site path ending in /thanks");
+});

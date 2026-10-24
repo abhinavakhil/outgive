@@ -131,7 +131,7 @@ export const DonateDialog = ({ target, isOpen, initial, onClose, onShare, onLoca
                 org_id: org.id, page_id: page?.id, amount_cents: cents, currency, recurring: monthly, tip_pct: org.tips_enabled ? tip : 0, cover,
                 donor_name: name.trim(), donor_email: email.trim() || undefined, anonymous: anon, message: message.trim(), dedication: dedication.trim(), cause: target.cause ?? "",
                 supporter_name: boardName || undefined, supporter_kind: kind, supporter_tagline: target.supporter?.tagline || message.trim().slice(0, 80) || undefined, supporter_country: target.supporter?.country, supporter_region: target.supporter?.region, supporter_link: target.supporter?.link, claimed_rank: target.supporter?.claimedRank,
-                ticket_type_id: ticket?.id, ticket_qty: ticket ? qty : undefined, return_to: window.location.pathname, origin: window.location.origin,
+                ticket_type_id: ticket?.id, ticket_qty: ticket ? qty : undefined, return_to: window.location.pathname, thanks_path: href({ name: "thanks" }), origin: window.location.origin,
             });
             if (res.donation) { if (res.donation.supporter_id) setMe(res.donation.supporter_id); refresh(); setDone({ id: res.donation.id, name: anon ? "Anonymous" : name.trim(), usd: Math.round(units / rate), message: message.trim(), at: Date.now() }); toast(`${anon ? "An anonymous gift" : name.trim()} gave ${show(cents)}${target.supporter?.claimedRank ? ` and took #${target.supporter.claimedRank}` : ""}`); }
             else if (res.url) window.location.assign(res.url);
@@ -143,7 +143,7 @@ export const DonateDialog = ({ target, isOpen, initial, onClose, onShare, onLoca
                 <div className="flex flex-col items-center gap-3 py-4 text-center">
                     <span className="flex size-12 items-center justify-center rounded-full bg-brand-solid text-white"><Check className="size-6" /></span>
                     <Head title={`Thank you${done.name === "Anonymous" ? "" : `, ${done.name.split(" ")[0]}`}`} sub={`Your ${money(done.usd)} gift now shows on the page.${isDemo || onLocal ? " Demo: nothing was charged." : ""}`} />
-                    <div className="flex gap-3 pt-1"><Button size="md" color="primary" className="rounded-full" iconLeading={Share07} onPress={() => { onClose(); onShare(); }}>Share this page</Button>{done.id && <Button size="md" color="secondary" className="rounded-full" onPress={() => window.location.assign(`${href({ name: "thanks" })}?donation=${done.id}`)}>Your receipt</Button>}<Button size="md" color="secondary" className="rounded-full" onPress={onClose}>Close</Button></div>
+                    <div className="flex gap-3 pt-1"><Button size="md" color="primary" className="rounded-full" iconLeading={Share07} onPress={() => { onClose(); onShare(); }}>Share this page</Button>{done.id && <Button size="md" color="secondary" className="rounded-full" onPress={() => window.location.assign(href({ name: "thanks", ref: done.id }))}>Your receipt</Button>}<Button size="md" color="secondary" className="rounded-full" onPress={onClose}>Close</Button></div>
                 </div>
             </Shell>
         );
