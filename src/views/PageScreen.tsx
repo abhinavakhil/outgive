@@ -5,7 +5,7 @@ import { NotFound } from "@/views/NotFound";
 import { useApp } from "@/components/outgive/shared";
 import { CURRENCIES, type Donation, type PageData, type PageUpdate, SAMPLE_PAGE, pageKey } from "@/data";
 import type { PageRef } from "@/lib/route";
-import { type PageBundle, type UpdateRow, toPageData } from "@/lib/types";
+import { type Org, type PageBundle, type UpdateRow, toPageData } from "@/lib/types";
 
 const usdRate = (c: string) => CURRENCIES[c] ?? 1;
 
@@ -39,9 +39,11 @@ export const PageScreen = ({ pageRef, manage }: { pageRef: PageRef; manage: bool
 
 /** The layouts showcase at /layouts: the sample page, kept in memory, with a layout switcher. */
 export const SamplePage = () => {
-    const { org } = useApp();
+    const { org, brand } = useApp();
     const [sample, setSample] = useState<PageData>(SAMPLE_PAGE);
+    // Gifts here stay in memory (DonateDialog's onLocal), so this stand-in only supplies the name and fee settings the form shows.
+    const sampleOrg = org ?? ({ id: "sample", slug: "sample", name: SAMPLE_PAGE.org, tips_enabled: true, platform_fee_bps: 0, stripe_charges_enabled: true, remove_branding: false, live: {}, color: brand.color } as unknown as Org);
     const give = (d: Donation) => setSample((p) => ({ ...p, raised: p.raised + d.usd, supporters: p.supporters + 1, donations: [d, ...p.donations] }));
     const addUpdate = async (u: PageUpdate) => setSample((p) => ({ ...p, updates: [u, ...p.updates] }));
-    return <CampaignPage pageKey={pageKey(sample)} page={sample} org={org} canEdit={false} setPage={async (p) => setSample(p)} give={give} addUpdate={addUpdate} />;
+    return <CampaignPage pageKey={pageKey(sample)} page={sample} org={sampleOrg} canEdit={false} setPage={async (p) => setSample(p)} give={give} addUpdate={addUpdate} />;
 };

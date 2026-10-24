@@ -1,4 +1,4 @@
-import { type FC, type ReactNode, createContext, useContext, useMemo, useState } from "react";
+import { type FC, type ReactNode, createContext, useContext, useEffect, useMemo, useState } from "react";
 
 const ChildrenContext = createContext<PageBundle["children"] | undefined>(undefined);
 import { Check, Flag01, Heart, Link01, Settings01, Share07, Tv01 } from "@untitledui/icons";
@@ -270,6 +270,12 @@ export const CampaignPage = ({ pageKey: key, page, row, org, tickets, childPages
     const { go, href, isDemo } = useApp();
     const [shareOpen, setShareOpen] = useState(false);
     const [gift, setGift] = useState<number | null>(null);
+    // A link ending in ?donate (optionally &amount=50) opens the gift form straight away: embeds, emails and posters use it.
+    useEffect(() => {
+        const q = new URLSearchParams(window.location.search); if (!q.has("donate")) return;
+        const amount = Number(q.get("amount")); setGift(amount >= 1 ? amount : page.gifts[1] ?? 25);
+        q.delete("donate"); q.delete("amount"); window.history.replaceState(null, "", window.location.pathname + (q.size ? `?${q}` : ""));
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
     const [list, setList] = useState<"all" | "top" | null>(null);
     const Layout = LAYOUT_COMPONENTS[page.layout];
     const actions = useMemo(() => ({ donate: (usd?: number) => setGift(usd ?? page.gifts[1] ?? 25), share: () => setShareOpen(true), donations: (m: "all" | "top") => setList(m), postUpdate: addUpdate ?? null }), [page.gifts, addUpdate]);

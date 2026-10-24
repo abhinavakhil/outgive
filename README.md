@@ -45,6 +45,9 @@ gift wall; dark or light), an OBS overlay (`/overlay`) and a phone give screen (
 donor picks an impact item ("A borehole for a village, $6,000") or any amount and the gift lands on the screen in the room within a
 second. The presenter console (Admin, Live screen) sets layout, theme, goal for the night, impact items, the ask banner and confetti.
 
+Donate links: add `?donate` to any page address to open the gift form on arrival, and `&amount=50` to prefill it, for emails,
+posters and buttons on a charity's own site. The embed widget's Give button uses it.
+
 Tenancy: `<slug>.outgive.org` or a charity's custom domain resolves the organisation from the host; `/o/<slug>` works on the
 bare domain. Tenant routes: `/` board, `/live` and `/overlay` (wall display and OBS overlay), `/c|/f|/t|/ch|/e|/m/<slug>` pages
 (plus `/live`, `/overlay`, `/manage`), `/create`, `/admin`, `/thanks`, `/embed`.

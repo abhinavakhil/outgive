@@ -26,14 +26,14 @@ export const Embed = ({ pageRef }: { pageRef?: PageRef }) => {
                 <div className="flex items-center gap-3"><BrandMark className="size-9 rounded-xl text-sm" /><div className="min-w-0"><div className="truncate font-semibold">{p.title}</div><div className="text-xs text-tertiary">{p.org_name || brand.name}</div></div></div>
                 <div><span className="text-xl font-semibold text-brand-secondary">{money(raised)}</span>{p.show_goal && goal > 0 && <span className="text-sm text-tertiary"> raised of {money(goal)}</span>}</div>
                 {p.show_goal && goal > 0 && <div className="h-2 overflow-hidden rounded-full bg-tertiary"><div className="h-full rounded-full bg-brand-solid" style={{ width: `${pct}%` }} /></div>}
-                <div className="flex items-center justify-between gap-3 text-xs text-tertiary"><span>{p.donor_count} supporters</span>{link(href({ name: "page", org: org.slug, page: pageRef }))}</div>
+                <div className="flex items-center justify-between gap-3 text-xs text-tertiary"><span>{p.donor_count} supporters</span>{link(`${href({ name: "page", org: org.slug, page: pageRef })}?donate`)}</div>
             </div>
         );
     }
     const rows = [...board].sort((a, b) => b.total - a.total).slice(0, limit);
     return (
         <div className="flex flex-col gap-2 bg-primary p-4 text-primary">
-            <div className="flex items-center justify-between gap-3"><div className="flex items-center gap-2"><BrandMark className="size-8 rounded-lg text-xs" /><span className="font-semibold">{brand.name}</span></div>{link(href({ name: "home" }))}</div>
+            <div className="flex items-center justify-between gap-3"><div className="flex items-center gap-2"><BrandMark className="size-8 rounded-lg text-xs" /><span className="font-semibold">{brand.name}</span></div>{link(href({ name: "give" }))}</div>
             <ol className="flex flex-col gap-1">{rows.map((o, i) => <li key={o.id} className={cx("flex items-center gap-3 rounded-xl px-3 py-2", i < 3 && "bg-brand-primary")}><span className={cx("w-6 text-sm font-semibold tabular-nums", i < 3 ? "text-brand-secondary" : "text-tertiary")}>#{i + 1}</span><Avatar size="xs" initials={initials(o.name)} /><span className="min-w-0 flex-1 truncate text-sm font-medium">{o.name}</span><span className="text-sm font-semibold text-brand-secondary tabular-nums">{money(o.total)}</span></li>)}{rows.length === 0 && <li className="py-4 text-center text-sm text-tertiary">Nobody on the board yet.</li>}</ol>
             {!org.remove_branding && <a href={base} target="_top" rel="noopener" className="text-right text-[11px] text-tertiary hover:underline">Powered by Outgive</a>}
         </div>

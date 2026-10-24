@@ -9,7 +9,7 @@ const chrome = candidates.find((p) => fs.existsSync(p));
 if (!chrome) { console.error("No Chrome found; set CHROME=/path/to/chrome"); process.exit(2); }
 const shots = path.resolve("tests/browser/shots"); fs.mkdirSync(shots, { recursive: true });
 let failed = false;
-for (const script of ["smoke.mjs", "flows.mjs", "live.mjs"]) {
+for (const script of ["smoke.mjs", "flows.mjs", "live.mjs", "give.mjs"]) {
     console.log(`\n== ${script}`);
     const r = spawnSync(process.execPath, [path.resolve("tests/browser", script), chrome, shots], { stdio: "inherit" });
     if (r.status !== 0) failed = true;
