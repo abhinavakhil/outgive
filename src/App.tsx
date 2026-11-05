@@ -11,7 +11,7 @@ import { Dashboard } from "@/views/Dashboard";
 import { Embed } from "@/views/Embed";
 import { Info } from "@/views/Info";
 import { Leaderboard } from "@/views/Leaderboard";
-import { Landing } from "@/views/Landing";
+import { ComingSoon, ComingSoonGate } from "@/views/ComingSoon";
 import { LandingB } from "@/views/LandingB";
 import { Give } from "@/views/Give";
 import { Live, Overlay } from "@/views/Live";
@@ -27,7 +27,10 @@ const load = <T,>(key: string, fallback: T): T => { try { return JSON.parse(loca
 const save = (key: string, v: unknown) => { try { localStorage.setItem(key, JSON.stringify(v)); } catch { /* storage unavailable */ } };
 const orgOf = (v: View) => ("org" in v ? v.org : null);
 
-const Splash = ({ text }: { text: string }) => <div className="flex min-h-dvh items-center justify-center bg-primary text-sm text-tertiary">{text}</div>;
+/** Before launch the coming-soon page is the only public screen. Every other path shows "Coming soon", except when running locally. */
+const LOCAL = import.meta.env.DEV || /^(localhost|127\.0\.0\.1|\[::1\]|10\.|192\.168\.)/.test(window.location.hostname);
+
+const Splash =({ text }: { text: string }) => <div className="flex min-h-dvh items-center justify-center bg-primary text-sm text-tertiary">{text}</div>;
 
 export const App = () => {
     const [tenant, setTenant] = useState<Tenant>(() => tenantOf(window.location.host));
@@ -47,7 +50,8 @@ export const App = () => {
     const [toastMsg, setToastMsg] = useState("");
     const orgRef = useRef<Org | null>(null);
 
-    useEffect(() => { loadDb().then(setDbi).catch((e) => setDbError(String((e as Error).message ?? e))); }, []);
+    // Before launch the live site only shows the coming-soon screens, which need no data, so it never loads the database.
+    useEffect(() => { if (!LOCAL) return; loadDb().then(setDbi).catch((e) => setDbError(String((e as Error).message ?? e))); }, []);
     useEffect(() => { if (!dbi) return; dbi.user().then(setUser); return dbi.onAuth(setUser); }, [dbi]);
     useEffect(() => {
         const onPop = () => setView(parse(window.location.pathname, tenant, window.location.search));
@@ -125,14 +129,16 @@ export const App = () => {
         canonical.href = (tenant.host ? `https://${tenant.host}` : SITE.url) + pathOf(view, tenant);
     }, [view, brand, tenant]);
 
+    // The coming-soon screens need no data, so they render at once instead of waiting for the database.
+    if (view.name === "landing") return <ComingSoon />;
+    if (!LOCAL) return <ComingSoonGate />;
     if (dbError) return <Splash text={`Could not start: ${dbError}`} />;
-    if (!ctx) return <Splash text={isDemo ? "Starting the demo…" : "Loading…"} />;
+    if (!ctx) return <Splash text="Loading…" />;
     const needsOrg = !!slug;
     const screen = () => {
         if (needsOrg && orgMissing) return <NotFound />;
         if (needsOrg && !org) return <Splash text="Loading…" />;
         switch (view.name) {
-            case "landing": return <Landing />;
             case "landing-b": return <LandingB />;
             case "layouts": return <SamplePage />;
             case "pricing": return <Pricing />;

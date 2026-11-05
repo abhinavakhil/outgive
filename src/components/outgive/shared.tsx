@@ -40,11 +40,11 @@ export const BrandMark = ({ className }: { className?: string }) => {
         : <span className={cx("flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-solid text-sm font-bold text-white", className)}>{initials(brand.name) || "?"}</span>;
 };
 /** The charity's name and mark; links home. */
-export const BrandLogo = ({ onClick }: { onClick?: () => void }) => {
+export const BrandLogo = ({ onClick, mark }: { onClick?: () => void; mark?: string }) => {
     const { brand } = useApp();
     return (
         <button type="button" onClick={onClick} className="flex min-w-0 cursor-pointer items-center gap-2 rounded-md text-left outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2">
-            <BrandMark className="size-7 rounded-lg text-xs" />
+            <BrandMark className={cx("size-7 rounded-lg text-xs", mark)} />
             <span className="truncate text-[22px] leading-tight font-medium tracking-[-0.04em] text-primary">{brand.name}</span>
         </button>
     );

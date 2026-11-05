@@ -77,11 +77,11 @@ export const ACTIVITY: Activity[] = [{ who: "Amara Okafor", usd: 18900, at: Date
 /** The nine below are drawn in Leaderboard.tsx; twenty more live in views/boards.tsx and are named by their key there. */
 export type Variant = "list" | "podium" | "race" | "league" | "levels" | "arcade" | "spotlight" | "spotpodium" | "ribbons" | (string & {});
 export const VARIANTS: [Variant, string][] = [["list", "List"], ["podium", "Podium"], ["race", "Race"], ["league", "League"], ["levels", "Levels"], ["arcade", "Arcade"], ["spotlight", "Spotlight"], ["spotpodium", "Spotlight podium"], ["ribbons", "Ribbons"]];
-export const FONTS = ["Poppins", "Inter", "DM Sans", "Nunito", "Lora"];
+export const FONTS = ["Rubik", "Poppins", "Inter", "DM Sans", "Nunito", "Lora"];
 /** The charity running this board. Everything a white-label customer changes lives here. */
 /** impact = what a gift buys: the cost of one unit in USD and the unit's plural name. */
 export interface Brand { name: string; tagline: string; logo: string; color: string; font: string; variant: Variant; impact?: { usd: number; unit: string } }
-export const DEFAULT_BRAND: Brand = { name: "Clearwell Trust", tagline: "Clean water for 40 villages", logo: "", color: "#e0603f", font: "Poppins", variant: "list", impact: { usd: 6000, unit: "boreholes" } };
+export const DEFAULT_BRAND: Brand = { name: "Clearwell Trust", tagline: "Clean water for 40 villages", logo: "", color: "#2b59ff", font: "Rubik", variant: "list", impact: { usd: 6000, unit: "boreholes" } };
 export const BRAND_PRESETS: Brand[] = [
     DEFAULT_BRAND,
     { name: "Mangrove Line", tagline: "Replanting the coast, one kilometre at a time", logo: "", color: "#1f7a4d", font: "DM Sans", variant: "race", impact: { usd: 25, unit: "mangroves" } },

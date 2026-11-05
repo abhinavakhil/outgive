@@ -1,5 +1,5 @@
 import { type FC, type ReactNode, createElement, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowRight, ArrowUp, Award01, Brush03, Building07, Calendar, Diamond01, GraduationHat01, Grid01, Minus, Plus, Settings01, Shield01, TrendUp01, Trophy01, Tv01, User01, Users01, XClose, Zap } from "@untitledui/icons";
+import { ArrowRight, ArrowUp, Award01, Brush03, Building07, Calendar, Diamond01, Eye, GraduationHat01, Grid01, Minus, Plus, Settings01, Shield01, TrendUp01, Trophy01, Tv01, User01, Users01, XClose, Zap } from "@untitledui/icons";
 import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/modal";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { Badge } from "@/components/base/badges/badges";
@@ -39,6 +39,12 @@ const Ribbon = ({ band, tail, children }: { band: string; tail: string; children
 const stand = (rows: Row[]) => { const t = rows.slice(0, 3).map((o, i) => ({ o, place: i + 1 })); return t.length === 3 ? [t[1], t[0], t[2]] : t; };
 const CHIP = "inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary";
 const NAME = "transition-colors group-hover:text-brand-secondary";
+const ICON_BTN = "flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-tertiary outline-white transition hover:bg-white/15 hover:text-primary focus-visible:outline-2";
+const STEP = "flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-white text-brand-700 shadow-md outline-white transition hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 md:size-11";
+const compact = (n: number) => new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(n);
+/** Four-point twinkle. */
+const Sparkle = ({ className }: { className?: string }) => <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M12 0c.9 6.6 4.8 10.6 12 12-7.2 1.4-11.1 5.4-12 12-.9-6.6-4.8-10.6-12-12C7.2 10.6 11.1 6.6 12 0z" /></svg>;
+const HeartFilled = ({ className }: { className?: string }) => <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.3 3 4.5 6.7 4.5c2.2 0 3.6 1.2 5.3 3.1 1.7-1.9 3.1-3.1 5.3-3.1 3.7 0 5.8 3.8 4.3 7.2C19.5 16.4 12 21 12 21z" /></svg>;
 const one = (kind: string) => ({ Individuals: "Individual", Teams: "Team", Companies: "Company", Schools: "School" })[kind] ?? kind;
 
 export const Leaderboard = () => {
@@ -128,7 +134,7 @@ export const Leaderboard = () => {
         return best;
     }, [byTotal]);
 
-    const tab = (on: boolean) => cx("inline-flex h-7 shrink-0 cursor-pointer items-center gap-1 rounded-full px-2.5 text-[0.8rem] font-semibold whitespace-nowrap outline-focus-ring transition focus-visible:outline-2", on ? "bg-brand-solid text-white" : "text-primary hover:bg-primary/60");
+    const tab = (on: boolean) => cx("inline-flex h-7 shrink-0 cursor-pointer items-center gap-1 rounded-full px-2.5 text-[0.8rem] font-semibold whitespace-nowrap outline-focus-ring transition focus-visible:outline-2", on ? "bg-white text-brand-700 shadow-sm" : "text-white/90 hover:bg-white/15 hover:text-white");
     const claimRow = (o: Row) => openClaim(o.total + 1, byTotal.findIndex((x) => x.id === o.id) + 1);
     const claimLink = (o: Row) => boardDef.money && <button type="button" onClick={() => claimRow(o)} className="cursor-pointer font-semibold text-brand-secondary underline-offset-2 hover:underline">claim for {money(o.total + 1)}</button>;
     /** Fades in over a hovered or focused row (put `group relative` on the row). Touch screens get the inline claim link instead. */
@@ -146,11 +152,11 @@ export const Leaderboard = () => {
     const boardCtx: BoardCtx = { val, money, claim: claimRow, pill: claimPill, link: claimLink, badge: youBadge, gap: gapUp, fmt, you, metric: period, canClaim: boardDef.money, label: boardDef.label };
 
     const ListRow = ({ o }: { o: Row }) => (
-        <li id={`row-${o.id}`} className={cx("group relative shrink-0 px-4 py-3", o.rank === 1 ? "rounded-2xl bg-brand-secondary" : o.rank === 2 ? "rounded-2xl bg-brand-primary" : o.rank === 3 ? "rounded-2xl bg-brand-primary/60" : "border-b border-secondary", you === o.id && cx(YOU, "rounded-2xl"))}>
+        <li id={`row-${o.id}`} className={cx("group relative shrink-0 px-4 py-3", o.rank === 1 ? "on-brand rounded-3xl bg-brand-solid shadow-lg shadow-brand-600/25" : o.rank === 2 ? "rounded-3xl bg-brand-secondary" : o.rank === 3 ? "rounded-3xl bg-brand-primary" : "border-b border-secondary", you === o.id && cx(YOU, "rounded-2xl"))}>
             {claimPill(o)}
             <div className="flex items-center gap-3.5">
-                <span className={cx("w-8 text-md font-semibold tabular-nums", o.rank <= 3 ? "text-brand-secondary" : "text-tertiary")}>#{o.rank}</span>
-                <Avatar size="md" initials={initials(o.name)} />
+                <span className={cx("w-9 font-bubble text-xl font-bold tabular-nums", o.rank <= 3 ? "text-brand-secondary" : "text-quaternary")}>#{o.rank}</span>
+                <span className={cx("shrink-0 rounded-full", o.rank <= 3 && "ring-[3px] ring-white", o.rank === 1 && "-rotate-6", o.rank === 2 && "rotate-6")}><Avatar size="md" initials={initials(o.name)} /></span>
                 <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-3"><span className="flex min-w-0 items-center gap-2"><span className={cx("truncate text-md font-semibold text-primary", NAME)}>{o.name}</span>{youBadge(o)}</span><span className="shrink-0 text-md font-semibold text-brand-secondary tabular-nums">{val(o)}</span></div>
                     <div className="truncate text-sm text-tertiary">{o.tagline}</div>
@@ -392,56 +398,75 @@ export const Leaderboard = () => {
 
     return (
         <div className="flex min-h-dvh flex-col bg-primary">
-            <Container className="flex flex-1 flex-col gap-4 pt-6 pb-5 md:px-4 lg:max-w-5xl">
-                <header className="flex flex-col gap-3">
-                    <div className="flex items-center justify-between gap-4">
-                        <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
-                            <BrandLogo />
-                            <span className="hidden items-center gap-1.5 rounded-full border border-secondary px-2.5 py-1 text-xs whitespace-nowrap text-tertiary md:inline-flex">
-                                <span className="relative inline-flex size-2 shrink-0"><span className="absolute inline-flex size-full animate-ping rounded-full bg-success-solid opacity-75 motion-reduce:animate-none" /><span className="relative inline-flex size-2 rounded-full bg-success-solid" /></span>
-                                <span className="font-semibold text-success-primary">{board.length} on the board</span><span>· {todayTotal} given today</span>
-                            </span>
-                        </div>
-                        <div className="flex shrink-0 items-center gap-2 sm:gap-4">
-                            <nav aria-label="Main" className="flex items-center gap-3 text-xs font-medium text-tertiary sm:gap-6 sm:text-sm">
-                                {([["dashboard", "Dashboard"], ["about", "About"], ["rules", "Rules"]] as const).map(([n, l]) => <button key={n} type="button" onClick={() => go({ name: n })} className="cursor-pointer rounded outline-focus-ring transition-colors hover:text-primary focus-visible:outline-2 max-md:last:hidden">{l}</button>)}
-                            </nav>
-                            <div className="flex items-center gap-1">
-                                <button type="button" aria-label="Live screen" title="Live screen" onClick={() => go({ name: "live" })} className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-tertiary outline-focus-ring transition hover:bg-secondary hover:text-primary focus-visible:outline-2"><Tv01 className="size-4" /></button>
-                                {member && <button type="button" aria-label="Organiser dashboard" title="Organiser dashboard" onClick={() => go({ name: "admin" })} className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-tertiary outline-focus-ring transition hover:bg-secondary hover:text-primary focus-visible:outline-2"><Settings01 className="size-4" /></button>}
-                                <button type="button" aria-label="Your branding" title="Your branding" onClick={() => setBranding(true)} className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-tertiary outline-focus-ring transition hover:bg-secondary hover:text-primary focus-visible:outline-2"><Brush03 className="size-4" /></button>
-                                <ThemeToggle />
+            <div className="on-brand relative overflow-hidden bg-brand-solid">
+                {/* Dashed orbits and sparkles, as on the moodboard. Decorative only. */}
+                <svg aria-hidden="true" className="pointer-events-none absolute -top-40 -left-48 size-[620px] text-white/25 md:-left-24" viewBox="0 0 200 200" fill="none" stroke="currentColor" strokeWidth="0.6" strokeDasharray="3 3"><circle cx="100" cy="100" r="98" /><circle cx="100" cy="100" r="70" /></svg>
+                <svg aria-hidden="true" className="pointer-events-none absolute -right-40 -bottom-56 size-[560px] text-white/20" viewBox="0 0 200 200" fill="none" stroke="currentColor" strokeWidth="0.6" strokeDasharray="3 3"><circle cx="100" cy="100" r="98" /></svg>
+                <Sparkle className="pointer-events-none absolute top-28 right-[8%] size-6 text-pop-300 max-md:hidden" />
+                <Sparkle className="pointer-events-none absolute top-[58%] left-[6%] size-4 text-white/70 max-md:hidden" />
+                <Container className="relative flex flex-col gap-4 pt-6 md:px-4 lg:max-w-5xl">
+                    <header className="flex flex-col gap-3">
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+                                <BrandLogo mark="bg-white text-brand-700" />
+                                <span className="hidden items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs whitespace-nowrap text-tertiary md:inline-flex">
+                                    <span className="relative inline-flex size-2 shrink-0"><span className="absolute inline-flex size-full animate-ping rounded-full bg-pop-300 opacity-75 motion-reduce:animate-none" /><span className="relative inline-flex size-2 rounded-full bg-pop-300" /></span>
+                                    <span className="font-semibold text-primary">{board.length} on the board</span><span>· {todayTotal} given today</span>
+                                </span>
+                            </div>
+                            <div className="flex shrink-0 items-center gap-2 sm:gap-4">
+                                <nav aria-label="Main" className="flex items-center gap-3 text-xs font-medium text-secondary sm:gap-6 sm:text-sm">
+                                    {([["dashboard", "Dashboard"], ["about", "About"], ["rules", "Rules"]] as const).map(([n, l]) => <button key={n} type="button" onClick={() => go({ name: n })} className="cursor-pointer rounded outline-white transition-colors hover:text-primary focus-visible:outline-2 max-md:last:hidden">{l}</button>)}
+                                </nav>
+                                <div className="flex items-center gap-1">
+                                    <button type="button" aria-label="Live screen" title="Live screen" onClick={() => go({ name: "live" })} className={ICON_BTN}><Tv01 className="size-4" /></button>
+                                    {member && <button type="button" aria-label="Organiser dashboard" title="Organiser dashboard" onClick={() => go({ name: "admin" })} className={ICON_BTN}><Settings01 className="size-4" /></button>}
+                                    <button type="button" aria-label="Your branding" title="Your branding" onClick={() => setBranding(true)} className={ICON_BTN}><Brush03 className="size-4" /></button>
+                                    <ThemeToggle />
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div className="flex items-center gap-1 rounded-[20px] bg-tertiary p-1.5">
-                        <div className="no-scrollbar flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto" role="group" aria-label="Who">
-                            {["All", ...KINDS].map((c) => { const Icon = KIND_ICON[c]; return <button key={c} type="button" aria-pressed={kind === c} onClick={() => setKind(c)} className={tab(kind === c)}>{Icon && <Icon className={cx("size-3.5", kind === c ? "text-white/85" : "text-brand-secondary")} />}{c}</button>; })}
+                        <div className="flex items-center gap-1 rounded-full bg-white/12 p-1.5 ring-1 ring-white/15 ring-inset">
+                            <div className="no-scrollbar flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto" role="group" aria-label="Who">
+                                {["All", ...KINDS].map((c) => { const Icon = KIND_ICON[c]; return <button key={c} type="button" aria-pressed={kind === c} onClick={() => setKind(c)} className={tab(kind === c)}>{Icon && <Icon className={cx("size-3.5", kind === c ? "text-brand-600" : "text-white/75")} />}{c}</button>; })}
+                            </div>
+                            <button type="button" onClick={() => go({ name: "create" })} className={cx(tab(false), "pl-1.5")}><Plus className="size-3.5" /><span className="max-sm:hidden">Start fundraising</span><span className="sm:hidden">Fundraise</span></button>
                         </div>
-                        <button type="button" onClick={() => go({ name: "create" })} className={cx(tab(false), "pl-1.5 text-brand-secondary")}><Plus className="size-3.5" /><span className="max-sm:hidden">Start fundraising</span><span className="sm:hidden">Fundraise</span></button>
-                    </div>
-                </header>
+                    </header>
 
-                <section className="flex flex-col items-center gap-6 pt-5 pb-3">
-                    <div role="group" aria-label="Board" className="no-scrollbar flex max-w-full gap-0.5 overflow-x-auto rounded-full p-1 ring-1 ring-secondary ring-inset">
-                        {BOARDS.map((b) => { const Icon = BOARD_ICON[b.key]; return <button key={b.key} type="button" aria-pressed={period === b.key} onClick={() => setPeriod(b.key)} className={cx(tab(period === b.key), period !== b.key && "text-brand-secondary")}>{Icon ? <Icon className="size-3.5" /> : <span className={cx("size-1.5 rounded-full", period === b.key ? "bg-white" : "bg-brand-solid")} />}{b.label}</button>; })}
-                    </div>
-                    <h1 className="flex flex-wrap items-center justify-center gap-x-3 text-center text-display-sm font-semibold tracking-tight text-primary md:text-display-md">
-                        <span>Take #1 for</span>
-                        <span className="flex items-center gap-2.5">
-                            <button type="button" aria-label="Lower amount" onClick={() => setBump((b) => Math.max(1, b - 100))} className="flex size-5 cursor-pointer items-center justify-center rounded-full bg-brand-secondary text-brand-secondary outline-focus-ring focus-visible:outline-2"><Minus className="size-3" /></button>
-                            <span className="text-brand-secondary tabular-nums">{money(heroUsd)}</span>
-                            <button type="button" aria-label="Raise amount" onClick={() => setBump((b) => (b === 1 ? 100 : b + 100))} className="flex size-5 cursor-pointer items-center justify-center rounded-full bg-brand-secondary text-brand-secondary outline-focus-ring focus-visible:outline-2"><Plus className="size-3" /></button>
-                        </span>
-                    </h1>
-                    <form className="flex w-full max-w-[57rem] flex-col gap-2 sm:flex-row" onSubmit={(e) => { e.preventDefault(); openClaim(heroUsd, 1, heroName, heroKind); }}>
-                        <label className="relative flex-1"><User01 aria-hidden="true" className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-quaternary" /><input aria-label="Your name or team" className={cx(FIELD, "w-full pl-10")} placeholder="Your name, team or company" value={heroName} onChange={(e) => setHeroName(e.target.value)} /></label>
-                        <PillSelect label="Giving as" className="sm:w-64" value={heroKind} onChange={setHeroKind} options={KINDS} placeholder="Giving as" />
-                        <button type="submit" className="h-11 cursor-pointer rounded-full bg-brand-solid px-6 text-md font-semibold text-white shadow-xs outline-focus-ring transition hover:bg-brand-solid_hover focus-visible:outline-2 focus-visible:outline-offset-2">Claim rank</button>
-                    </form>
-                    <p className="-mt-3 text-center text-xs text-tertiary">{brand.tagline}. Every gift goes to {brand.name}; your name goes on the board.</p>
-                </section>
-
+                    <section className="flex flex-col items-center gap-6 pt-6 pb-16 md:pb-20">
+                        <div role="group" aria-label="Board" className="no-scrollbar flex max-w-full gap-0.5 overflow-x-auto rounded-full bg-white/10 p-1">
+                            {BOARDS.map((b) => { const Icon = BOARD_ICON[b.key]; return <button key={b.key} type="button" aria-pressed={period === b.key} onClick={() => setPeriod(b.key)} className={tab(period === b.key)}>{Icon ? <Icon className="size-3.5" /> : <span className={cx("size-1.5 rounded-full", period === b.key ? "bg-brand-600" : "bg-white")} />}{b.label}</button>; })}
+                        </div>
+                        <div className="relative flex flex-col items-center">
+                            <span aria-hidden="true" className="hand absolute top-1 -left-44 hidden -rotate-6 flex-col items-center text-2xl leading-none text-white/90 lg:flex">
+                                your name here
+                                <svg viewBox="0 0 90 40" className="mt-1 ml-16 h-8 w-20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6 C 30 4, 60 14, 82 32" strokeDasharray="4 5" /><path d="M71 33 L83 33 L80 21" /></svg>
+                            </span>
+                            <h1 className="flex flex-col items-center text-center text-[44px] leading-[0.95] font-extrabold tracking-[-0.03em] text-primary md:text-[76px]">
+                                <span>Take #1 for</span>
+                                <span className="mt-2 flex items-center gap-3 md:gap-4">
+                                    <button type="button" aria-label="Lower amount" onClick={() => setBump((b) => Math.max(1, b - 100))} className={STEP}><Minus className="size-4" /></button>
+                                    <span className="bubble text-[52px] leading-none text-brand-600 tabular-nums md:text-[96px]">{money(heroUsd)}</span>
+                                    <button type="button" aria-label="Raise amount" onClick={() => setBump((b) => (b === 1 ? 100 : b + 100))} className={STEP}><Plus className="size-4" /></button>
+                                </span>
+                            </h1>
+                        </div>
+                        <div className="flex flex-wrap items-center justify-center gap-2.5">
+                            <span className="inline-flex -rotate-2 items-center gap-2 rounded-2xl bg-white px-3.5 py-1.5 text-brand-700 shadow-lg shadow-brand-900/20"><Eye className="size-5" /><span className="font-bubble text-xl font-bold tabular-nums">{compact(board.reduce((n, o) => n + o.visits, 0))}</span><span className="text-xs font-semibold text-neutral-500">visits</span></span>
+                            <span className="inline-flex rotate-2 items-center gap-2 rounded-2xl bg-white px-3.5 py-1.5 text-brand-700 shadow-lg shadow-brand-900/20"><HeartFilled className="size-5 text-heart" /><span className="font-bubble text-xl font-bold tabular-nums">{todayTotal}</span><span className="text-xs font-semibold text-neutral-500">given today</span></span>
+                        </div>
+                        <form className="flex w-full max-w-[57rem] flex-col gap-2 rounded-[28px] bg-white/12 p-2 ring-1 ring-white/20 ring-inset sm:flex-row" onSubmit={(e) => { e.preventDefault(); openClaim(heroUsd, 1, heroName, heroKind); }}>
+                            <label className="relative flex-1"><User01 aria-hidden="true" className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-neutral-400" /><input aria-label="Your name or team" className={cx(FIELD, "h-12 w-full pl-10")} placeholder="Your name, team or company" value={heroName} onChange={(e) => setHeroName(e.target.value)} /></label>
+                            <PillSelect label="Giving as" className="sm:w-56 [&_select]:h-12" value={heroKind} onChange={setHeroKind} options={KINDS} placeholder="Giving as" />
+                            <button type="submit" className="h-12 cursor-pointer rounded-full bg-pop-300 px-7 text-md font-bold text-brand-950 shadow-[0_4px_0_rgb(0_0_0/0.18)] outline-white transition hover:-translate-y-0.5 hover:bg-pop-400 focus-visible:outline-2 focus-visible:outline-offset-2 active:translate-y-0">Claim rank</button>
+                        </form>
+                        <p className="-mt-2 text-center text-xs text-tertiary">{brand.tagline}. Every gift goes to {brand.name}; your name goes on the board.</p>
+                    </section>
+                </Container>
+                <div aria-hidden="true" className="relative h-10 rounded-t-[40px] bg-primary" />
+            </div>
+            <Container className="flex flex-1 flex-col gap-4 pb-5 md:px-4 lg:max-w-5xl">
                 <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_230px]">
                     <main className="flex min-w-0 flex-col gap-2">
                         {nextUp && <div className="mb-1 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-2xl bg-brand-primary px-4 py-3 text-sm text-secondary"><span className="flex min-w-0 items-center gap-2"><ArrowUp aria-hidden="true" className="size-4 shrink-0 text-brand-secondary" /><span>{nextUp.text}</span></span>{nextUp.cta && <Button color="primary" size="sm" className="rounded-full" onPress={nextUp.run}>{nextUp.cta}</Button>}</div>}

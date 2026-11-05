@@ -15,7 +15,7 @@ const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").repla
 /** A charity creates its organisation: the board exists as soon as this is submitted; Stripe is connected from the dashboard. */
 export const Start = () => {
     const { db, user, go, isDemo } = useApp();
-    const [f, setF] = useState({ name: "", slug: "", tagline: "", description: "", color: "#e0603f", font: "Poppins", variant: "list", currency: "USD", country: "", registration_number: "", website: "", impact_unit: "", impact_usd: "" });
+    const [f, setF] = useState({ name: "", slug: "", tagline: "", description: "", color: "#2b59ff", font: "Rubik", variant: "list", currency: "USD", country: "", registration_number: "", website: "", impact_unit: "", impact_usd: "" });
     const set = (k: keyof typeof f) => (v: string) => setF((o) => ({ ...o, [k]: v }));
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState("");

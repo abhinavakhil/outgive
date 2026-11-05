@@ -15,7 +15,7 @@ export const LEGAL_DRAFT = Object.values(LEGAL).some((v) => v.startsWith("["));
 export const metaFor = (name: View["name"], brand: Brand, page?: PageData): [string, string] => {
     const missing: [string, string] = ["Page not found", `This page does not exist. Go to ${SITE.name}.`];
     const m: Partial<Record<View["name"], [string, string]>> = {
-        landing: ["Fundraising platform with live leaderboards, on your own brand | Outgive", "Outgive is a white-label fundraising platform: donation pages, peer-to-peer fundraising, events and a live leaderboard where every rank has a price. Free for charities; donors tip."],
+        landing: ["Outgive: crowdfunding for charities, coming soon", "Outgive is a new crowdfunding platform for charities and their fundraisers: live leaderboards, team races, matching gifts and big-screen giving moments. Join the waitlist for early access."],
         "landing-b": ["Giving, made a race | Outgive", "A second design for the Outgive product page: charity leaderboards where every rank has a price."],
         board: [`${brand.name} leaderboard: give more to take a rank`, `${brand.tagline}. See who is giving most to ${brand.name}, what it costs to pass them, and claim your own rank.`],
         give: [`Give to ${brand.name}`, `Pick what to fund and give from your phone. Your gift shows on the live screen at once.`],
