@@ -1,6 +1,5 @@
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import { Container, Logo, type View, useApp } from "@/components/outgive/shared";
-import { pathOf } from "@/seo";
+import { Container, type Go, Logo, useApp } from "@/components/outgive/shared";
 import { LANDING_FAQ } from "@/views/Landing";
 import { cx } from "@/utils/cx";
 
@@ -49,12 +48,12 @@ const Head = ({ label, title, sub, center, aside }: { label?: string; title: str
 );
 
 export const LandingB = () => {
-    const { go, money } = useApp();
+    const { go, href, money } = useApp();
     const [tab, setTab] = useState(0);
     const [raise, setRaise] = useState(200000);
     const [step, setStep] = useState(0);
     useEffect(() => { if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return; const id = setInterval(() => setStep((s) => (s + 1) % 3), 3600); return () => clearInterval(id); }, [step]);
-    const A = ({ to, className, children }: { to: View; className?: string; children: ReactNode }) => <a href={pathOf(to)} onClick={(e) => { if (e.metaKey || e.ctrlKey || e.shiftKey) return; e.preventDefault(); go(to); }} className={cx("outline-focus-ring focus-visible:outline-2", className)}>{children}</a>;
+    const A = ({ to, className, children }: { to: Go; className?: string; children: ReactNode }) => <a href={href(to)} onClick={(e) => { if (e.metaKey || e.ctrlKey || e.shiftKey) return; e.preventDefault(); go(to); }} className={cx("outline-focus-ring focus-visible:outline-2", className)}>{children}</a>;
     const white = "inline-flex items-center justify-center bg-white px-5 py-3 font-mono text-[13px] tracking-[0.08em] whitespace-nowrap text-brand-800 uppercase transition hover:-translate-y-px";
     const btn = "inline-flex items-center justify-center rounded-[5px] bg-primary-solid px-4 py-2.5 text-sm font-medium whitespace-nowrap text-white transition hover:-translate-y-px";
 
@@ -112,8 +111,8 @@ export const LandingB = () => {
 
             <section className="pb-16 md:pb-28"><Container>
                 <Head center title="One board for giving" sub="Whether you run the appeal or rally support for it, Outgive gives you the same simple tools." />
-                <div className="grid gap-3 md:grid-cols-2">{[["01", "For charities", "Run a leaderboard on your own name and colours, see who is giving and what moves them, and let rivalry do the asking.", "See the live board", { name: "home" } as View], ["02", "For fundraisers", "Open a personal or team page, share one link, and climb the board as gifts arrive.", "Start a page", { name: "create" } as View]].map(([n, t, d, cta, to]) => (
-                    <A key={n as string} to={to as View} className="group relative grid min-h-[340px] content-start gap-3 overflow-hidden rounded-lg bg-gradient-to-b from-brand-900 to-brand-950 p-7 text-white">
+                <div className="grid gap-3 md:grid-cols-2">{[["01", "For charities", "Run a leaderboard on your own name and colours, see who is giving and what moves them, and let rivalry do the asking.", "See the live board", { name: "home" } as Go], ["02", "For fundraisers", "Open a personal or team page, share one link, and climb the board as gifts arrive.", "Start a page", { name: "create" } as Go]].map(([n, t, d, cta, to]) => (
+                    <A key={n as string} to={to as Go} className="group relative grid min-h-[340px] content-start gap-3 overflow-hidden rounded-lg bg-gradient-to-b from-brand-900 to-brand-950 p-7 text-white">
                         <span aria-hidden="true" className="absolute inset-x-[-20%] bottom-[-55%] h-[110%] rounded-full bg-[radial-gradient(closest-side,rgb(255_255_255/0.28),transparent)] transition-transform duration-500 group-hover:-translate-y-[12%]" />
                         <span className={cx(LABEL, "relative text-white/60")}>{n as string}</span><h3 className="relative text-display-xs font-light tracking-tight">{t as string}</h3><p className="relative max-w-[38ch] text-[14.5px] text-white/75">{d as string}</p><span className="relative mt-1.5 justify-self-start rounded-[5px] px-3 py-2 text-[13px] ring-1 ring-white/15 ring-inset">{cta as string}</span>
                     </A>

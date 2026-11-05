@@ -1,9 +1,8 @@
 import type { ReactNode } from "react";
 import { ArrowRight, Brush03, Calendar, Check, EyeOff, Heart, LayoutGrid01, Trophy01, Users01 } from "@untitledui/icons";
 import { Avatar } from "@/components/base/avatar/avatar";
-import { Container, Logo, ThemeToggle, type View, useApp } from "@/components/outgive/shared";
+import { Container, type Go, Logo, ThemeToggle, useApp } from "@/components/outgive/shared";
 import { SUPPORTERS, initials } from "@/data";
-import { pathOf } from "@/seo";
 import { cx } from "@/utils/cx";
 
 /** Questions a charity asks before trying a leaderboard. Shown on the page and published as FAQ structured data, so the two can never disagree. */
@@ -49,9 +48,9 @@ const Section = ({ id, eyebrow, title, lead, children, className }: { id?: strin
 
 /** The product page: what Outgive is, why it works and where to try it. Written for a charity deciding whether to run a board. */
 export const Landing = () => {
-    const { go, money } = useApp();
+    const { go, href, money } = useApp();
     /** Real links, so crawlers and "open in new tab" work, with in-app navigation on click. */
-    const A = ({ to, className, children, event }: { to: View; className?: string; children: ReactNode; event?: string }) => <a href={pathOf(to)} data-umami-event={event} onClick={(e) => { if (e.metaKey || e.ctrlKey || e.shiftKey) return; e.preventDefault(); go(to); }} className={cx("outline-focus-ring focus-visible:outline-2", className)}>{children}</a>;
+    const A = ({ to, className, children, event }: { to: Go; className?: string; children: ReactNode; event?: string }) => <a href={href(to)} data-umami-event={event} onClick={(e) => { if (e.metaKey || e.ctrlKey || e.shiftKey) return; e.preventDefault(); go(to); }} className={cx("outline-focus-ring focus-visible:outline-2", className)}>{children}</a>;
     const primary = "inline-flex h-12 items-center justify-center gap-2 rounded-full bg-brand-solid px-6 text-md font-semibold text-white shadow-xs transition hover:bg-brand-solid_hover";
     const secondary = "inline-flex h-12 items-center justify-center gap-2 rounded-full bg-primary px-6 text-md font-semibold text-secondary ring-1 ring-primary transition ring-inset hover:bg-secondary";
     const top = SUPPORTERS.slice(0, 5);
@@ -137,7 +136,7 @@ export const Landing = () => {
             <footer className="border-t border-secondary py-8"><Container className="flex flex-col items-start justify-between gap-4 text-sm text-tertiary md:flex-row md:items-center">
                 <div className="flex items-center gap-3"><Logo /><span>White-label fundraising leaderboards for charities.</span></div>
                 <nav aria-label="Footer" className="flex flex-wrap gap-x-5 gap-y-2 font-medium">
-                    <A to={{ name: "home" }} className="rounded hover:text-primary">Live demo</A><A to={{ name: "page" }} className="rounded hover:text-primary">Page layouts</A><A to={{ name: "rules" }} className="rounded hover:text-primary">Rules</A><A to={{ name: "faq" }} className="rounded hover:text-primary">FAQ</A><A to={{ name: "about" }} className="rounded hover:text-primary">About</A><A to={{ name: "terms" }} className="rounded hover:text-primary">Terms</A><A to={{ name: "privacy" }} className="rounded hover:text-primary">Privacy</A>
+                    <A to={{ name: "home" }} className="rounded hover:text-primary">Live demo</A><A to={{ name: "layouts" }} className="rounded hover:text-primary">Page layouts</A><A to={{ name: "rules" }} className="rounded hover:text-primary">Rules</A><A to={{ name: "faq" }} className="rounded hover:text-primary">FAQ</A><A to={{ name: "about" }} className="rounded hover:text-primary">About</A><A to={{ name: "terms" }} className="rounded hover:text-primary">Terms</A><A to={{ name: "privacy" }} className="rounded hover:text-primary">Privacy</A>
                 </nav>
             </Container></footer>
         </div>

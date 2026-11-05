@@ -10,7 +10,7 @@ export const CURRENCIES: Record<string, number> = { USD: 1, EUR: 0.92, GBP: 0.78
 export const KINDS = ["Individuals", "Teams", "Companies", "Schools"];
 /** One row on the board: a supporter ranked by what they have given to the charity. */
 /** week = given since Monday, recruited = donors brought in through a fundraising page, streak = consecutive months of giving, match = cap a company has pledged to match gifts up to. */
-export interface Supporter { id: number; name: string; tagline: string; kind: string; region: string; country: string; page: string; total: number; today: number; week: number; recruited: number; streak: number; visits: number; days: number; match?: number }
+export interface Supporter { id: string; name: string; tagline: string; kind: string; region: string; country: string; page: string; total: number; today: number; week: number; recruited: number; streak: number; visits: number; days: number; match?: number }
 /** Boards saved before week, recruited and streak existed take those from the seed row, or neutral values for rows added since. */
 export const withBoards = (o: Supporter): Supporter => { const seed = SUPPORTERS.find((x) => x.id === o.id); return { ...o, week: o.week ?? Math.min(o.total, seed?.week ?? o.today), recruited: o.recruited ?? seed?.recruited ?? 0, streak: o.streak ?? seed?.streak ?? 0, match: o.match ?? MATCH[o.name] }; };
 
@@ -64,11 +64,11 @@ const SEED: [string, string, string, string, string][] = [
 ];
 export const SUPPORTERS: Supporter[] = SEED.map((r, i) => {
     const total = Math.round(18500 * Math.pow(0.89, i) + 400 - i * 4);
-    return { id: i + 1, name: r[0], tagline: r[1], kind: r[2], region: r[3], country: r[4], page: "/f/" + r[0].toLowerCase().replace(/[^a-z]+/g, "-"),
+    return { id: String(i + 1), name: r[0], tagline: r[1], kind: r[2], region: r[3], country: r[4], page: "/f/" + r[0].toLowerCase().replace(/[^a-z]+/g, "-"),
         total, today: Math.round(total * (((i * 37) % 11) / 60 + 0.01)), visits: Math.round(total * (2.2 + ((i * 13) % 7) / 3)), days: 3 + ((i * 17) % 44),
         week: Math.min(total, Math.round(total * (((i * 37) % 11) / 60 + 0.01) * (1.6 + ((i * 3) % 5) / 2)) + 40), recruited: ((i * 7) % 23) + (r[2] === "Individuals" ? 0 : 9), streak: (i * 5) % 14, match: MATCH[r[0]] };
 });
-export interface Activity { who: string; usd: number; at: number }
+export interface Activity { who: string; usd: number; at: number; cause?: string; message?: string }
 const MIN = 60000;
 export const ACTIVITY: Activity[] = [{ who: "Amara Okafor", usd: 18900, at: Date.now() - 49 * MIN }, { who: "Hana Suzuki", usd: 2810, at: Date.now() - 130 * MIN }, { who: "Priya Sharma", usd: 6120, at: Date.now() - 310 * MIN }, { who: "Ben Carter", usd: 1050, at: Date.now() - 560 * MIN }];
 
@@ -77,11 +77,11 @@ export const ACTIVITY: Activity[] = [{ who: "Amara Okafor", usd: 18900, at: Date
 /** The nine below are drawn in Leaderboard.tsx; twenty more live in views/boards.tsx and are named by their key there. */
 export type Variant = "list" | "podium" | "race" | "league" | "levels" | "arcade" | "spotlight" | "spotpodium" | "ribbons" | (string & {});
 export const VARIANTS: [Variant, string][] = [["list", "List"], ["podium", "Podium"], ["race", "Race"], ["league", "League"], ["levels", "Levels"], ["arcade", "Arcade"], ["spotlight", "Spotlight"], ["spotpodium", "Spotlight podium"], ["ribbons", "Ribbons"]];
-export const FONTS = ["Poppins", "Inter", "DM Sans", "Nunito", "Lora"];
+export const FONTS = ["Rubik", "Poppins", "Inter", "DM Sans", "Nunito", "Lora"];
 /** The charity running this board. Everything a white-label customer changes lives here. */
 /** impact = what a gift buys: the cost of one unit in USD and the unit's plural name. */
 export interface Brand { name: string; tagline: string; logo: string; color: string; font: string; variant: Variant; impact?: { usd: number; unit: string } }
-export const DEFAULT_BRAND: Brand = { name: "Clearwell Trust", tagline: "Clean water for 40 villages", logo: "", color: "#e0603f", font: "Poppins", variant: "list", impact: { usd: 6000, unit: "boreholes" } };
+export const DEFAULT_BRAND: Brand = { name: "Clearwell Trust", tagline: "Clean water for 40 villages", logo: "", color: "#2b59ff", font: "Rubik", variant: "list", impact: { usd: 6000, unit: "boreholes" } };
 export const BRAND_PRESETS: Brand[] = [
     DEFAULT_BRAND,
     { name: "Mangrove Line", tagline: "Replanting the coast, one kilometre at a time", logo: "", color: "#1f7a4d", font: "DM Sans", variant: "race", impact: { usd: 25, unit: "mangroves" } },
