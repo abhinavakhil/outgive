@@ -2,11 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { ArrowUp, Check, Copy01, Download01, Heart, Share07 } from "@untitledui/icons";
 import { Button } from "@/shared/ui/base/buttons/button";
-import { ShareDialog } from "@/shared/ui/outgive/dialogs";
-import { BrandMark, Container, SiteHeader, useApp } from "@/shared/ui/outgive/shared";
+import { ShareDialog } from "@/shared/ui/dialog";
+import { BrandMark } from "@/shared/ui/brand";
+import { Container, SiteHeader } from "@/shared/ui/layout";
+import { useApp } from "@/shared/lib/app-context";
 import { fmt } from "@/shared/lib/money";
-import { CURRENCIES, PREFIX, type PageType } from "@/shared/domain/data";
-import { Confetti } from "@/features/live/components/Live";
+import { CURRENCIES, PREFIX, type PageType } from "@/shared/domain/model";
+import { Confetti } from "@/shared/ui/confetti";
 
 interface Lookup {
     id: string; name: string; amount_cents: number; currency: string; tip_cents: number; cover_cents: number; status: string; recurring: boolean; claimed_rank: number | null; message: string; cause: string; created_at: string; email_hint: string | null;

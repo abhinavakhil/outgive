@@ -1,7 +1,8 @@
 import { ArrowLeft } from "@untitledui/icons";
 import { Button } from "@/shared/ui/base/buttons/button";
-import { Container, SiteHeader, useApp } from "@/shared/ui/outgive/shared";
-import { CURRENCIES } from "@/shared/domain/data";
+import { Container, SiteHeader } from "@/shared/ui/layout";
+import { useApp } from "@/shared/lib/app-context";
+import { CURRENCIES } from "@/shared/domain/model";
 import { ANALYTICS, LEGAL, LEGAL_DRAFT, SITE } from "@/shared/lib/seo";
 
 const RULES: [string, string][] = [

@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { CampaignPage } from "@/features/campaign/components/CampaignPage";
 import { PageManage } from "@/features/campaign/components/PageManage";
-import { NotFound } from "@/shared/ui/outgive/NotFound";
-import { useApp } from "@/shared/ui/outgive/shared";
-import { CURRENCIES, type Donation, type PageData, type PageUpdate, SAMPLE_PAGE, pageKey } from "@/shared/domain/data";
+import { NotFound } from "@/shared/ui/not-found";
+import { useApp } from "@/shared/lib/app-context";
+import { CURRENCIES, type Donation, type PageData, type PageUpdate, pageKey } from "@/shared/domain/model";
+import { SAMPLE_PAGE } from "@/shared/lib/demo-data";
 import type { PageRef } from "@/shared/lib/route";
 import { type Org, type PageBundle, type UpdateRow, toPageData } from "@/shared/domain/types";
 

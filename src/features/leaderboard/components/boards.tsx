@@ -1,7 +1,9 @@
 import type { FC, ReactNode } from "react";
 import { ArrowUp, Award01, Plus, Star01, Trophy01 } from "@untitledui/icons";
 import { Avatar } from "@/shared/ui/base/avatar/avatar";
-import { type BoardKey, type Supporter, VARIANTS, initials } from "@/shared/domain/data";
+import { type BoardKey, VARIANTS } from "@/features/leaderboard/model";
+import { type Supporter } from "@/shared/domain/model";
+import { initials } from "@/shared/lib/format";
 import { cx } from "@/shared/utils/cx";
 
 /** Twenty more ways to draw the ranking. Each takes the rows already ranked and filtered, plus what the leaderboard knows how to do with a row. */

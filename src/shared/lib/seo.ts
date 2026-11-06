@@ -1,5 +1,5 @@
 import type { View } from "@/shared/lib/route";
-import type { Brand, PageData } from "@/shared/domain/data";
+import type { Brand, PageData } from "@/shared/domain/model";
 
 /** The one place the public address lives. Change `url` when the domain is bought; canonical links, the sitemap and share previews all read it. */
 export const SITE = { name: "Outgive", url: "https://www.outgive.tech" };

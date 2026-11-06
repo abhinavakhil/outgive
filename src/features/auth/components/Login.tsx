@@ -3,7 +3,8 @@ import { Mail01 } from "@untitledui/icons";
 import { Button } from "@/shared/ui/base/buttons/button";
 import { Input } from "@/shared/ui/base/input/input";
 import { Google } from "@/shared/ui/foundations/social-icons";
-import { Container, SiteHeader, useApp } from "@/shared/ui/outgive/shared";
+import { Container, SiteHeader } from "@/shared/ui/layout";
+import { useApp } from "@/shared/lib/app-context";
 
 /** Magic link or Google. Works inline (on the create flow, the dashboard) and as its own screen. */
 export const SignIn = ({ next, title = "Sign in", sub = "A link by email, or your Google account. No password." }: { next?: string; title?: string; sub?: string }) => {

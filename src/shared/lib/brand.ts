@@ -1,4 +1,4 @@
-import type { Brand } from "@/shared/domain/data";
+import type { Brand } from "@/shared/domain/model";
 
 /** Lightness per step of the brand scale; 600 keeps the chosen colour itself. */
 const STEPS: [number, number][] = [[25, 98], [50, 96], [100, 92], [200, 85], [300, 75], [400, 64], [500, 54], [700, 38], [800, 30], [900, 22], [950, 12]];

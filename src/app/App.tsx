@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AppContext, type Go, makeMoney } from "@/shared/ui/outgive/shared";
+import { AppContext, type Go, makeMoney } from "@/shared/lib/app-context";
 import { applyBrand } from "@/shared/lib/brand";
-import { type Activity, type Brand, DEFAULT_BRAND, PREFIX, type Supporter } from "@/shared/domain/data";
+import { type Activity, type Brand, DEFAULT_BRAND, PREFIX, type Supporter } from "@/shared/domain/model";
 import { type DB, db as loadDb, isDemo } from "@/shared/lib/db";
 import { DEMO_SLUG, type Tenant, type View, parse, pathOf, tenantOf } from "@/shared/lib/route";
 import { type BoardRow, type Org, type User, toBrand, toSupporter } from "@/shared/domain/types";
@@ -16,7 +16,7 @@ import { LandingB } from "@/features/marketing/components/LandingB";
 import { Give } from "@/features/donate/components/Give";
 import { Live, Overlay } from "@/features/live/components/Live";
 import { Login } from "@/features/auth/components/Login";
-import { NotFound } from "@/shared/ui/outgive/NotFound";
+import { NotFound } from "@/shared/ui/not-found";
 import { PageScreen, SamplePage } from "@/features/campaign/components/PageScreen";
 import { Pricing } from "@/features/marketing/components/Pricing";
 import { Start } from "@/features/onboarding/components/Start";

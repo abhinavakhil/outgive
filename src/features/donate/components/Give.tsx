@@ -1,9 +1,11 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowRight, Heart } from "@untitledui/icons";
-import { DonateDialog, ShareDialog } from "@/shared/ui/outgive/dialogs";
-import { BrandMark, useApp } from "@/shared/ui/outgive/shared";
-import { initials } from "@/shared/domain/data";
+import { DonateDialog } from "@/features/donate/components/dialogs";
+import { ShareDialog } from "@/shared/ui/dialog";
+import { BrandMark } from "@/shared/ui/brand";
+import { useApp } from "@/shared/lib/app-context";
+import { initials } from "@/shared/lib/format";
 import type { PageRef } from "@/shared/lib/route";
 import type { LiveItem } from "@/shared/domain/types";
 import { useCountUp, useLive } from "@/features/live/components/Live";

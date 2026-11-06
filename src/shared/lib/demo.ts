@@ -7,7 +7,8 @@ import storage from "../../../supabase/migrations/20261023000001_storage.sql?raw
 import type { PGlite } from "@electric-sql/pglite";
 import type { DB } from "@/shared/lib/db";
 import type { DonationRow, Org, User } from "@/shared/domain/types";
-import { DEFAULT_BRAND, SAMPLE_PAGE, SUPPORTERS, type Supporter } from "@/shared/domain/data";
+import { DEFAULT_BRAND, type Supporter } from "@/shared/domain/model";
+import { SAMPLE_PAGE, SUPPORTERS } from "@/shared/lib/demo-data";
 
 export const DEMO_USER: User = { id: "00000000-0000-4000-8000-000000000001", email: "demo@outgive.org", name: "Demo organiser" };
 export const DEMO_SLUG = "clearwell";

@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { AppContext, type AppCtx, makeMoney } from "@/shared/ui/outgive/shared";
-import { ACTIVITY, DEFAULT_BRAND, SUPPORTERS } from "@/shared/domain/data";
+import { AppContext, type AppCtx, makeMoney } from "@/shared/lib/app-context";
+import { ACTIVITY, SUPPORTERS } from "@/shared/lib/demo-data";
+import { DEFAULT_BRAND } from "@/shared/domain/model";
 import { type View, parse, pathOf, tenantOf } from "@/shared/lib/route";
 import { LEGAL_DRAFT, SITE, metaFor } from "@/shared/lib/seo";
 import { ComingSoon } from "@/features/marketing/components/ComingSoon";

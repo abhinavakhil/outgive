@@ -1,5 +1,6 @@
 import { Button } from "@/shared/ui/base/buttons/button";
-import { Container, SiteHeader, useApp } from "@/shared/ui/outgive/shared";
+import { Container, SiteHeader } from "@/shared/ui/layout";
+import { useApp } from "@/shared/lib/app-context";
 
 export const NotFound = () => {
     const { go } = useApp();

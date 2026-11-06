@@ -3,8 +3,9 @@ import { Dialog, Modal, ModalOverlay } from "@/shared/ui/application/modals/moda
 import { Button } from "@/shared/ui/base/buttons/button";
 import { Input } from "@/shared/ui/base/input/input";
 import { NativeSelect } from "@/shared/ui/base/select/select-native";
-import { BrandMark, useApp } from "@/shared/ui/outgive/shared";
-import { BRAND_PRESETS, DEFAULT_BRAND, FONTS, type Brand } from "@/shared/domain/data";
+import { BrandMark } from "@/shared/ui/brand";
+import { useApp } from "@/shared/lib/app-context";
+import { BRAND_PRESETS, DEFAULT_BRAND, FONTS, type Brand } from "@/shared/domain/model";
 import { ALL_VARIANTS } from "@/features/leaderboard/components/boards";
 import { cx } from "@/shared/utils/cx";
 

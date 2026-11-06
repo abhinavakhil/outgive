@@ -1,4 +1,4 @@
-import type { Cover } from "@/shared/domain/data";
+import type { Cover } from "@/shared/domain/model";
 import type { DB } from "@/shared/lib/db";
 
 /** Uploads a cover that is still a local data: or blob: URL and returns the cover with a permanent address. YouTube links and already-hosted files pass through. */

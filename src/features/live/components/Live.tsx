@@ -1,11 +1,14 @@
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import QRCode from "qrcode";
-import { BrandMark, useApp } from "@/shared/ui/outgive/shared";
-import { type Activity, CURRENCIES, initials } from "@/shared/domain/data";
+import { BrandMark } from "@/shared/ui/brand";
+import { useApp } from "@/shared/lib/app-context";
+import { type Activity, CURRENCIES } from "@/shared/domain/model";
+import { initials } from "@/shared/lib/format";
 import type { PageRef } from "@/shared/lib/route";
 import { fmt } from "@/shared/lib/money";
 import type { DonationRow, LiveItem, LiveLayout, LiveState, PageBundle } from "@/shared/domain/types";
+import { Confetti } from "@/shared/ui/confetti";
 import { cx } from "@/shared/utils/cx";
 
 /**
@@ -53,10 +56,6 @@ export const useCountUp = (value: number) => {
     return shown;
 };
 
-export const Confetti = ({ at }: { at: number }) => {
-    const bits = useMemo(() => Array.from({ length: 80 }, (_, i) => ({ x: (i * 37) % 100, d: 0.6 + ((i * 13) % 10) / 10, r: (i * 53) % 360, c: ["bg-brand-400", "bg-brand-600", "bg-white", "bg-brand-200", "bg-yellow-300"][i % 5], w: 6 + (i % 3) * 3 })), [at]);
-    return <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-40 overflow-hidden">{bits.map((b, i) => <motion.span key={`${at}-${i}`} initial={{ y: -40, x: `${b.x}vw`, rotate: 0, opacity: 1 }} animate={{ y: "110vh", rotate: b.r + 720, opacity: [1, 1, 0.8, 0] }} transition={{ duration: 2.4 + b.d, ease: "easeIn", delay: (i % 7) * 0.08 }} className={cx("absolute top-0 rounded-sm", b.c)} style={{ width: b.w, height: b.w * 1.6 }} />)}</div>;
-};
 
 /** Theme-aware surface classes. `t` is the theme; panels are translucent so the brand gradient shows through. */
 const skin = (t: "dark" | "light") => ({

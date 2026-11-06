@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Penna } from "@abhinavakhil/penna-react";
-import type { Cover } from "@/shared/domain/data";
+import type { Cover } from "@/shared/domain/model";
 import { cx } from "@/shared/utils/cx";
 
 /** Tracks the `dark-mode` class the theme toggle puts on <html>. */

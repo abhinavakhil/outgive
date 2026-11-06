@@ -1,5 +1,7 @@
 import { ArrowRight, Check } from "@untitledui/icons";
-import { Container, Logo, ThemeToggle, useApp } from "@/shared/ui/outgive/shared";
+import { Container } from "@/shared/ui/layout";
+import { Logo, ThemeToggle } from "@/shared/ui/brand";
+import { useApp } from "@/shared/lib/app-context";
 import { CARD_FEE_FIXED, CARD_FEE_PCT, DEFAULT_TIP_PCT } from "@/shared/lib/money";
 
 const INCLUDED = ["Unlimited campaigns, fundraisers, teams, events and in-memory pages", "The live leaderboard in 29 layouts, and 12 page layouts", "Live screens and stream overlays", "Cards, Apple Pay, Google Pay and Link through Stripe", "Monthly giving, offline gifts, matching pledges and tickets", "Email receipts, CSV export, organiser roles", "Your name, logo, colours, font and your own domain"];

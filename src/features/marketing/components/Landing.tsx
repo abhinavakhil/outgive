@@ -1,8 +1,11 @@
 import type { ReactNode } from "react";
 import { ArrowRight, Brush03, Calendar, Check, EyeOff, Heart, LayoutGrid01, Trophy01, Users01 } from "@untitledui/icons";
 import { Avatar } from "@/shared/ui/base/avatar/avatar";
-import { Container, type Go, Logo, ThemeToggle, useApp } from "@/shared/ui/outgive/shared";
-import { SUPPORTERS, initials } from "@/shared/domain/data";
+import { Container } from "@/shared/ui/layout";
+import { type Go, useApp } from "@/shared/lib/app-context";
+import { Logo, ThemeToggle } from "@/shared/ui/brand";
+import { SUPPORTERS } from "@/shared/lib/demo-data";
+import { initials } from "@/shared/lib/format";
 import { cx } from "@/shared/utils/cx";
 
 /** Questions a charity asks before trying a leaderboard. Shown on the page and published as FAQ structured data, so the two can never disagree. */

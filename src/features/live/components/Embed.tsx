@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Avatar } from "@/shared/ui/base/avatar/avatar";
-import { BrandMark, useApp } from "@/shared/ui/outgive/shared";
-import { CURRENCIES, initials } from "@/shared/domain/data";
+import { BrandMark } from "@/shared/ui/brand";
+import { useApp } from "@/shared/lib/app-context";
+import { CURRENCIES } from "@/shared/domain/model";
+import { initials } from "@/shared/lib/format";
 import type { PageRef } from "@/shared/lib/route";
 import type { PageBundle } from "@/shared/domain/types";
 import { cx } from "@/shared/utils/cx";

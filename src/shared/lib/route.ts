@@ -2,7 +2,7 @@
  * Tenant-aware routing. An organisation is reached on its own host (custom domain or <slug>.outgive.org) or under /o/<slug>.
  * /demo is the sample charity's board. On a tenant host the /o/<slug> prefix disappears.
  */
-import { PREFIX, type PageType } from "@/shared/domain/data";
+import { PREFIX, type PageType } from "@/shared/domain/model";
 
 export const DEMO_SLUG = "clearwell";
 /** Hosts that are the platform itself, not a tenant. */

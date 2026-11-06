@@ -1,5 +1,5 @@
 /** Rows as the SQL API returns them (snake_case, cents), and adapters to the shapes the screens were built on. */
-import { type Brand, type Donation, type PageData, type PageType, type PageUpdate, type Supporter, type LayoutId, type Cover } from "@/shared/domain/data";
+import { type Brand, type Donation, type PageData, type PageType, type PageUpdate, type Supporter, type LayoutId, type Cover } from "@/shared/domain/model";
 
 export interface Org {
     id: string; slug: string; name: string; tagline: string; description: string; logo_url: string; color: string; font: string; variant: string;
