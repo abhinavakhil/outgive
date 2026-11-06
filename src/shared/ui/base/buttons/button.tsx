@@ -20,35 +20,26 @@ export const styles = sortCx({
         ].join(" "),
         icon: "pointer-events-none size-5 shrink-0 transition-inherit-all",
     },
+    // Teseria control heights: 32 / 40 / 48, medium weight, pill shape.
     sizes: {
         xs: {
-            root: [
-                "gap-1 rounded-full px-2.5 py-1.5 text-sm font-semibold before:rounded-full data-icon-only:p-2",
-                "in-data-input-wrapper:px-3.5 in-data-input-wrapper:py-2.5 in-data-input-wrapper:data-icon-only:p-2.5",
-                "*:data-icon:size-4 *:data-icon:stroke-[2.25px]",
-            ].join(" "),
+            root: "h-7 gap-1 rounded-full px-2.5 text-xs font-medium before:rounded-full data-icon-only:w-7 data-icon-only:px-0 *:data-icon:size-3.5",
             linkRoot: "gap-1 *:data-text:underline-offset-3",
         },
         sm: {
-            root: [
-                "gap-1 rounded-full px-3 py-2 text-sm font-semibold before:rounded-full data-icon-only:p-2",
-                "in-data-input-wrapper:px-3.5 in-data-input-wrapper:py-2.5 in-data-input-wrapper:data-icon-only:p-2.5",
-            ].join(" "),
+            root: "h-8 gap-1.5 rounded-full px-3.5 text-[13px] font-medium before:rounded-full data-icon-only:w-8 data-icon-only:px-0 *:data-icon:size-4",
             linkRoot: "gap-1 *:data-text:underline-offset-3",
         },
         md: {
-            root: [
-                "gap-1 rounded-full px-3.5 py-2.5 text-sm font-semibold before:rounded-full data-icon-only:p-2.5",
-                "in-data-input-wrapper:gap-1.5 in-data-input-wrapper:px-4 in-data-input-wrapper:text-md in-data-input-wrapper:data-icon-only:p-3",
-            ].join(" "),
+            root: "h-10 gap-1.5 rounded-full px-4 text-sm font-medium before:rounded-full data-icon-only:w-10 data-icon-only:px-0 *:data-icon:size-4",
             linkRoot: "gap-1 *:data-text:underline-offset-4",
         },
         lg: {
-            root: "gap-1.5 rounded-full px-4 py-2.5 text-md font-semibold before:rounded-full data-icon-only:p-3",
+            root: "h-12 gap-2 rounded-full px-5 text-sm font-medium before:rounded-full data-icon-only:w-12 data-icon-only:px-0 *:data-icon:size-5",
             linkRoot: "gap-1.5 *:data-text:underline-offset-4",
         },
         xl: {
-            root: "gap-1.5 rounded-full px-4.5 py-3 text-md font-semibold before:rounded-full data-icon-only:p-3.5",
+            root: "h-12 gap-2 rounded-full px-6 text-[15px] font-medium before:rounded-full data-icon-only:w-12 data-icon-only:px-0 *:data-icon:size-5",
             linkRoot: "gap-1.5 *:data-text:underline-offset-4",
         },
     },
@@ -56,21 +47,21 @@ export const styles = sortCx({
     colors: {
         primary: {
             root: [
-                "bg-gradient-to-b from-brand-500 to-brand-700 text-white shadow-[0_8px_20px_-6px_var(--color-brand-600),inset_0_1px_0_0_rgb(255_255_255/0.25)] hover:brightness-110 data-loading:brightness-110",
+                "bg-ink text-ink-inverse shadow-[inset_0_1px_0_0_rgb(255_255_255/0.14),0_1px_2px_0_rgb(0_0_0/0.16)] hover:opacity-90 data-loading:opacity-90",
                 // Icon styles
-                "*:data-icon:text-white/80 hover:*:data-icon:text-white",
+                "*:data-icon:text-current",
             ].join(" "),
         },
         secondary: {
             root: [
-                "bg-brand-primary text-brand-secondary hover:bg-brand-secondary hover:text-brand-secondary_hover data-loading:bg-brand-secondary",
+                "bg-raised text-ink shadow-edge hover:bg-field-hover dark:hover:bg-tint-3 data-loading:bg-field-hover",
                 // Icon styles
-                "*:data-icon:text-fg-brand-secondary hover:*:data-icon:text-fg-brand-secondary_hover",
+                "*:data-icon:text-ink-3 hover:*:data-icon:text-ink",
             ].join(" "),
         },
         tertiary: {
             root: [
-                "text-secondary hover:bg-secondary hover:text-primary data-loading:bg-secondary",
+                "text-ink-2 hover:bg-tint-2 hover:text-ink data-loading:bg-tint-2",
                 // Icon styles
                 "*:data-icon:text-fg-quaternary hover:*:data-icon:text-fg-quaternary_hover",
             ].join(" "),

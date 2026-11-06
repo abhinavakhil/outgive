@@ -99,9 +99,9 @@ export const InputBase = ({
             ref={groupRef}
             className={({ isFocusWithin, isDisabled, isInvalid }) =>
                 cx(
-                    "group/input relative flex w-full flex-row place-content-center place-items-center rounded-full bg-secondary ring-1 ring-transparent transition duration-100 ease-linear ring-inset",
+                    "group/input relative flex w-full flex-row place-content-center place-items-center rounded-full bg-field shadow-edge ring-1 ring-transparent transition duration-100 hover:bg-field-hover ease-linear ring-inset",
 
-                    isFocusWithin && !isDisabled && "bg-primary ring-brand shadow-[0_0_0_4px_color-mix(in_srgb,var(--color-brand-500)_18%,transparent)]",
+                    isFocusWithin && !isDisabled && "ring-2 ring-brand",
 
                     // Disabled state styles
                     isDisabled && "cursor-not-allowed opacity-50",

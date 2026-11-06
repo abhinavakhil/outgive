@@ -23,9 +23,9 @@ export const CheckboxBase = ({ className, isSelected, isDisabled, isIndeterminat
     return (
         <div
             className={cx(
-                "relative flex size-4 shrink-0 cursor-pointer appearance-none items-center justify-center rounded bg-primary ring-1 ring-primary ring-inset",
+                "relative flex size-4 shrink-0 cursor-pointer appearance-none items-center justify-center rounded-[5px] bg-field ring-1 ring-primary ring-inset",
                 size === "md" && "size-5 rounded-md",
-                (isSelected || isIndeterminate) && "bg-gradient-to-b from-brand-500 to-brand-700 shadow-sm ring-transparent",
+                (isSelected || isIndeterminate) && "bg-ink ring-transparent",
                 isDisabled && "cursor-not-allowed opacity-50",
                 isDisabled && !(isSelected || isIndeterminate) && "bg-tertiary",
                 isFocusVisible && "outline-2 outline-offset-2 outline-focus-ring",
@@ -37,7 +37,7 @@ export const CheckboxBase = ({ className, isSelected, isDisabled, isIndeterminat
                 viewBox="0 0 14 14"
                 fill="none"
                 className={cx(
-                    "pointer-events-none absolute h-3 w-2.5 text-fg-white opacity-0 transition-inherit-all",
+                    "pointer-events-none absolute h-3 w-2.5 text-ink-inverse opacity-0 transition-inherit-all",
                     size === "md" && "size-3.5",
                     isIndeterminate && "opacity-100",
                 )}
@@ -50,7 +50,7 @@ export const CheckboxBase = ({ className, isSelected, isDisabled, isIndeterminat
                 viewBox="0 0 14 14"
                 fill="none"
                 className={cx(
-                    "pointer-events-none absolute size-3 text-fg-white opacity-0 transition-inherit-all",
+                    "pointer-events-none absolute size-3 text-ink-inverse opacity-0 transition-inherit-all",
                     size === "md" && "size-3.5",
                     isSelected && !isIndeterminate && "opacity-100",
                 )}

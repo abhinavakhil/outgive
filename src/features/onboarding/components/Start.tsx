@@ -12,7 +12,7 @@ const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").repla
 /** A charity creates its organisation: the board exists as soon as this is submitted; Stripe is connected from the dashboard. */
 export const Start = () => {
     const { db, user, go, isDemo } = useApp();
-    const [f, setF] = useState({ name: "", slug: "", tagline: "", description: "", color: "#2b59ff", font: "Rubik", variant: "list", currency: "USD", country: "", registration_number: "", website: "", impact_unit: "", impact_usd: "" });
+    const [f, setF] = useState({ name: "", slug: "", tagline: "", description: "", color: "#2b59ff", font: "Inter", variant: "list", currency: "USD", country: "", registration_number: "", website: "", impact_unit: "", impact_usd: "" });
     const set = (k: keyof typeof f) => (v: string) => setF((o) => ({ ...o, [k]: v }));
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState("");
@@ -24,7 +24,7 @@ export const Start = () => {
         try { const o = await db.rpc<Org>("org_create", { p: { ...f, slug, impact_usd: f.impact_usd || null } }); go({ name: "admin", org: o.slug, tab: "payments" }); } catch (e) { setError((e as Error).message.includes("orgs_slug_key") ? "That address is taken. Pick another." : (e as Error).message); } finally { setBusy(false); }
     };
     return (
-        <div className="min-h-dvh bg-secondary"><Container className="flex max-w-3xl flex-col gap-8 py-5"><SiteHeader />
+        <div className="min-h-dvh bg-primary"><Container className="flex max-w-3xl flex-col gap-8 py-5"><SiteHeader />
             <div><h1 className="text-display-sm font-semibold tracking-tight text-primary">Run a board for your organisation</h1><p className="mt-2 text-lg text-tertiary">Your name, colours and address. You can change all of it later and connect Stripe when you are ready to take gifts.</p></div>
             {!user && !isDemo ? <div className="rounded-3xl p-6 ring-1 ring-secondary ring-inset"><SignIn next="/start" title="Sign in to start" sub="Your account becomes the organisation's owner." /></div> : (
                 <form className="flex flex-col gap-5" onSubmit={(e) => { e.preventDefault(); submit(); }}>

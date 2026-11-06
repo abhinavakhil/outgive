@@ -100,7 +100,7 @@ export const Dashboard = () => {
     const account = <Tile className="gap-4 p-5"><Eyebrow>Profile</Eyebrow><div className="grid gap-3.5 sm:grid-cols-2"><Input label="Name" value={name} onChange={setName} /><Input label="Email" value={profile?.email ?? user.email} isDisabled /></div><Button color="primary" className="w-fit rounded-full" isDisabled={!name.trim() || name === profile?.name} onPress={async () => { await db.rpc("profile_update", { p: { name: name.trim() } }); setProfile((p) => (p ? { ...p, name: name.trim() } : p)); toast("Saved"); }}>Save</Button><p className="text-xs text-tertiary">Gifts made with your email address are linked to this account, including ones made before you signed up.</p>{!isDemo && <Button color="secondary" className="w-fit rounded-full" onPress={() => db.signOut().then(() => go({ name: "landing" }))}>Sign out</Button>}</Tile>;
     const titles: Record<Tab, [string, string]> = { home: [`Hello, ${first}`, org && rank ? `You hold #${rank} on the ${org.name} board.` : "Your giving, pages and organisations."], giving: ["Giving", "What you have given, and the receipts."], pages: ["Pages", "Pages you have set up."], orgs: ["Organisations", "Boards you run."], account: ["Account", "Your name and sign-in."] };
     return (
-        <div className="flex min-h-dvh flex-col bg-secondary">
+        <div className="flex min-h-dvh flex-col bg-primary">
             <header className="sticky top-0 z-30 flex h-16 items-center gap-2.5 bg-secondary px-4 md:h-[76px] md:px-7">
                 <div className="mr-auto min-w-0">{org ? <BrandLogo onClick={() => go({ name: "home" })} /> : <Logo onClick={() => go({ name: "landing" })} />}</div>
                 <ThemeToggle />

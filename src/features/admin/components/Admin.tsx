@@ -24,7 +24,7 @@ export const Admin = ({ tab = "overview" }: { tab?: string }) => {
     const [known, setKnown] = useState<boolean | null>(member ? true : null);
     useEffect(() => { if (member) { setKnown(true); return; } if (!org || !user) return; let live = true; db.rpc<boolean>("is_member", { org: org.id }).then((v) => { if (live) setKnown(v); }).catch(() => { if (live) setKnown(false); }); return () => { live = false; }; }, [db, org, user, member]);
     if (!org) return null;
-    if (user && known === null) return <div className="min-h-dvh bg-secondary" />;
+    if (user && known === null) return <div className="min-h-dvh bg-primary" />;
     if (!user) return <div className="min-h-dvh bg-primary"><Container className="max-w-md py-10"><div className="rounded-3xl p-6 ring-1 ring-secondary ring-inset"><SignIn title={`${org.name} dashboard`} sub="Sign in as a member of the organisation." /></div></Container></div>;
     if (!member && !known) return <div className="min-h-dvh bg-primary"><Container className="max-w-md py-10 text-center"><h1 className="text-display-xs font-semibold text-primary">Members only</h1><p className="mt-2 text-tertiary">Your account is not on {org.name}'s team. Ask an organiser to add {user.email}.</p><Button color="secondary" className="mt-4 rounded-full" onPress={() => go({ name: "home" })}>Back to the board</Button></Container></div>;
     const current = TABS.some(([k]) => k === tab) ? tab : "overview";

@@ -44,12 +44,12 @@ export const ProgressBarBase = ({ value, min = 0, max = 100, className, progress
             aria-valuenow={value}
             aria-valuemin={min}
             aria-valuemax={max}
-            className={cx("h-2.5 w-full overflow-hidden rounded-full bg-brand-primary", className)}
+            className={cx("h-1.5 w-full overflow-hidden rounded-full bg-tint-3", className)}
         >
             <div
                 // Use transform instead of width to avoid layout thrashing (and for smoother animation)
                 style={{ transform: `translateX(-${100 - percentage}%)` }}
-                className={cx("size-full rounded-full bg-gradient-to-r from-brand-400 to-brand-700 shadow-[0_0_12px_var(--color-brand-500)] transition duration-75 ease-linear", progressClassName)}
+                className={cx("size-full rounded-full bg-ink transition duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]", progressClassName)}
             />
         </div>
     );

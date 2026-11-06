@@ -42,18 +42,18 @@ export const ShareDialog = ({ isOpen, onClose, url, title }: { isOpen: boolean; 
     return (
         <DialogShell isOpen={isOpen} onClose={onClose} label="Share this page">
             <DialogHead title="Share this page" sub="Pages that are shared in the first day raise the most." />
-            <div className="flex items-center gap-2 rounded-full bg-secondary p-1.5 pl-4 ring-1 ring-secondary ring-inset">
+            <div className="flex items-center gap-2 rounded-full bg-field p-1.5 pl-4 shadow-edge">
                 <span className="min-w-0 flex-1 truncate text-sm text-secondary">{url.replace(/^https?:\/\//, "")}</span>
                 <Button size="sm" color="primary" className="rounded-full" iconLeading={copied ? Check : Copy01} onPress={copy}>{copied ? "Copied" : "Copy link"}</Button>
             </div>
             <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
                 {targets.map(([name, icon, href]) => (
                     <a key={name} href={href} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1.5 rounded-xl px-1 py-2.5 text-xs font-medium text-secondary outline-focus-ring transition hover:bg-secondary focus-visible:outline-2">
-                        <span className="flex size-10 items-center justify-center rounded-full bg-secondary text-primary ring-1 ring-secondary ring-inset">{icon}</span>{name}
+                        <span className="flex size-10 items-center justify-center rounded-full bg-tint-2 text-ink">{icon}</span>{name}
                     </a>
                 ))}
             </div>
-            <div className="flex items-center gap-4 rounded-2xl bg-brand-primary p-4">
+            <div className="flex items-center gap-4 rounded-2xl bg-tint-1 p-4">
                 <div className="flex size-28 shrink-0 items-center justify-center rounded-xl bg-white p-1.5">{qr ? <img src={qr} alt={`QR code for ${url}`} className="size-full" /> : <span className="text-xs text-gray-500">QR</span>}</div>
                 <div className="flex min-w-0 flex-1 flex-col items-start gap-2">
                     <div className="font-semibold text-primary">Scan to open</div>
