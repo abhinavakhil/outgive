@@ -108,7 +108,7 @@ export const App = () => {
         const [title, desc] = metaFor(view.name, brand);
         document.title = title;
         for (const [sel, content] of [['meta[name="description"]', desc], ['meta[property="og:title"]', title], ['meta[property="og:description"]', desc], ['meta[name="twitter:title"]', title], ['meta[name="twitter:description"]', desc]]) document.querySelector(sel)?.setAttribute("content", content);
-        const noindex = ["notfound", "ui", "dashboard", "admin", "landing-b", "thanks", "login", "overlay", "embed"].includes(view.name) || (LEGAL_DRAFT && (view.name === "terms" || view.name === "privacy"));
+        const noindex = ["notfound", "ui", "ui-variants", "dashboard", "admin", "landing-b", "thanks", "login", "overlay", "embed"].includes(view.name) || (LEGAL_DRAFT && (view.name === "terms" || view.name === "privacy"));
         document.querySelector('meta[name="robots"]')?.setAttribute("content", noindex ? "noindex" : "index, follow");
         let canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
         if (!canonical) { canonical = document.createElement("link"); canonical.rel = "canonical"; document.head.appendChild(canonical); }
