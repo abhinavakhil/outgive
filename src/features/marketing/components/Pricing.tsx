@@ -1,6 +1,5 @@
 import { ArrowRight, Check } from "@untitledui/icons";
-import { Container } from "@/shared/ui/layout";
-import { Logo, ThemeToggle } from "@/shared/ui/brand";
+import { Container, Logo, ThemeToggle } from "@/shared/ui";
 import { useApp } from "@/shared/lib/app-context";
 import { CARD_FEE_FIXED, CARD_FEE_PCT, DEFAULT_TIP_PCT } from "@/shared/lib/money";
 

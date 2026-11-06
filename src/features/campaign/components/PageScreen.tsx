@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { CampaignPage } from "@/features/campaign/components/CampaignPage";
 import { PageManage } from "@/features/campaign/components/PageManage";
-import { NotFound } from "@/shared/ui/not-found";
+import { NotFound } from "@/shared/ui";
 import { useApp } from "@/shared/lib/app-context";
 import { CURRENCIES, type Donation, type PageData, type PageUpdate, pageKey } from "@/shared/domain/model";
 import { SAMPLE_PAGE } from "@/shared/lib/demo-data";

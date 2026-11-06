@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { Avatar } from "@/shared/ui/base/avatar/avatar";
-import { BrandMark } from "@/shared/ui/brand";
+import { Avatar, BrandMark } from "@/shared/ui";
 import { useApp } from "@/shared/lib/app-context";
 import { CURRENCIES } from "@/shared/domain/model";
 import { initials } from "@/shared/lib/format";

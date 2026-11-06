@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react";
 import { Mail01 } from "@untitledui/icons";
-import { Button } from "@/shared/ui/base/buttons/button";
-import { Input } from "@/shared/ui/base/input/input";
-import { Google } from "@/shared/ui/foundations/social-icons";
-import { Container, SiteHeader } from "@/shared/ui/layout";
+import { Button, Input, Google, Container, SiteHeader } from "@/shared/ui";
 import { useApp } from "@/shared/lib/app-context";
 
 /** Magic link or Google. Works inline (on the create flow, the dashboard) and as its own screen. */

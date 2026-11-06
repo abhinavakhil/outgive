@@ -4,12 +4,7 @@ import { type LayoutId, type PageData, type PageUpdate, type Supporter, daysLeft
 import { useApp } from "@/shared/lib/app-context";
 import { LEVELS, PEOPLE } from "@/shared/lib/demo-data";
 import { ago, initials } from "@/shared/lib/format";
-import { Avatar } from "@/shared/ui/base/avatar/avatar";
-import { Badge } from "@/shared/ui/base/badges/badges";
-import { Button } from "@/shared/ui/base/buttons/button";
-import { Ring } from "@/shared/ui/display";
-import { Card } from "@/shared/ui/layout";
-import { CoverMedia, DescriptionView } from "@/shared/ui/media";
+import { Avatar, Badge, Button, Ring, Card, CoverMedia, DescriptionView } from "@/shared/ui";
 import { cx } from "@/shared/utils/cx";
 
 /** The page being viewed. Lets shared sections show an empty state on a newly published page instead of sample people. */

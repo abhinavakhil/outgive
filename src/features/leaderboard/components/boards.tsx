@@ -1,6 +1,6 @@
 import type { FC, ReactNode } from "react";
 import { ArrowUp, Award01, Plus, Star01, Trophy01 } from "@untitledui/icons";
-import { Avatar } from "@/shared/ui/base/avatar/avatar";
+import { Avatar } from "@/shared/ui";
 import { type BoardKey, VARIANTS } from "@/features/leaderboard/model";
 import { type Supporter } from "@/shared/domain/model";
 import { initials } from "@/shared/lib/format";

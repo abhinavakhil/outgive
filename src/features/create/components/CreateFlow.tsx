@@ -1,22 +1,12 @@
 import { type ReactNode, useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, Copy01, Eye, Share07, Trash01, Trophy01, Users01 } from "@untitledui/icons";
-import { FileUpload } from "@/shared/ui/application/file-upload/file-upload-base";
-import { Badge } from "@/shared/ui/base/badges/badges";
-import { Button } from "@/shared/ui/base/buttons/button";
-import { Checkbox } from "@/shared/ui/base/checkbox/checkbox";
-import { Input } from "@/shared/ui/base/input/input";
-import { ProgressBarBase } from "@/shared/ui/base/progress-indicators/progress-indicators";
-import { NativeSelect } from "@/shared/ui/base/select/select-native";
-import { FeaturedIcon } from "@/shared/ui/foundations/featured-icon/featured-icon";
-import { ShareDialog } from "@/shared/ui/dialog";
-import { CoverMedia, DescriptionEditor, readImage, youtubeId } from "@/shared/ui/media";
-import { LayoutThumb } from "@/features/campaign/components/page-parts";
-import { Logo, ThemeToggle } from "@/shared/ui/brand";
+import { FileUpload, Badge, Button, Checkbox, Input, ProgressBarBase, NativeSelect, FeaturedIcon, ShareDialog, CoverMedia, DescriptionEditor, readImage, youtubeId, Logo, ThemeToggle } from "@/shared/ui";
+import { LayoutThumb } from "@/features/campaign";
 import { useApp } from "@/shared/lib/app-context";
 import { CAUSES, CURRENCIES, DEFAULT_ALLOCATION, type Cover, LAYOUTS, PAGE_TYPES, PREFIX, type LayoutId, type PageData, type PageType } from "@/shared/domain/model";
 import { persistCover } from "@/shared/lib/media";
 import type { PageRow } from "@/shared/domain/types";
-import { SignIn } from "@/features/auth/components/Login";
+import { SignIn } from "@/features/auth";
 import { cx } from "@/shared/utils/cx";
 import { track } from "@/shared/lib/analytics";
 

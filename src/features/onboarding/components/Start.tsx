@@ -1,15 +1,11 @@
 import { useState } from "react";
 import { ArrowRight } from "@untitledui/icons";
-import { Button } from "@/shared/ui/base/buttons/button";
-import { Input } from "@/shared/ui/base/input/input";
-import { TextArea } from "@/shared/ui/base/textarea/textarea";
-import { NativeSelect } from "@/shared/ui/base/select/select-native";
-import { Container, Fieldset, Panel, SiteHeader } from "@/shared/ui/layout";
+import { Button, Input, TextArea, NativeSelect, Container, Fieldset, Panel, SiteHeader } from "@/shared/ui";
 import { useApp } from "@/shared/lib/app-context";
 import { CURRENCIES, FONTS } from "@/shared/domain/model";
 import type { Org } from "@/shared/domain/types";
-import { ALL_VARIANTS } from "@/features/leaderboard/components/boards";
-import { SignIn } from "@/features/auth/components/Login";
+import { ALL_VARIANTS } from "@/features/leaderboard";
+import { SignIn } from "@/features/auth";
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
 

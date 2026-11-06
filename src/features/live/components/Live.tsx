@@ -1,14 +1,13 @@
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import QRCode from "qrcode";
-import { BrandMark } from "@/shared/ui/brand";
+import { BrandMark, Confetti } from "@/shared/ui";
 import { useApp } from "@/shared/lib/app-context";
 import { type Activity, CURRENCIES } from "@/shared/domain/model";
 import { initials } from "@/shared/lib/format";
 import type { PageRef } from "@/shared/lib/route";
 import { fmt } from "@/shared/lib/money";
 import type { DonationRow, LiveItem, LiveLayout, LiveState, PageBundle } from "@/shared/domain/types";
-import { Confetti } from "@/shared/ui/confetti";
 import { cx } from "@/shared/utils/cx";
 
 /**

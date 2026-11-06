@@ -3,11 +3,7 @@ import QRCode from "qrcode";
 import { useEffect, useState } from "react";
 import { LIVE_LAYOUTS, type LiveItem, type LiveLayout, type LiveState } from "@/shared/domain/types";
 import { useApp } from "@/shared/lib/app-context";
-import { Button } from "@/shared/ui/base/buttons/button";
-import { Input } from "@/shared/ui/base/input/input";
-import { Toggle } from "@/shared/ui/base/toggle/toggle";
-import { CopyRow } from "@/shared/ui/display";
-import { Panel } from "@/shared/ui/layout";
+import { Button, Input, Toggle, CopyRow, Panel } from "@/shared/ui";
 import { cx } from "@/shared/utils/cx";
 
 /** Little illustration of each live layout. */

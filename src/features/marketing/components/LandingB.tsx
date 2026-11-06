@@ -1,7 +1,6 @@
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import { Container } from "@/shared/ui/layout";
+import { Container, Logo } from "@/shared/ui";
 import { type Go, useApp } from "@/shared/lib/app-context";
-import { Logo } from "@/shared/ui/brand";
 import { LANDING_FAQ } from "@/features/marketing/components/Landing";
 import { cx } from "@/shared/utils/cx";
 

@@ -1,17 +1,12 @@
 import { type FC, type ReactNode, useEffect, useState } from "react";
 import { AlertCircle, Announcement01, ArrowRight, ArrowUp, Building07, Check, Heart, HelpCircle, HomeLine, Lock01, Trophy01, User01, Zap } from "@untitledui/icons";
-import { Avatar } from "@/shared/ui/base/avatar/avatar";
-import { Badge } from "@/shared/ui/base/badges/badges";
-import { Button } from "@/shared/ui/base/buttons/button";
-import { Input } from "@/shared/ui/base/input/input";
-import { BrandLogo, Logo, ThemeToggle } from "@/shared/ui/brand";
-import { ago } from "@/shared/lib/format";
+import { Avatar, Badge, Button, Input, BrandLogo, Logo, ThemeToggle } from "@/shared/ui";
+import { ago, initials } from "@/shared/lib/format";
 import { useApp } from "@/shared/lib/app-context";
 import { CURRENCIES, PREFIX, type PageType } from "@/shared/domain/model";
-import { initials } from "@/shared/lib/format";
 import { fmt } from "@/shared/lib/money";
 import type { Org, PageRow } from "@/shared/domain/types";
-import { SignIn } from "@/features/auth/components/Login";
+import { SignIn } from "@/features/auth";
 import { cx } from "@/shared/utils/cx";
 
 type Tab = "home" | "giving" | "pages" | "orgs" | "account";

@@ -1,23 +1,15 @@
 import { useEffect, useState } from "react";
 import { Announcement01, BankNote01, CoinsStacked01, CreditCard01, Download01, Gift01, Globe01, Heart, LinkExternal01, Palette, Plus, PresentationChart01, RefreshCw01, Repeat01, Tv01, Upload01, Users01, UsersPlus, Zap } from "@untitledui/icons";
 import QRCode from "qrcode";
-import { Badge } from "@/shared/ui/base/badges/badges";
-import { Button } from "@/shared/ui/base/buttons/button";
-import { Input } from "@/shared/ui/base/input/input";
-import { NativeSelect } from "@/shared/ui/base/select/select-native";
-import { TextArea } from "@/shared/ui/base/textarea/textarea";
-import { Toggle } from "@/shared/ui/base/toggle/toggle";
-import { BrandMark } from "@/shared/ui/brand";
-import { ConsoleShell, Container, Fieldset, Panel } from "@/shared/ui/layout";
-import { CopyRow, Empty, Stat, Who } from "@/shared/ui/display";
-import { LiveConsole } from "@/features/live/components/LiveConsole";
+import { Badge, Button, Input, NativeSelect, TextArea, Toggle, BrandMark, ConsoleShell, Container, Fieldset, Panel, CopyRow, Empty, Stat, Who } from "@/shared/ui";
+import { LiveConsole } from "@/features/live";
 import { ago } from "@/shared/lib/format";
 import { useApp } from "@/shared/lib/app-context";
 import { CURRENCIES, FONTS, PREFIX } from "@/shared/domain/model";
 import { fmt } from "@/shared/lib/money";
 import type { DonationRow, LiveState, MatchPledge, Member, Org, OrgStats, PageRow } from "@/shared/domain/types";
-import { ALL_VARIANTS } from "@/features/leaderboard/components/boards";
-import { SignIn } from "@/features/auth/components/Login";
+import { ALL_VARIANTS } from "@/features/leaderboard";
+import { SignIn } from "@/features/auth";
 import { cx } from "@/shared/utils/cx";
 
 const TABS: [string, string, typeof Heart][] = [["overview", "Overview", PresentationChart01], ["donations", "Donations", Heart], ["pages", "Pages", Announcement01], ["live", "Live screen", Tv01], ["pledges", "Matching", Repeat01], ["branding", "Branding", Palette], ["payments", "Payments", CreditCard01], ["domain", "Domain & embeds", Globe01], ["members", "Team", Users01]];

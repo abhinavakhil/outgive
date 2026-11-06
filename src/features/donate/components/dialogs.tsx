@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react";
 import { Check, Share07 } from "@untitledui/icons";
-import { Button } from "@/shared/ui/base/buttons/button";
-import { Checkbox } from "@/shared/ui/base/checkbox/checkbox";
-import { Input } from "@/shared/ui/base/input/input";
-import { TextArea } from "@/shared/ui/base/textarea/textarea";
-import { DialogHead as Head, DialogShell as Shell } from "@/shared/ui/dialog";
+import { Button, Checkbox, Input, TextArea, DialogHead as Head, DialogShell as Shell } from "@/shared/ui";
 import { CURRENCIES, type Donation, type PageData, typeOf } from "@/shared/domain/model";
 import type { Org, PageRow, TicketType } from "@/shared/domain/types";
 import { useApp } from "@/shared/lib/app-context";

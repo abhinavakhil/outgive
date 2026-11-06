@@ -2,27 +2,14 @@ import { type FC, type ReactNode, createContext, useContext, useEffect, useMemo,
 
 const ChildrenContext = createContext<PageBundle["children"] | undefined>(undefined);
 import { Check, Flag01, Heart, Link01, Settings01, Share07, Tv01 } from "@untitledui/icons";
-import { Tab, TabList, TabPanel, Tabs } from "@/shared/ui/application/tabs/tabs";
-import { Badge } from "@/shared/ui/base/badges/badges";
-import { Button } from "@/shared/ui/base/buttons/button";
-import { ProgressBarBase } from "@/shared/ui/base/progress-indicators/progress-indicators";
+import { Tab, TabList, TabPanel, Tabs, Badge, Button, ProgressBarBase, BrandLogo, Logo, ThemeToggle, Card, Container, TwoCol, PillSelect, Ring, ShareDialog, shareTargets, Input, TextArea, Avatar } from "@/shared/ui";
 import { Board, Cover, Donate, Levels, OrgLine, OrganizerLine, PageActions, PageContext, Protected, Raised, Stats, Story, TypeBadge } from "@/features/campaign/components/page-parts";
-import { BrandLogo, Logo, ThemeToggle } from "@/shared/ui/brand";
-import { Card, Container, TwoCol } from "@/shared/ui/layout";
-import { PillSelect } from "@/shared/ui/pill-select";
-import { Ring } from "@/shared/ui/display";
-import { ago, dateOf } from "@/shared/lib/format";
-import { daysLeft, pct, typeOf } from "@/shared/domain/model";
+import { ago, dateOf, initials } from "@/shared/lib/format";
+import { daysLeft, pct, typeOf, PREFIX, DEFAULT_ALLOCATION, type Donation, LAYOUTS, type LayoutId, type PageData, type PageUpdate, pageKey } from "@/shared/domain/model";
 import { useApp } from "@/shared/lib/app-context";
-import { DonateDialog, DonationsDialog } from "@/features/donate/components/dialogs";
-import { ShareDialog, shareTargets } from "@/shared/ui/dialog";
-import { PREFIX, DEFAULT_ALLOCATION, type Donation, LAYOUTS, type LayoutId, type PageData, type PageUpdate, pageKey } from "@/shared/domain/model";
-import { initials } from "@/shared/lib/format";
+import { DonateDialog, DonationsDialog } from "@/features/donate";
 import type { Org, PageBundle, PageRow, TicketType } from "@/shared/domain/types";
 import { LEGAL } from "@/shared/lib/seo";
-import { Input } from "@/shared/ui/base/input/input";
-import { TextArea } from "@/shared/ui/base/textarea/textarea";
-import { Avatar } from "@/shared/ui/base/avatar/avatar";
 import { cx } from "@/shared/utils/cx";
 
 type L = FC<{ p: PageData }>;

@@ -1,16 +1,7 @@
 import { type FC, type ReactNode, createElement, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, ArrowUp, Award01, Brush03, Building07, Calendar, Diamond01, Eye, GraduationHat01, Grid01, Minus, Plus, Settings01, Shield01, TrendUp01, Trophy01, Tv01, User01, Users01, XClose, Zap } from "@untitledui/icons";
-import { Dialog, Modal, ModalOverlay } from "@/shared/ui/application/modals/modal";
-import { Avatar } from "@/shared/ui/base/avatar/avatar";
-import { Badge } from "@/shared/ui/base/badges/badges";
-import { Button } from "@/shared/ui/base/buttons/button";
-import { Checkbox } from "@/shared/ui/base/checkbox/checkbox";
-import { Input } from "@/shared/ui/base/input/input";
-import { NativeSelect } from "@/shared/ui/base/select/select-native";
+import { Dialog, Modal, ModalOverlay, Avatar, Badge, Button, Checkbox, Input, NativeSelect, BrandLogo, ThemeToggle, Container, FIELD, PillSelect } from "@/shared/ui";
 import { BrandPanel } from "@/features/leaderboard/components/BrandPanel";
-import { BrandLogo, ThemeToggle } from "@/shared/ui/brand";
-import { Container } from "@/shared/ui/layout";
-import { FIELD, PillSelect } from "@/shared/ui/pill-select";
 import { type Go, useApp } from "@/shared/lib/app-context";
 import { BOARDS, type BoardKey, KINDS, REGIONS } from "@/features/leaderboard/model";
 import { CURRENCIES, type Supporter } from "@/shared/domain/model";

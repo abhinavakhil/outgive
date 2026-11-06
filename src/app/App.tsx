@@ -1,26 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppContext, type Go, makeMoney } from "@/shared/lib/app-context";
 import { applyBrand } from "@/shared/lib/brand";
 import { type Activity, type Brand, DEFAULT_BRAND, PREFIX, type Supporter } from "@/shared/domain/model";
 import { type DB, db as loadDb, isDemo } from "@/shared/lib/db";
 import { DEMO_SLUG, type Tenant, type View, parse, pathOf, tenantOf } from "@/shared/lib/route";
 import { type BoardRow, type Org, type User, toBrand, toSupporter } from "@/shared/domain/types";
-import { Admin } from "@/features/admin/components/Admin";
-import { CreateFlow } from "@/features/create/components/CreateFlow";
-import { Dashboard } from "@/features/dashboard/components/Dashboard";
-import { Embed } from "@/features/live/components/Embed";
-import { Info } from "@/features/marketing/components/Info";
-import { Leaderboard } from "@/features/leaderboard/components/Leaderboard";
-import { ComingSoon, ComingSoonGate } from "@/features/marketing/components/ComingSoon";
-import { LandingB } from "@/features/marketing/components/LandingB";
-import { Give } from "@/features/donate/components/Give";
-import { Live, Overlay } from "@/features/live/components/Live";
-import { Login } from "@/features/auth/components/Login";
-import { NotFound } from "@/shared/ui/not-found";
-import { PageScreen, SamplePage } from "@/features/campaign/components/PageScreen";
-import { Pricing } from "@/features/marketing/components/Pricing";
-import { Start } from "@/features/onboarding/components/Start";
-import { Thanks } from "@/features/donate/components/Thanks";
+import { ComingSoon, ComingSoonGate } from "@/features/launch";
+import { screenFor } from "@/app/routes";
 import { LEGAL_DRAFT, SITE, metaFor } from "@/shared/lib/seo";
 
 const load = <T,>(key: string, fallback: T): T => { try { return JSON.parse(localStorage.getItem(key) ?? "null") ?? fallback; } catch { return fallback; } };
@@ -136,27 +122,8 @@ export const App = () => {
     if (!ctx) return <Splash text="Loading…" />;
     const needsOrg = !!slug;
     const screen = () => {
-        if (needsOrg && orgMissing) return <NotFound />;
-        if (needsOrg && !org) return <Splash text="Loading…" />;
-        switch (view.name) {
-            case "landing-b": return <LandingB />;
-            case "layouts": return <SamplePage />;
-            case "pricing": return <Pricing />;
-            case "start": return <Start />;
-            case "login": return <Login />;
-            case "dashboard": return <Dashboard />;
-            case "about": case "rules": case "faq": case "terms": case "privacy": return <Info kind={view.name} />;
-            case "board": return <Leaderboard />;
-            case "live": return <Live pageRef={view.page} layout={view.layout} theme={view.theme} />;
-            case "overlay": return <Overlay pageRef={view.page} style={view.style} />;
-            case "give": return <Give pageRef={view.page} />;
-            case "create": return <CreateFlow parent={view.parent} />;
-            case "admin": return <Admin tab={view.tab} />;
-            case "thanks": return <Thanks gref={view.ref} />;
-            case "page": return <PageScreen key={`${view.page.type}/${view.page.slug}`} pageRef={view.page} manage={view.sub === "manage"} donate={view.sub === "donate" ? view.amount ?? true : undefined} />;
-            case "embed": return <Embed pageRef={view.page} theme={view.theme} limit={view.limit} />;
-            default: return <NotFound />;
-        }
+        if (needsOrg && !orgMissing && !org) return <Splash text="Loading…" />;
+        return <Suspense fallback={<Splash text="Loading…" />}>{screenFor(needsOrg && orgMissing ? { name: "notfound" } : view)}</Suspense>;
     };
     return (
         <AppContext.Provider value={ctx}>
