@@ -16,7 +16,10 @@ export interface DonateTarget {
     /** Prefilled board identity, from the leaderboard's claim flow. */
     supporter?: { name?: string; kind?: string; tagline?: string; country?: string; region?: string; link?: string; claimedRank?: number; anonymous?: boolean; lockKind?: boolean };
 }
-const chip = (on: boolean) => cx("h-9 cursor-pointer rounded-full px-4 text-sm font-semibold ring-1 ring-inset outline-focus-ring focus-visible:outline-2", on ? "bg-brand-solid text-white ring-transparent" : "bg-primary text-secondary ring-primary hover:bg-secondary");
+const ease = "transition duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]";
+const chip = (on: boolean) => cx("h-8 cursor-pointer rounded-full px-3 text-[13px] font-semibold outline-focus-ring focus-visible:outline-2", ease, on ? "bg-ink text-ink-inverse" : "bg-tint-2 text-ink-2 hover:text-ink");
+/** One option inside a segmented track (frequency, list order). */
+const seg = (on: boolean) => cx("h-full cursor-pointer rounded-full px-4 text-[13px] font-semibold outline-focus-ring focus-visible:outline-2", ease, on ? "bg-ink text-ink-inverse" : "text-ink-2 hover:text-ink");
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
@@ -74,9 +77,9 @@ export const DonateDialog = ({ target, isOpen, initial, onClose, onShare, onLoca
         return (
             <Shell isOpen={isOpen} onClose={onClose} label="Thank you">
                 <div className="flex flex-col items-center gap-3 py-4 text-center">
-                    <span className="flex size-12 items-center justify-center rounded-full bg-brand-solid text-white"><Check className="size-6" /></span>
+                    <span className="flex size-12 items-center justify-center rounded-full bg-ink text-ink-inverse"><Check className="size-6" /></span>
                     <Head title={`Thank you${done.name === "Anonymous" ? "" : `, ${done.name.split(" ")[0]}`}`} sub={`Your ${money(done.usd)} gift now shows on the page.${isDemo || onLocal ? " Demo: nothing was charged." : ""}`} />
-                    <div className="flex gap-3 pt-1"><Button size="md" color="primary" className="rounded-full" iconLeading={Share07} onPress={() => { onClose(); onShare(); }}>Share this page</Button>{done.id && <Button size="md" color="secondary" className="rounded-full" onPress={() => window.location.assign(href({ name: "thanks", ref: done.id }))}>Your receipt</Button>}<Button size="md" color="secondary" className="rounded-full" onPress={onClose}>Close</Button></div>
+                    <div className="flex flex-wrap justify-center gap-3 pt-1"><Button size="md" color="primary" className="rounded-full" iconLeading={Share07} onPress={() => { onClose(); onShare(); }}>Share this page</Button>{done.id && <Button size="md" color="secondary" className="rounded-full" onPress={() => window.location.assign(href({ name: "thanks", ref: done.id }))}>Your receipt</Button>}<Button size="md" color="secondary" className="rounded-full" onPress={onClose}>Close</Button></div>
                 </div>
             </Shell>
         );
@@ -87,30 +90,30 @@ export const DonateDialog = ({ target, isOpen, initial, onClose, onShare, onLoca
         <Shell isOpen={isOpen} onClose={onClose} label="Give">
             <form className="flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); submit(); }}>
                 <Head title={target.cause ?? target.title} sub={target.cause ? `${money(initial)} funds this for ${target.title}. Paid straight to ${org.name}'s own account.` : `${page ? `${cta} to ${page.org_name || org.name}` : `Give to ${org.name}`}. Paid straight to ${org.name}'s own account.`} />
-                {!canPay && <p className="rounded-xl bg-warning-primary px-4 py-3 text-sm text-warning-primary">{org.name} has not connected payouts yet, so gifts cannot be taken here for the moment.</p>}
-                {target.tickets && target.tickets.length > 0 && <div className="flex flex-col gap-2"><span className="text-sm font-medium text-secondary">Tickets</span>{target.tickets.map((t) => { const left = t.quantity === null ? null : t.quantity - t.sold; const on = ticket?.id === t.id; return <button key={t.id} type="button" aria-pressed={on} disabled={left !== null && left <= 0} onClick={() => { setTicket(on ? null : t); setMonthly(false); }} className={cx("flex cursor-pointer items-center justify-between rounded-xl px-3.5 py-3 text-left ring-1 ring-inset disabled:cursor-not-allowed disabled:opacity-50", on ? "bg-brand-primary ring-brand" : "ring-secondary hover:bg-secondary")}><span><span className="block font-semibold text-primary">{t.name}</span><span className="text-sm text-tertiary">{t.description}{left !== null && ` · ${left} left`}</span></span><span className="font-semibold text-brand-secondary">{t.price_cents ? show(t.price_cents) : "Free"}</span></button>; })}
-                    {ticket && <label className="flex items-center gap-3 text-sm text-secondary">How many<input type="number" min={1} max={20} value={qty} onChange={(e) => setQty(Math.max(1, Math.min(20, Number(e.target.value) || 1)))} className="h-9 w-20 rounded-lg px-3 ring-1 ring-primary ring-inset" /></label>}
-                    <span className="text-xs text-tertiary">Or give without a ticket:</span></div>}
+                {!canPay && <p className="rounded-[18px] bg-warning-primary px-4 py-3 text-sm text-warning-primary">{org.name} has not connected payouts yet, so gifts cannot be taken here for the moment.</p>}
+                {target.tickets && target.tickets.length > 0 && <div className="flex flex-col gap-2"><span className="text-[11px] font-semibold tracking-wide text-ink-3 uppercase">Tickets</span>{target.tickets.map((t) => { const left = t.quantity === null ? null : t.quantity - t.sold; const on = ticket?.id === t.id; return <button key={t.id} type="button" aria-pressed={on} disabled={left !== null && left <= 0} onClick={() => { setTicket(on ? null : t); setMonthly(false); }} className={cx("flex cursor-pointer items-center justify-between gap-3 rounded-[18px] px-3.5 py-3 text-left outline-focus-ring focus-visible:outline-2 disabled:cursor-not-allowed disabled:opacity-50", ease, on ? "bg-ink text-ink-inverse" : "bg-tint-1 text-ink hover:bg-tint-2")}><span><span className="block font-semibold">{t.name}</span><span className={cx("text-sm", on ? "text-ink-inverse/70" : "text-ink-3")}>{t.description}{left !== null && ` · ${left} left`}</span></span><span className="shrink-0 font-bubble font-bold tabular-nums">{t.price_cents ? show(t.price_cents) : "Free"}</span></button>; })}
+                    {ticket && <label className="flex items-center gap-3 text-sm font-semibold text-ink-2">How many<input type="number" min={1} max={20} value={qty} onChange={(e) => setQty(Math.max(1, Math.min(20, Number(e.target.value) || 1)))} className="h-10 w-20 rounded-full bg-raised px-3.5 text-sm text-ink tabular-nums shadow-edge outline-none placeholder:text-ink-faint focus:ring-1 focus:ring-[color-mix(in_srgb,var(--ts-fg)_24%,transparent)]" /></label>}
+                    <span className="text-xs text-ink-3">Or give without a ticket:</span></div>}
                 {!ticket && <>
-                    {!target.cause && <div className="flex flex-wrap gap-2">{target.gifts.map((g) => { const v = String(Math.round(g * rate)); return <button key={g} type="button" aria-pressed={amount === v} onClick={() => setAmount(v)} className={chip(amount === v)}>{money(g)}</button>; })}</div>}
+                    {!target.cause && <div className="flex flex-wrap gap-2">{target.gifts.map((g) => { const v = String(Math.round(g * rate)); return <button key={g} type="button" aria-pressed={amount === v} onClick={() => setAmount(v)} className={cx(chip(amount === v), "font-bubble font-bold tabular-nums")}>{money(g)}</button>; })}</div>}
                     <div className="grid gap-3 sm:grid-cols-[1fr_auto]"><Input label={`Amount (${currency})`} type="number" value={amount} onChange={setAmount} isInvalid={!!error && !(cents >= 100)} />
-                        <div role="group" aria-label="Frequency" className="flex h-fit gap-1 self-end rounded-full bg-secondary p-1 ring-1 ring-secondary ring-inset">{([[false, "Once"], [true, "Monthly"]] as const).map(([v, l]) => <button key={l} type="button" aria-pressed={monthly === v} onClick={() => setMonthly(v)} className={cx("h-9 cursor-pointer rounded-full px-4 text-sm font-semibold outline-focus-ring focus-visible:outline-2", monthly === v ? "bg-brand-solid text-white" : "text-tertiary hover:text-primary")}>{l}</button>)}</div></div>
+                        <div role="group" aria-label="Frequency" className="flex h-12 w-fit gap-1 self-end rounded-full bg-tint-2 p-1">{([[false, "Once"], [true, "Monthly"]] as const).map(([v, l]) => <button key={l} type="button" aria-pressed={monthly === v} onClick={() => setMonthly(v)} className={seg(monthly === v)}>{l}</button>)}</div></div>
                 </>}
-                {org.tips_enabled && !onLocal && <div className="flex flex-col gap-2 rounded-xl bg-secondary p-3.5"><div className="flex flex-wrap items-center justify-between gap-2"><span className="text-sm font-medium text-primary">Add a tip to Outgive</span><span className="text-xs text-tertiary">Outgive is free for {org.name}. Tips keep it that way.</span></div><div className="flex flex-wrap gap-2">{TIP_CHOICES.map((t) => <button key={t} type="button" aria-pressed={tip === t} onClick={() => setTip(t)} className={chip(tip === t)}>{t === 0 ? "No tip" : `${t}% · ${show(tipFor(cents, t))}`}</button>)}</div></div>}
+                {org.tips_enabled && !onLocal && <div className="flex flex-col gap-2 rounded-[18px] bg-tint-1 p-3.5"><div className="flex flex-wrap items-center justify-between gap-2"><span className="text-sm font-semibold text-ink">Add a tip to Outgive</span><span className="text-xs text-ink-3">Outgive is free for {org.name}. Tips keep it that way.</span></div><div className="flex flex-wrap gap-2">{TIP_CHOICES.map((t) => <button key={t} type="button" aria-pressed={tip === t} onClick={() => setTip(t)} className={cx(chip(tip === t), "tabular-nums")}>{t === 0 ? "No tip" : `${t}% · ${show(tipFor(cents, t))}`}</button>)}</div></div>}
                 {!onLocal && <Checkbox size="md" isSelected={cover} onChange={setCover} label={`Cover the card fees (${show(coverFor(cents))}) so ${org.name} gets the full gift`} />}
                 <div className="grid gap-3 sm:grid-cols-2"><Input label="Your name" placeholder="Shown on the page" value={name} onChange={setName} isDisabled={anon} /><Input label="Email" type="email" placeholder="For your receipt" value={email} onChange={setEmail} isRequired={!onLocal && !isDemo} /></div>
                 <TextArea label="Message (optional)" rows={2} value={message} onChange={setMessage} />
                 <button type="button" onClick={() => setMore((m) => !m)} className="w-fit cursor-pointer text-sm font-semibold text-brand-secondary underline-offset-4 hover:underline">{more ? "Fewer options" : "Dedicate this gift, or give as a team, company or school"}</button>
                 {more && <div className="flex flex-col gap-3">
                     <Input label="Dedicate this gift (optional)" placeholder="In honour of, or in memory of…" value={dedication} onChange={setDedication} />
-                    {!target.supporter?.lockKind && <><div role="group" aria-label="On the board as" className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">{kinds.map(([k, l]) => <button key={k} type="button" aria-pressed={kind === k} onClick={() => setKind(k)} className={cx("cursor-pointer rounded-xl px-2 py-2 text-sm font-semibold ring-1 outline-focus-ring transition ring-inset focus-visible:outline-2", kind === k ? "bg-brand-primary text-brand-secondary ring-brand" : "text-secondary ring-secondary hover:bg-secondary")}>{l}</button>)}</div>
+                    {!target.supporter?.lockKind && <><div role="group" aria-label="On the board as" className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">{kinds.map(([k, l]) => <button key={k} type="button" aria-pressed={kind === k} onClick={() => setKind(k)} className={cx("h-8 cursor-pointer rounded-full px-3 text-[13px] font-semibold outline-focus-ring focus-visible:outline-2", ease, kind === k ? "bg-ink text-ink-inverse" : "bg-tint-2 text-ink-2 hover:text-ink")}>{l}</button>)}</div>
                     {kind !== "Individuals" && <Input label={`${kind.replace(/ies$/, "y").replace(/s$/, "")} name on the board`} value={team} onChange={setTeam} placeholder="The gift counts toward this name's rank" />}</>}
                 </div>}
                 <Checkbox size="md" isSelected={anon} onChange={setAnon} label="Give anonymously" hint="Your name is hidden on the page and the board. The gift still counts for a team, company or school." />
                 {error && <p className="text-sm text-error-primary">{error}</p>}
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-brand-primary px-4 py-3 text-sm"><span className="text-tertiary">{onLocal ? "Demo only, nothing is charged." : <>You pay <b className="text-primary">{show(b.total)}</b>{monthly && " a month"}. {org.name} receives {show(b.amount + (cover ? b.cover : 0))}{cover ? " before Stripe's fee" : ""}.</>}</span>
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] bg-tint-1 px-4 py-3 text-sm"><span className="text-ink-3">{onLocal ? "Demo only, nothing is charged." : <>You pay <b className="font-bubble font-bold text-ink tabular-nums">{show(b.total)}</b>{monthly && " a month"}. {org.name} receives {show(b.amount + (cover ? b.cover : 0))}{cover ? " before Stripe's fee" : ""}.</>}</span>
                     <div className="flex gap-2"><Button size="md" color="secondary" className="rounded-full" onPress={onClose}>Cancel</Button><Button size="md" color="primary" type="submit" className="rounded-full" isDisabled={busy || !canPay}>{busy ? "One moment…" : ticket ? `Get ${qty > 1 ? `${qty} tickets` : "ticket"}` : `${monthly ? "Give monthly" : "Give"} ${show(b.total)}`}</Button></div></div>
-                {!onLocal && !isDemo && <p className="text-center text-xs text-tertiary">Cards, Apple Pay, Google Pay and Link, through Stripe. You will be sent to a secure checkout page.</p>}
+                {!onLocal && !isDemo && <p className="text-center text-xs text-ink-3">Cards, Apple Pay, Google Pay and Link, through Stripe. You will be sent to a secure checkout page.</p>}
             </form>
         </Shell>
     );
@@ -125,16 +128,16 @@ export const DonationsDialog = ({ p, mode, onClose }: { p: PageData; mode: "all"
     return (
         <Shell isOpen={mode !== null} onClose={onClose} label="Donations">
             <Head title={`Donations · ${p.supporters}`} sub={p.donations.length < p.supporters ? `Showing the ${p.donations.length} most recent.` : undefined} />
-            <div role="group" aria-label="Order" className="flex w-fit gap-1 rounded-full bg-secondary p-1 ring-1 ring-secondary ring-inset">
-                {([["all", "Recent"], ["top", "Top"]] as const).map(([k, l]) => <button key={k} type="button" aria-pressed={tab === k} onClick={() => setTab(k)} className={cx("h-9 cursor-pointer rounded-full px-4 text-sm font-semibold outline-focus-ring focus-visible:outline-2", tab === k ? "bg-brand-solid text-white" : "text-tertiary hover:text-primary")}>{l}</button>)}
+            <div role="group" aria-label="Order" className="flex w-fit gap-1.5">
+                {([["all", "Recent"], ["top", "Top"]] as const).map(([k, l]) => <button key={k} type="button" aria-pressed={tab === k} onClick={() => setTab(k)} className={chip(tab === k)}>{l}</button>)}
             </div>
-            <ul className="flex max-h-96 flex-col overflow-y-auto">
-                {rows.length === 0 && <li className="py-6 text-center text-sm text-tertiary">No gifts yet. Be the first.</li>}
+            <ul className="flex max-h-96 flex-col gap-0.5 overflow-y-auto">
+                {rows.length === 0 && <li className="rounded-[18px] bg-tint-1 py-6 text-center text-sm text-ink-3">No gifts yet. Be the first.</li>}
                 {rows.map((d, i) => (
-                    <li key={`${d.at}-${i}`} className="flex items-center gap-3 border-b border-secondary py-3 last:border-b-0">
-                        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-secondary">{(d.name[0] ?? "A").toUpperCase()}</span>
-                        <span className="min-w-0 flex-1"><span className="block truncate font-medium text-primary">{d.name}</span><span className="block text-xs text-tertiary">{ago(d.at)}</span></span>
-                        <span className="font-semibold text-primary">{money(d.usd)}</span>
+                    <li key={`${d.at}-${i}`} className={cx("flex items-center gap-3 rounded-[18px] px-3 py-3 hover:bg-tint-2", ease)}>
+                        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-tint-2 text-sm font-semibold text-ink-2">{(d.name[0] ?? "A").toUpperCase()}</span>
+                        <span className="min-w-0 flex-1"><span className="block truncate font-medium text-ink">{d.name}</span><span className="block text-xs text-ink-3">{ago(d.at)}</span></span>
+                        <span className="font-bubble font-bold text-ink tabular-nums">{money(d.usd)}</span>
                     </li>
                 ))}
             </ul>

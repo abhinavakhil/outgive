@@ -4,7 +4,7 @@ import { type LayoutId, type PageData, type PageUpdate, type Supporter, daysLeft
 import { useApp } from "@/shared/lib/app-context";
 import { LEVELS, PEOPLE } from "@/shared/lib/demo-data";
 import { ago, initials } from "@/shared/lib/format";
-import { Avatar, Badge, Button, Ring, Card, CoverMedia, DescriptionView } from "@/shared/ui";
+import { Avatar, Button, Ring, Card, CoverMedia, DescriptionView } from "@/shared/ui";
 import { cx } from "@/shared/utils/cx";
 
 /** The page being viewed. Lets shared sections show an empty state on a newly published page instead of sample people. */
@@ -15,19 +15,19 @@ export const Cover = ({ className }: { className?: string }) => {
     const page = useContext(PageContext);
     return <CoverMedia cover={page?.cover ?? { kind: "none", src: "" }} className={cx("aspect-video max-w-full min-w-0", className)} />;
 };
-export const TypeBadge = ({ p }: { p: PageData }) => <Badge type="pill-color" color="brand" size="md">{typeOf(p).label}</Badge>;
+export const TypeBadge = ({ p }: { p: PageData }) => <span className="inline-flex h-6 w-fit items-center rounded-full bg-tint-2 px-2.5 text-xs font-semibold text-ink-2">{typeOf(p).label}</span>;
 export const OrgLine = ({ p }: { p: PageData }) => (
-    <div className="flex items-center gap-2.5 text-sm text-tertiary">
+    <div className="flex items-center gap-2.5 text-sm text-ink-3">
         <Avatar size="sm" initials={initials(p.org) || "?"} />
-        <span>by <span className="font-semibold text-primary">{p.org}</span> · Registered charity · {p.country}</span>
+        <span>by <span className="font-semibold text-ink">{p.org}</span> · Registered charity · {p.country}</span>
     </div>
 );
 export const Raised = ({ p, size = "lg" }: { p: PageData; size?: "lg" | "xl" }) => {
     const { money } = useApp();
     return (
         <div>
-            <span className={cx("font-semibold tracking-tight text-brand-secondary", size === "xl" ? "text-display-md" : "text-display-sm")}>{money(p.raised)}</span>{" "}
-            <span className="text-tertiary">raised of {money(p.goal)}</span>
+            <span className={cx("font-bubble font-bold text-ink tabular-nums", size === "xl" ? "text-display-md" : "text-display-sm")}>{money(p.raised)}</span>{" "}
+            <span className="text-ink-3">raised of <span className="font-bubble font-bold tabular-nums">{money(p.goal)}</span></span>
         </div>
     );
 };
@@ -53,28 +53,28 @@ export const Donate = ({ p, cta }: { p: PageData; cta?: string }) => {
             <div className="flex items-center gap-4">
                 {p.showGoal && <Ring value={pct(p)} />}
                 <div className="min-w-0">
-                    <div className="text-xl font-semibold tracking-tight text-primary">{money(p.raised)} raised{p.showGoal && <span className="font-normal text-tertiary"> of {money(p.goal)}</span>}</div>
-                    <div className="text-sm text-tertiary">{p.supporters} donations{daysLeft(p) !== null && <> · {daysLeft(p)} days left</>}</div>
+                    <div className="text-xl font-semibold tracking-tight text-ink"><span className="font-bubble font-bold tabular-nums">{money(p.raised)}</span> raised{p.showGoal && <span className="font-normal text-ink-3"> of <span className="font-bubble font-bold tabular-nums">{money(p.goal)}</span></span>}</div>
+                    <div className="text-sm text-ink-3"><span className="font-bubble font-bold tabular-nums">{p.supporters}</span> donations{daysLeft(p) !== null && <> · <span className="font-bubble font-bold tabular-nums">{daysLeft(p)}</span> days left</>}</div>
                 </div>
             </div>
             <Button size="xl" color="primary" className="w-full rounded-full" onPress={() => donate()}>{label}</Button>
-            <Button size="xl" color="secondary" className="w-full" onPress={share}>Share</Button>
-            <div className="flex items-center gap-3 rounded-2xl bg-brand-primary p-3">
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-solid text-sm font-semibold text-white">#{rank.rank}</span>
-                <div className="min-w-0 flex-1 text-sm"><div className="font-semibold text-primary">{rank.listed ? `On the ${brand.name} leaderboard` : `Would rank on the ${brand.name} board`}</div><div className="text-xs text-tertiary">{rank.next ? `${money(rank.gap)} more takes #${rank.rank - 1} from ${rank.next.name}` : "This is the top rank"}</div></div>
+            <Button size="xl" color="secondary" className="w-full rounded-full" onPress={share}>Share</Button>
+            <div className="flex items-center gap-3 rounded-[18px] bg-tint-2 p-3">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-ink font-bubble text-sm font-bold text-ink-inverse tabular-nums">#{rank.rank}</span>
+                <div className="min-w-0 flex-1 text-sm"><div className="font-semibold text-ink">{rank.listed ? `On the ${brand.name} leaderboard` : `Would rank on the ${brand.name} board`}</div><div className="text-xs text-ink-3">{rank.next ? `${money(rank.gap)} more takes #${rank.rank - 1} from ${rank.next.name}` : "This is the top rank"}</div></div>
                 {rank.next && <Button size="sm" color="secondary" className="rounded-full" onPress={() => donate(rank.gap)}>Outbid</Button>}
             </div>
             {p.donations.length > 0 && <>
-                <div className="flex items-center gap-3 text-sm font-semibold text-brand-secondary"><span className="flex size-10 items-center justify-center rounded-full bg-brand-secondary"><TrendUp01 className="size-5" /></span>{p.donations.length} recent donations</div>
+                <div className="flex items-center gap-3 text-sm font-semibold text-ink"><span className="flex size-10 items-center justify-center rounded-full bg-tint-2 text-ink-2"><TrendUp01 className="size-5" /></span><span><span className="font-bubble font-bold tabular-nums">{p.donations.length}</span> recent donations</span></div>
                 <ul className="flex flex-col gap-3">{p.donations.slice(0, 5).map((d, i) => (
                     <li key={`${d.at}-${i}`} className="flex items-center gap-3">
-                        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-secondary">{(initials(d.name) || "A")[0]}</span>
-                        <span className="min-w-0"><span className="block truncate text-sm font-medium text-primary">{d.name}</span><span className="block text-xs text-tertiary"><span className="font-semibold text-secondary">{money(d.usd)}</span> · {d.usd === topUsd && p.donations.length > 1 ? "Top donation" : ago(d.at)}{d.monthly && " · Monthly"}</span></span>
+                        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-tint-2 text-sm font-semibold text-ink-2">{(initials(d.name) || "A")[0]}</span>
+                        <span className="min-w-0"><span className="block truncate text-sm font-medium text-ink">{d.name}</span><span className="block text-xs text-ink-3"><span className="font-bubble font-bold text-ink-2 tabular-nums">{money(d.usd)}</span> · {d.usd === topUsd && p.donations.length > 1 ? "Top donation" : ago(d.at)}{d.monthly && " · Monthly"}</span></span>
                     </li>
                 ))}</ul>
                 <div className="grid grid-cols-2 gap-2"><Button size="md" color="secondary" className="rounded-full" onPress={() => donations("all")}>See all</Button><Button size="md" color="secondary" className="rounded-full" iconLeading={Star01} onPress={() => donations("top")}>See top</Button></div>
             </>}
-            <p className="text-center text-xs text-tertiary">The full gift goes to the charity</p>
+            <p className="text-center text-xs text-ink-3">The full gift goes to the charity</p>
         </Card>
     );
 };
@@ -86,21 +86,21 @@ export const Board = ({ title = "Top fundraisers", items = PEOPLE, limit = 5 }: 
     if (rows.length === 0) {
         return (
             <section className="flex flex-col gap-3">
-                <h2 className="text-xl font-semibold text-primary">{title}</h2>
-                <p className="rounded-xl bg-secondary px-4 py-5 text-sm text-tertiary ring-1 ring-secondary ring-inset">Nobody here yet. The first gift puts a name on this list.</p>
+                <h2 className="text-xl font-semibold tracking-tight text-ink">{title}</h2>
+                <p className="rounded-[18px] bg-tint-1 px-4 py-5 text-sm text-ink-3">Nobody here yet. The first gift puts a name on this list.</p>
             </section>
         );
     }
     return (
         <section className="flex flex-col gap-3">
-            <h2 className="text-xl font-semibold text-primary">{title}</h2>
-            <ol className="flex flex-col gap-1">
+            <h2 className="text-xl font-semibold tracking-tight text-ink">{title}</h2>
+            <ol className="flex flex-col gap-0.5 rounded-[28px] bg-tint-1 p-2">
                 {rows.slice(0, limit).map(([name, amount], i) => (
-                    <li key={`${name}-${i}`} className={cx("flex items-center gap-3 rounded-xl px-3 py-2.5", i < 3 && "bg-brand-primary")}>
-                        <span className={cx("w-8 font-semibold", i < 3 ? "text-brand-secondary" : "text-tertiary")}>#{i + 1}</span>
+                    <li key={`${name}-${i}`} className={cx("flex items-center gap-3 rounded-[18px] px-4 py-3 transition duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]", i === 0 ? "bg-ink text-ink-inverse" : "text-ink hover:bg-tint-2")}>
+                        <span className={cx("w-8 font-bubble font-bold tabular-nums", i === 0 ? "text-ink-inverse/70" : "text-ink-3")}>#{i + 1}</span>
                         <Avatar size="sm" initials={initials(name)} />
-                        <span className="flex-1 font-medium text-primary">{name}</span>
-                        <span className="font-semibold text-brand-secondary">{money(amount)}</span>
+                        <span className="min-w-0 flex-1 truncate font-medium">{name}</span>
+                        <span className="font-bubble font-bold tabular-nums">{money(amount)}</span>
                     </li>
                 ))}
             </ol>
@@ -113,18 +113,18 @@ export const Story = ({ p, lead, bare }: { p: PageData; lead?: boolean; bare?: b
     const long = bare && text.length > 700;
     return (
         <section className="flex flex-col gap-3">
-            {!bare && <h2 className="text-xl font-semibold text-primary">The story</h2>}
+            {!bare && <h2 className="text-xl font-semibold tracking-tight text-ink">The story</h2>}
             {text
                 ? <div className="relative"><DescriptionView html={p.story} className={cx("max-w-prose", lead && "text-lg", long && !open && "max-h-80 overflow-hidden")} />{long && !open && <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-primary to-transparent" />}</div>
-                : <p className="max-w-prose text-md text-tertiary">The story has not been written yet.</p>}
-            {long && <button type="button" onClick={() => setOpen((o) => !o)} className="w-fit cursor-pointer text-sm font-semibold text-primary underline underline-offset-4">{open ? "Show less" : "Read more"}</button>}
+                : <p className="max-w-prose text-[15px] text-ink-3">The story has not been written yet.</p>}
+            {long && <button type="button" onClick={() => setOpen((o) => !o)} className="w-fit cursor-pointer text-sm font-semibold text-ink underline underline-offset-4">{open ? "Show less" : "Read more"}</button>}
         </section>
     );
 };
 export const OrganizerLine = ({ p }: { p: PageData }) => (
-    <div className="flex items-center gap-3 border-y border-secondary py-4"><Avatar size="md" initials={initials(p.org) || "?"} /><span className="font-semibold text-primary">{p.org}</span><span className="text-sm text-tertiary">is organising this {typeOf(p).label.toLowerCase()}</span></div>
+    <div className="flex items-center gap-3 border-y border-hairline py-4"><Avatar size="md" initials={initials(p.org) || "?"} /><span className="font-semibold text-ink">{p.org}</span><span className="text-sm text-ink-3">is organising this {typeOf(p).label.toLowerCase()}</span></div>
 );
-export const Protected = () => <span className="inline-flex w-fit items-center gap-1.5 rounded-md bg-brand-secondary px-2.5 py-1 text-sm font-semibold text-primary"><ShieldTick className="size-4" />Donation protected</span>;
+export const Protected = () => <span className="inline-flex h-6 w-fit items-center gap-1.5 rounded-full bg-tint-2 px-2.5 text-xs font-semibold text-ink-2"><ShieldTick className="size-3.5" />Donation protected</span>;
 /** Giving levels. The sample page names what each buys; a published page offers its own gift amounts and claims nothing about them. */
 export const Levels = () => {
     const { money } = useApp();
@@ -135,9 +135,9 @@ export const Levels = () => {
         <div className="grid gap-3 sm:grid-cols-3">
             {levels.map(([amount, name, what]) => (
                 <Card key={amount} className="flex flex-col gap-2 md:p-5">
-                    <span className="text-display-xs font-semibold text-brand-secondary">{money(amount)}</span>
-                    <span className="font-semibold text-primary">{name}</span>
-                    <span className="flex-1 text-sm text-tertiary">{what}</span>
+                    <span className="font-bubble text-display-xs font-bold text-ink tabular-nums">{money(amount)}</span>
+                    <span className="font-semibold text-ink">{name}</span>
+                    <span className="flex-1 text-sm text-ink-3">{what}</span>
                     <Button size="sm" color="secondary" className="rounded-full" onPress={() => donate(amount)}>Give {money(amount)}</Button>
                 </Card>
             ))}
@@ -147,7 +147,7 @@ export const Levels = () => {
 export const Stats = ({ items }: { items: [string, string][] }) => (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {items.map(([value, label]) => (
-            <Card key={label} className="md:p-5"><div className="text-display-xs font-semibold text-primary">{value}</div><div className="text-sm text-tertiary">{label}</div></Card>
+            <Card key={label} className="rounded-3xl md:p-5"><div className="font-bubble text-display-xs font-bold text-ink tabular-nums">{value}</div><div className="text-sm text-ink-3">{label}</div></Card>
         ))}
     </div>
 );
@@ -168,9 +168,9 @@ const WF: Record<LayoutId, Box[]> = {
     chapters: [[4, 8, 40, 7, "k"], [4, 20, 26, 5, "g"], [4, 32, 16, 9, "a"], [56, 6, 40, 34, "t"], [4, 48, 92, 9, "g"], [6, 50, 14, 5, "a"], [4, 64, 56, 4, "g"], [4, 72, 48, 4, "g"], [66, 62, 30, 32, "w"]],
     impact: [[26, 6, 48, 8, "k"], [34, 18, 32, 4, "g"], [4, 30, 29, 34, "w"], [35.5, 30, 29, 34, "w"], [67, 30, 29, 34, "w"], [8, 54, 20, 6, "a"], [39.5, 54, 20, 6, "a"], [71, 54, 20, 6, "a"], [4, 70, 92, 7, "a"], [4, 82, 56, 12, "t"]],
 };
-const WF_FILL = { k: "bg-fg-primary", a: "bg-brand-400", t: "bg-brand-100", g: "bg-tertiary", w: "bg-primary ring-1 ring-secondary ring-inset" };
+const WF_FILL = { k: "bg-ink", a: "bg-ink-3", t: "bg-tint-3", g: "bg-tint-2", w: "bg-raised shadow-edge" };
 export const LayoutThumb = ({ id, className }: { id: LayoutId; className?: string }) => (
-    <div aria-hidden="true" className={cx("relative h-24 w-full overflow-hidden rounded-lg bg-secondary_alt ring-1 ring-secondary ring-inset", className)}>
+    <div aria-hidden="true" className={cx("relative h-24 w-full overflow-hidden rounded-xl bg-tint-1", className)}>
         {WF[id].map(([x, y, w, h, c], i) => (
             <div key={i} className={cx("absolute rounded-[3px]", WF_FILL[c])} style={{ left: `${x}%`, top: `${y}%`, width: `${w}%`, height: `${h}%` }} />
         ))}

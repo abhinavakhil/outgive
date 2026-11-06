@@ -6,14 +6,13 @@ import { type Go, useApp } from "@/shared/lib/app-context";
 import { BOARDS, type BoardKey, KINDS, REGIONS } from "@/features/leaderboard/model";
 import { CURRENCIES, type Supporter } from "@/shared/domain/model";
 import { initials } from "@/shared/lib/format";
-import { ALL_VARIANTS, type BoardCtx, MORE_BOARDS } from "@/features/leaderboard/components/boards";
+import { ALL_VARIANTS, type BoardCtx, EASE, INV, MORE_BOARDS, NUM, YOU } from "@/features/leaderboard/components/boards";
 import { cx } from "@/shared/utils/cx";
 import { track } from "@/shared/lib/analytics";
 
 const ago = (m: number) => (m < 1 ? "just now" : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} h ago` : `${Math.round(m / 1440)} d ago`);
 const opts = (xs: string[]) => xs.map((x) => ({ label: x, value: x }));
 type Row = Supporter & { rank: number };
-const YOU = "ring-2 ring-brand ring-offset-2 ring-offset-bg-primary";
 const BOARD_ICON: Record<BoardKey, FC<{ className?: string }> | null> = { total: Trophy01, week: Calendar, today: null, recruited: Users01, streak: Zap };
 const KIND_ICON: Record<string, FC<{ className?: string }>> = { All: Grid01, Individuals: User01, Teams: Users01, Companies: Building07, Schools: GraduationHat01 };
 /** League tiers by rank. The top tier takes the brand colour; the rest are fixed metals. */
@@ -25,21 +24,18 @@ const ord = (n: number) => n + (n % 100 > 10 && n % 100 < 14 ? "th" : (["th", "s
 const Crown = ({ className }: { className?: string }) => <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" className={className}><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z" /></svg>;
 /** A banner ribbon: a band with a notched, darker tail tucked behind each end. */
 const Ribbon = ({ band, tail, children }: { band: string; tail: string; children: ReactNode }) => (
-    <span className="absolute -bottom-5 left-1/2 flex -translate-x-1/2 items-start drop-shadow-md">
+    <span className="absolute -bottom-5 left-1/2 flex -translate-x-1/2 items-start">
         <span aria-hidden="true" className={cx("-mr-2.5 w-6 translate-y-2 self-stretch", tail)} style={{ clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%, 38% 50%)" }} />
-        <span className={cx("relative z-10 flex items-center gap-1.5 rounded-[5px] px-4 font-extrabold tracking-wide whitespace-nowrap uppercase", band)}>{children}</span>
+        <span className={cx("relative z-10 flex items-center gap-1.5 rounded-md px-4 font-bubble font-bold tracking-wide whitespace-nowrap uppercase", band)}>{children}</span>
         <span aria-hidden="true" className={cx("-ml-2.5 w-6 translate-y-2 self-stretch", tail)} style={{ clipPath: "polygon(0 0, 100% 0, 62% 50%, 100% 100%, 0 100%)" }} />
     </span>
 );
 /** The first three rows in stand order (2nd, 1st, 3rd), each with its place among the rows shown. */
 const stand = (rows: Row[]) => { const t = rows.slice(0, 3).map((o, i) => ({ o, place: i + 1 })); return t.length === 3 ? [t[1], t[0], t[2]] : t; };
-const CHIP = "inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary";
-const NAME = "transition-colors group-hover:text-brand-secondary";
-const ICON_BTN = "flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-tertiary outline-white transition hover:bg-white/15 hover:text-primary focus-visible:outline-2";
-const STEP = "flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-white text-brand-700 shadow-md outline-white transition hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 md:size-11";
+const CHIP = "inline-flex h-6 items-center gap-1 rounded-full bg-raised px-2.5 text-xs font-medium text-ink-2 shadow-edge";
+const ICON_BTN = cx("flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-3 outline-focus-ring hover:bg-tint-2 hover:text-ink focus-visible:outline-2", EASE);
+const STEP = cx("flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full bg-tint-1 text-ink outline-focus-ring hover:bg-tint-2 focus-visible:outline-2 focus-visible:outline-offset-2 md:size-11", EASE);
 const compact = (n: number) => new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(n);
-/** Four-point twinkle. */
-const Sparkle = ({ className }: { className?: string }) => <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M12 0c.9 6.6 4.8 10.6 12 12-7.2 1.4-11.1 5.4-12 12-.9-6.6-4.8-10.6-12-12C7.2 10.6 11.1 6.6 12 0z" /></svg>;
 const HeartFilled = ({ className }: { className?: string }) => <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.3 3 4.5 6.7 4.5c2.2 0 3.6 1.2 5.3 3.1 1.7-1.9 3.1-3.1 5.3-3.1 3.7 0 5.8 3.8 4.3 7.2C19.5 16.4 12 21 12 21z" /></svg>;
 const one = (kind: string) => ({ Individuals: "Individual", Teams: "Team", Companies: "Company", Schools: "School" })[kind] ?? kind;
 
@@ -130,31 +126,31 @@ export const Leaderboard = () => {
         return best;
     }, [byTotal]);
 
-    const tab = (on: boolean) => cx("inline-flex h-7 shrink-0 cursor-pointer items-center gap-1 rounded-full px-2.5 text-[0.8rem] font-semibold whitespace-nowrap outline-focus-ring transition focus-visible:outline-2", on ? "bg-white text-brand-700 shadow-sm" : "text-white/90 hover:bg-white/15 hover:text-white");
+    const tab = (on: boolean) => cx("inline-flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-3 text-[13px] font-semibold whitespace-nowrap outline-focus-ring focus-visible:outline-2", EASE, on ? "bg-ink text-ink-inverse" : "bg-tint-2 text-ink-2 hover:text-ink");
     const claimRow = (o: Row) => openClaim(o.total + 1, byTotal.findIndex((x) => x.id === o.id) + 1);
     const claimLink = (o: Row) => boardDef.money && <button type="button" onClick={() => claimRow(o)} className="cursor-pointer font-semibold text-brand-secondary underline-offset-2 hover:underline">claim for {money(o.total + 1)}</button>;
     /** Fades in over a hovered or focused row (put `group relative` on the row). Touch screens get the inline claim link instead. */
-    const claimPill = (o: Row, className?: string) => boardDef.money && <button type="button" onClick={() => claimRow(o)} className={cx("pointer-events-none absolute -top-2 left-1/2 z-10 hidden -translate-x-1/2 cursor-pointer rounded-full bg-brand-solid px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap text-white opacity-0 shadow-sm outline-focus-ring transition-opacity duration-150 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100 focus-visible:outline-2 md:block", className)}>claim this rank for {money(o.total + 1)}</button>;
+    const claimPill = (o: Row, className?: string) => boardDef.money && <button type="button" onClick={() => claimRow(o)} className={cx("pointer-events-none absolute -top-2 left-1/2 z-10 hidden h-6 -translate-x-1/2 cursor-pointer rounded-full bg-ink px-2.5 text-xs font-semibold whitespace-nowrap text-ink-inverse opacity-0 shadow-edge outline-focus-ring transition-opacity duration-150 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100 focus-visible:outline-2 md:block", className)}>claim this rank for {money(o.total + 1)}</button>;
     /** What this row needs to pass the one above it in the current period. */
     const gapUp = (o: Row) => (o.rank > 1 ? ranked[o.rank - 2][period] - o[period] + 1 : 0);
     const climb = (o: Row) => <span className="inline-flex items-center gap-0.5 text-xs text-tertiary">{o.rank > 1 ? <><ArrowUp className="size-3" />{fmt(gapUp(o))} to #{o.rank - 1}</> : "Leading"}</span>;
     const meta = (o: Row) => (
-        <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-tertiary"><span className="font-semibold text-secondary">{one(o.kind)}</span><span>·</span><span>{o.country}</span><span>·</span><span>{o.visits.toLocaleString("en")} visits</span>{o.match && <><span>·</span><span className="font-semibold text-brand-secondary">Matching gifts up to {money(o.match)}</span></>}{impact(o.total) && <><span className="max-sm:hidden">·</span><span className="max-sm:hidden">funded {impact(o.total)}</span></>}<span>·</span>
+        <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-tertiary"><span className="font-semibold text-secondary">{one(o.kind)}</span><span>·</span><span>{o.country}</span><span>·</span><span>{o.visits.toLocaleString("en")} visits</span>{o.match && <><span>·</span><span className="font-semibold text-primary">Matching gifts up to {money(o.match)}</span></>}{impact(o.total) && <><span className="max-sm:hidden">·</span><span className="max-sm:hidden">funded {impact(o.total)}</span></>}<span>·</span>
             <button type="button" aria-expanded={open === o.id} onClick={() => setOpen(open === o.id ? null : o.id)} className="cursor-pointer underline-offset-2 hover:text-primary hover:underline">{open === o.id ? "hide details" : "see details"}</button>{boardDef.money && <span className="md:hidden">·</span>}<span className="md:hidden">{claimLink(o)}</span></div>
     );
     const details = (o: Row) => open === o.id && <p className="mt-2 max-w-prose text-sm text-tertiary">{o.name} is giving from {o.country} ({o.region}). All-time {money(o.total)}, this week {money(o.week)}, today {money(o.today)}. {impact(o.total) && `That has funded ${impact(o.total)}. `}{o.recruited > 0 && `Brought in ${o.recruited} donors. `}{o.streak > 0 && `Has given ${o.streak} months in a row. `}{o.match && `Matching every gift up to ${money(o.match)}. `}{o.page ? `Fundraising page: ${o.page}. ` : ""}{o.days === 0 ? "Joined the board today." : `On the board for ${o.days} days.`}</p>;
-    const youBadge = (o: Row) => you === o.id && <Badge type="pill-color" color="brand" size="sm">You</Badge>;
+    const youBadge = (o: Row) => you === o.id && <Badge type="pill-color" color="gray" size="sm">You</Badge>;
 
     const boardCtx: BoardCtx = { val, money, claim: claimRow, pill: claimPill, link: claimLink, badge: youBadge, gap: gapUp, fmt, you, metric: period, canClaim: boardDef.money, label: boardDef.label };
 
     const ListRow = ({ o }: { o: Row }) => (
-        <li id={`row-${o.id}`} className={cx("group relative shrink-0 px-4 py-3", o.rank === 1 ? "on-brand rounded-3xl bg-brand-solid shadow-lg shadow-brand-600/25" : o.rank === 2 ? "rounded-3xl bg-brand-secondary" : o.rank === 3 ? "rounded-3xl bg-brand-primary" : "border-b border-secondary", you === o.id && cx(YOU, "rounded-2xl"))}>
+        <li id={`row-${o.id}`} className={cx("group relative shrink-0 rounded-[18px] px-4 py-3", EASE, o.rank === 1 ? INV : "hover:bg-tint-2", you === o.id && YOU)}>
             {claimPill(o)}
             <div className="flex items-center gap-3.5">
-                <span className={cx("w-9 font-bubble text-xl font-bold tabular-nums", o.rank <= 3 ? "text-brand-secondary" : "text-quaternary")}>#{o.rank}</span>
-                <span className={cx("shrink-0 rounded-full", o.rank <= 3 && "ring-[3px] ring-white", o.rank === 1 && "-rotate-6", o.rank === 2 && "rotate-6")}><Avatar size="md" initials={initials(o.name)} /></span>
+                <span className={cx("w-9 text-xl", NUM, o.rank <= 3 ? "text-primary" : "text-quaternary")}>#{o.rank}</span>
+                <span className="shrink-0 rounded-full"><Avatar size="md" initials={initials(o.name)} /></span>
                 <div className="min-w-0 flex-1">
-                    <div className="flex items-baseline justify-between gap-3"><span className="flex min-w-0 items-center gap-2"><span className={cx("truncate text-md font-semibold text-primary", NAME)}>{o.name}</span>{youBadge(o)}</span><span className="shrink-0 text-md font-semibold text-brand-secondary tabular-nums">{val(o)}</span></div>
+                    <div className="flex items-baseline justify-between gap-3"><span className="flex min-w-0 items-center gap-2"><span className="truncate text-md font-semibold text-primary">{o.name}</span>{youBadge(o)}</span><span className={cx("shrink-0 text-md text-primary", NUM)}>{val(o)}</span></div>
                     <div className="truncate text-sm text-tertiary">{o.tagline}</div>
                     {meta(o)}
                 </div>
@@ -165,24 +161,24 @@ export const Leaderboard = () => {
 
     /** Top three on a stand (2, 1, 3 on wide screens), the rest as rows. */
     const Podium = ({ rows }: { rows: Row[] }) => {
-        const h: Record<number, string> = { 1: "md:pt-8 md:pb-10 bg-brand-secondary", 2: "md:mt-10 bg-brand-primary", 3: "md:mt-16 bg-brand-primary/60" };
+        const h: Record<number, string> = { 1: cx("md:pt-8 md:pb-10", INV), 2: "md:mt-10 bg-tint-1", 3: "md:mt-16 bg-tint-1" };
         return (
             <>
                 <ol className="grid gap-3 md:grid-cols-3 md:items-end">
                     {stand(rows).map(({ o, place }) => (
-                        <li key={o.id} id={`row-${o.id}`} className={cx("group relative flex flex-col items-center gap-2 rounded-3xl px-4 py-6 text-center transition duration-200 hover:-translate-y-1 hover:shadow-lg", place === 1 ? "max-md:order-first" : place === 3 ? "max-md:order-last" : "max-md:order-2", h[place], you === o.id && YOU)}>
+                        <li key={o.id} id={`row-${o.id}`} className={cx("group relative flex flex-col items-center gap-2 rounded-[28px] px-4 py-6 text-center hover:-translate-y-1", EASE, place === 1 ? "max-md:order-first" : place === 3 ? "max-md:order-last" : "max-md:order-2", h[place], you === o.id && YOU)}>
                             {claimPill(o)}
-                            <span className={cx("flex items-center justify-center rounded-full font-bold", place === 1 ? "h-9 min-w-9 bg-brand-solid px-2 text-md text-white" : "h-7 min-w-7 bg-brand-secondary px-1.5 text-sm text-brand-secondary")}>{o.rank}</span>
+                            <span className={cx("flex items-center justify-center rounded-full bg-tertiary text-primary", NUM, place === 1 ? "h-9 min-w-9 px-2 text-md" : "h-7 min-w-7 px-1.5 text-sm")}>{o.rank}</span>
                             <Avatar size={place === 1 ? "2xl" : "xl"} initials={initials(o.name)} className="mt-1" />
-                            <span className="flex items-center gap-2"><span className={cx("text-lg font-semibold text-primary", NAME)}>{o.name}</span>{youBadge(o)}</span>
-                            <span className={cx("font-semibold tracking-tight text-brand-secondary tabular-nums", place === 1 ? "text-display-sm" : "text-display-xs")}>{val(o)}</span>
+                            <span className="flex items-center gap-2"><span className="text-lg font-semibold text-primary">{o.name}</span>{youBadge(o)}</span>
+                            <span className={cx("tracking-tight text-primary", NUM, place === 1 ? "text-display-sm" : "text-display-xs")}>{val(o)}</span>
                             <span className="line-clamp-2 text-sm text-tertiary">{o.tagline}</span>
                             <span className="text-xs text-tertiary">{one(o.kind)} · {o.country}</span>
                             <span className="text-xs md:hidden">{claimLink(o)}</span>
                         </li>
                     ))}
                 </ol>
-                {rows.length > 3 && <ol className="mt-3 flex flex-col gap-1.5">{rows.slice(3).map((o) => <ListRow key={o.id} o={o} />)}</ol>}
+                {rows.length > 3 && <ol className="mt-3 flex flex-col gap-0.5 rounded-[28px] bg-tint-1 p-2">{rows.slice(3).map((o) => <ListRow key={o.id} o={o} />)}</ol>}
             </>
         );
     };
@@ -191,19 +187,19 @@ export const Leaderboard = () => {
     const Race = ({ rows }: { rows: Row[] }) => {
         const max = Math.max(1, ...rows.map((o) => o[period]));
         return (
-            <ol className="flex flex-col gap-2">
+            <ol className="flex flex-col gap-0.5 rounded-[28px] bg-tint-1 p-2">
                 {rows.map((o) => (
-                    <li key={o.id} id={`row-${o.id}`} className={cx("group relative rounded-2xl px-3 py-2 transition-colors hover:bg-secondary", you === o.id && YOU)}>
+                    <li key={o.id} id={`row-${o.id}`} className={cx("group relative rounded-[18px] px-3 py-2 hover:bg-tint-2", EASE, you === o.id && YOU)}>
                         {claimPill(o)}
                         <div className="flex items-center gap-3">
-                            <span className={cx("w-7 text-sm font-semibold tabular-nums", o.rank <= 3 ? "text-brand-secondary" : "text-tertiary")}>#{o.rank}</span>
+                            <span className={cx("w-7 text-sm", NUM, o.rank <= 3 ? "text-primary" : "text-tertiary")}>#{o.rank}</span>
                             <Avatar size="sm" initials={initials(o.name)} />
                             <div className="min-w-0 flex-1">
-                                <div className="mb-1 flex items-baseline justify-between gap-3 text-sm"><span className="flex min-w-0 items-center gap-2"><span className={cx("truncate font-semibold text-primary", NAME)}>{o.name}</span>{youBadge(o)}<span className="hidden truncate text-xs text-tertiary sm:inline">{o.tagline}</span></span>
+                                <div className="mb-1 flex items-baseline justify-between gap-3 text-sm"><span className="flex min-w-0 items-center gap-2"><span className="truncate font-semibold text-primary">{o.name}</span>{youBadge(o)}<span className="hidden truncate text-xs text-tertiary sm:inline">{o.tagline}</span></span>
                                     <button type="button" aria-expanded={open === o.id} onClick={() => setOpen(open === o.id ? null : o.id)} className="shrink-0 cursor-pointer text-xs text-tertiary hover:text-primary">{one(o.kind)} · {o.country}</button></div>
                                 <div className="flex items-center gap-2">
-                                    <div className="h-7 flex-1 overflow-hidden rounded-full bg-secondary">
-                                        <div className={cx("flex h-full min-w-[4.5rem] items-center justify-end rounded-full px-2.5 text-xs font-semibold tabular-nums transition-[width] duration-700", o.rank === 1 ? "bg-brand-solid text-white" : o.rank <= 3 ? "bg-brand-400 text-white" : "bg-brand-secondary text-brand-secondary")} style={{ width: `${Math.max(8, (o[period] / max) * 100)}%` }}>{val(o)}</div>
+                                    <div className="h-7 flex-1 overflow-hidden rounded-full bg-tint-3">
+                                        <div className={cx("flex h-full min-w-[4.5rem] items-center justify-end rounded-full px-2.5 text-xs transition-[width] duration-700", NUM, o.rank === 1 ? "bg-ink text-ink-inverse" : o.rank <= 3 ? "bg-ink-3 text-ink-inverse" : "bg-raised text-ink-2 shadow-edge")} style={{ width: `${Math.max(8, (o[period] / max) * 100)}%` }}>{val(o)}</div>
                                     </div>
                                     <span className="shrink-0 text-xs md:hidden">{claimLink(o)}</span>
                                 </div>
@@ -218,69 +214,68 @@ export const Leaderboard = () => {
 
     /** Rows below the top three in the Spotlight (a), Spotlight podium (d) and Ribbons (f) layouts. */
     const flatRow = (o: Row, v: "a" | "d" | "f", max: number) => (
-        <li key={o.id} id={`row-${o.id}`} className={cx("group relative flex items-center gap-2.5 border-b border-secondary py-4 last:border-0 md:gap-[18px]", you === o.id && cx(YOU, "rounded-2xl px-2"))}>
+        <li key={o.id} id={`row-${o.id}`} className={cx("group relative flex items-center gap-2.5 border-b border-hairline py-4 last:border-0 md:gap-[18px]", you === o.id && cx(YOU, "rounded-[18px] px-2"))}>
             {claimPill(o)}
-            <span className={cx("shrink-0 text-center font-extrabold tabular-nums", v === "d" ? "flex size-9 items-center justify-center rounded-full bg-brand-solid text-sm text-white" : "w-7 text-md text-quaternary")}>{o.rank}</span>
-            <span className={cx("shrink-0 rounded-full", v === "f" && "ring-[3px] ring-brand-300")}><Avatar size="lg" initials={initials(o.name)} /></span>
+            <span className={cx("shrink-0 text-center", NUM, v === "d" ? "flex size-9 items-center justify-center rounded-full bg-tint-2 text-sm text-ink-2" : "w-7 text-md text-quaternary")}>{o.rank}</span>
+            <span className="shrink-0 rounded-full"><Avatar size="lg" initials={initials(o.name)} /></span>
             <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2"><span className={cx("truncate text-md font-bold text-primary", NAME)}>{o.name}</span>{youBadge(o)}</div>
+                <div className="flex items-center gap-2"><span className="truncate text-md font-semibold text-primary">{o.name}</span>{youBadge(o)}</div>
                 <div className="truncate text-sm text-tertiary tabular-nums">{o.visits.toLocaleString("en")} visits{v === "f" && ` · ${o.country}`}</div>
                 <span className="text-xs md:hidden">{claimLink(o)}</span>
             </div>
-            {v === "a" && <div className="hidden w-[200px] shrink-0 items-center gap-2.5 md:flex"><div className="h-1.5 flex-1 overflow-hidden rounded-full bg-secondary"><div className="h-full rounded-full bg-brand-solid transition-[width] duration-700" style={{ width: `${(o[period] / max) * 100}%` }} /></div><span className="w-10 text-[13px] font-bold text-secondary tabular-nums">{Math.round((o[period] / max) * 100)}%</span></div>}
-            {v === "d" && <span className="hidden h-[30px] shrink-0 items-center rounded-full bg-secondary px-3 md:inline-flex">{climb(o)}</span>}
-            <span className={cx("shrink-0 font-extrabold tabular-nums", v === "f" ? "text-xl tracking-tight text-primary" : "inline-flex h-10 items-center rounded-xl bg-brand-secondary px-3.5 text-md text-brand-secondary")}>{val(o)}</span>
+            {v === "a" && <div className="hidden w-[200px] shrink-0 items-center gap-2.5 md:flex"><div className="h-1.5 flex-1 overflow-hidden rounded-full bg-tint-3"><div className="h-full rounded-full bg-ink transition-[width] duration-700" style={{ width: `${(o[period] / max) * 100}%` }} /></div><span className={cx("w-10 text-[13px] text-secondary", NUM)}>{Math.round((o[period] / max) * 100)}%</span></div>}
+            {v === "d" && <span className="hidden h-8 shrink-0 items-center rounded-full bg-tint-1 px-3 md:inline-flex">{climb(o)}</span>}
+            <span className={cx("shrink-0", NUM, v === "f" ? "text-xl tracking-tight text-primary" : "inline-flex h-8 items-center rounded-full bg-tint-2 px-3 text-sm text-ink")}>{val(o)}</span>
         </li>
     );
 
-    /** A: top three on a brand-tint hero, 1st raised and ringed, with the rest as a sheet sliding over it. */
+    /** A: top three on a tinted card, 1st in ink, with the rest as a sheet sliding over it. */
     const Spotlight = ({ rows }: { rows: Row[] }) => {
         const max = Math.max(1, ...rows.map((o) => o[period]));
         return (
             <div>
-                <section aria-label="Top three" className={cx("flex flex-col items-center gap-9 rounded-[32px] bg-brand-secondary px-4 pt-8 md:px-10 md:pt-11", rows.length > 3 ? "pb-24 md:pb-28" : "pb-8")}>
-                    <span className="inline-flex h-9 items-center gap-2 rounded-full bg-brand-solid px-3.5 text-[13px] font-bold text-white"><Crown className="size-3.5" />Top 3 · {boardDef.label}</span>
+                <section aria-label="Top three" className={cx("flex flex-col items-center gap-9 rounded-[28px] bg-tint-1 px-4 pt-8 md:px-10 md:pt-11", rows.length > 3 ? "pb-24 md:pb-28" : "pb-8")}>
+                    <span className="inline-flex h-8 items-center gap-2 rounded-full bg-raised px-3 text-[13px] font-semibold text-ink shadow-edge"><Crown className="size-3.5" />Top 3 · {boardDef.label}</span>
                     <ol className="flex w-full items-end justify-center gap-2 md:gap-10">
                         {stand(rows).map(({ o, place }) => (
-                            <li key={o.id} id={`row-${o.id}`} className={cx("group relative flex min-w-0 flex-1 flex-col items-center gap-1 text-center", place === 1 ? "max-w-[300px] pb-7" : "max-w-[260px]", you === o.id && cx(YOU, "rounded-2xl ring-offset-bg-brand-secondary"))}>
+                            <li key={o.id} id={`row-${o.id}`} className={cx("group relative flex min-w-0 flex-1 flex-col items-center gap-1 text-center", place === 1 ? "max-w-[300px] pb-7" : "max-w-[260px]", you === o.id && cx(YOU, "rounded-[18px]"))}>
                                 {claimPill(o, place === 1 ? "-top-12" : undefined)}
                                 <div className="relative mb-3.5">
-                                    {place === 1 && <Crown className="absolute -top-8 left-1/2 size-8 -translate-x-1/2 text-brand-secondary" />}
-                                    <span aria-hidden="true" className={cx("flex items-center justify-center rounded-full border-white font-extrabold", place === 1 ? "size-[88px] border-[6px] bg-brand-200 text-2xl text-brand-800 ring-[3px] ring-brand md:size-32 md:text-[34px]" : "size-16 border-[5px] bg-brand-100 text-lg text-brand-700 md:size-24 md:text-[26px]")}>{initials(o.name)}</span>
-                                    <span className={cx("absolute -bottom-3 left-1/2 flex h-7 min-w-10 -translate-x-1/2 items-center justify-center rounded-full px-2.5 text-[13px] font-extrabold", place === 1 ? "bg-brand-solid text-white" : "bg-primary text-primary shadow-sm")}>{ord(o.rank)}</span>
+                                    {place === 1 && <Crown className="absolute -top-8 left-1/2 size-8 -translate-x-1/2 text-ink" />}
+                                    <span aria-hidden="true" className={cx("flex items-center justify-center rounded-full font-semibold", place === 1 ? "size-[88px] bg-ink text-2xl text-ink-inverse md:size-32 md:text-[34px]" : "size-16 bg-raised text-lg text-ink-2 shadow-edge md:size-24 md:text-[26px]")}>{initials(o.name)}</span>
+                                    <span className={cx("absolute -bottom-3 left-1/2 flex h-7 min-w-10 -translate-x-1/2 items-center justify-center rounded-full bg-raised px-2.5 text-[13px] text-ink shadow-edge", NUM)}>{ord(o.rank)}</span>
                                 </div>
-                                <h3 className="mt-2 flex max-w-full items-center justify-center gap-1.5"><span className={cx("truncate font-bold text-primary", NAME, place === 1 ? "text-md md:text-lg" : "text-[13px] md:text-md")}>{o.name}</span>{youBadge(o)}</h3>
-                                <div className={cx("leading-tight font-extrabold tracking-tight text-primary tabular-nums", place === 1 ? "text-[26px] md:text-[40px]" : "text-xl md:text-[30px]")}>{val(o)}</div>
-                                <div className="text-xs font-semibold text-tertiary tabular-nums md:text-sm">{o.visits.toLocaleString("en")} visits</div>
+                                <h3 className="mt-2 flex max-w-full items-center justify-center gap-1.5"><span className={cx("truncate font-semibold text-primary", place === 1 ? "text-md md:text-lg" : "text-[13px] md:text-md")}>{o.name}</span>{youBadge(o)}</h3>
+                                <div className={cx("leading-tight tracking-tight text-primary", NUM, place === 1 ? "text-[26px] md:text-[40px]" : "text-xl md:text-[30px]")}>{val(o)}</div>
+                                <div className="text-xs font-medium text-tertiary tabular-nums md:text-sm">{o.visits.toLocaleString("en")} visits</div>
                                 <span className="text-xs md:hidden">{claimLink(o)}</span>
                             </li>
                         ))}
                     </ol>
                 </section>
-                {rows.length > 3 && <ol className="relative mx-2 -mt-[72px] rounded-[28px] bg-primary px-4 pt-2 pb-3 shadow-xl ring-1 ring-secondary md:mx-6 md:px-7">{rows.slice(3).map((o) => flatRow(o, "a", max))}</ol>}
+                {rows.length > 3 && <ol className="relative mx-2 -mt-[72px] rounded-[28px] bg-raised px-4 pt-2 pb-3 shadow-lift md:mx-6 md:px-7">{rows.slice(3).map((o) => flatRow(o, "a", max))}</ol>}
             </div>
         );
     };
 
-    /** D: a stepped podium in a dark card with a brand glow behind the winner. The card stays dark in both themes. */
+    /** D: a stepped podium on a tinted card. */
     const SpotPodium = ({ rows }: { rows: Row[] }) => (
         <div className="flex flex-col gap-2">
-            <section aria-label="Top three" className="relative overflow-hidden rounded-[32px] bg-neutral-950 text-white ring-1 ring-secondary ring-inset">
-                <div aria-hidden="true" className="absolute top-10 left-1/2 size-[560px] -translate-x-1/2 rounded-full" style={{ background: "radial-gradient(circle, color-mix(in srgb, var(--color-brand-500) 34%, transparent) 0%, transparent 62%)" }} />
-                <div className="relative flex justify-center pt-7"><span className="inline-flex h-[34px] items-center gap-2 rounded-full bg-white/10 px-3.5 text-[13px] font-bold tracking-wide text-brand-300"><Crown className="size-3.5" />Top supporters</span></div>
+            <section aria-label="Top three" className="relative overflow-hidden rounded-[28px] bg-tint-1 text-ink">
+                <div className="relative flex justify-center pt-7"><span className="inline-flex h-8 items-center gap-2 rounded-full bg-raised px-3 text-[13px] font-semibold text-ink shadow-edge"><Crown className="size-3.5" />Top supporters</span></div>
                 <ol className="relative flex items-end gap-1.5 px-3 pt-14 md:gap-4 md:px-14">
                     {stand(rows).map(({ o, place }) => (
                         <li key={o.id} id={`row-${o.id}`} className="group relative flex min-w-0 flex-1 flex-col items-center text-center">
                             {claimPill(o, place === 1 ? "-top-12" : undefined)}
                             <div className="relative mb-4">
-                                {place === 1 && <Crown className="absolute -top-10 left-1/2 size-8 -translate-x-1/2 text-brand-400" />}
-                                <span aria-hidden="true" className={cx("flex items-center justify-center rounded-full font-extrabold ring-offset-neutral-950", place === 1 ? "size-[84px] bg-brand-100 text-2xl text-brand-800 ring-4 ring-brand-500 ring-offset-[5px] md:size-[116px] md:text-[32px]" : "size-[60px] text-[17px] ring-[3px] ring-offset-4 md:size-[84px] md:text-2xl", place === 2 && "bg-brand-200 text-brand-800 ring-brand-300", place === 3 && "bg-white text-neutral-950 ring-brand-200", you === o.id && "ring-white")}>{initials(o.name)}</span>
+                                {place === 1 && <Crown className="absolute -top-10 left-1/2 size-8 -translate-x-1/2 text-ink" />}
+                                <span aria-hidden="true" className={cx("flex items-center justify-center rounded-full font-semibold", place === 1 ? "size-[84px] bg-ink text-2xl text-ink-inverse md:size-[116px] md:text-[32px]" : "size-[60px] bg-raised text-[17px] text-ink-2 shadow-edge md:size-[84px] md:text-2xl", you === o.id && "ring-2 ring-ink ring-offset-4 ring-offset-tint-1")}>{initials(o.name)}</span>
                             </div>
-                            <h3 className="flex max-w-full items-center justify-center gap-1.5"><span className={cx("truncate font-bold transition-colors group-hover:text-brand-300", place === 1 ? "text-sm md:text-lg" : "text-xs md:text-md")}>{o.name}</span>{youBadge(o)}</h3>
-                            <div className={cx("leading-tight font-extrabold tracking-tight tabular-nums", place === 1 ? "text-2xl text-brand-400 md:text-[42px]" : "text-lg md:text-[30px]")}>{val(o)}</div>
-                            <div className="text-[11px] text-neutral-400 tabular-nums md:text-sm">{o.visits.toLocaleString("en")} visits</div>
-                            <span className="text-xs md:hidden [&_button]:text-brand-300">{claimLink(o)}</span>
-                            <div aria-label={`${ord(o.rank)} place`} className={cx("mt-5 flex w-full items-start justify-center rounded-t-[22px] pt-1 font-extrabold md:pt-4", place === 1 ? "h-[92px] bg-brand-500 text-[32px] text-white md:h-40" : place === 2 ? "h-14 bg-brand-300 text-[26px] text-brand-950 md:h-[104px]" : "h-9 bg-brand-200 text-[26px] text-brand-900 md:h-[68px]")}>{o.rank}</div>
+                            <h3 className="flex max-w-full items-center justify-center gap-1.5"><span className={cx("truncate font-semibold", place === 1 ? "text-sm md:text-lg" : "text-xs md:text-md")}>{o.name}</span>{youBadge(o)}</h3>
+                            <div className={cx("leading-tight tracking-tight", NUM, place === 1 ? "text-2xl md:text-[42px]" : "text-lg md:text-[30px]")}>{val(o)}</div>
+                            <div className="text-[11px] text-ink-3 tabular-nums md:text-sm">{o.visits.toLocaleString("en")} visits</div>
+                            <span className="text-xs md:hidden">{claimLink(o)}</span>
+                            <div aria-label={`${ord(o.rank)} place`} className={cx("mt-5 flex w-full items-start justify-center rounded-t-[18px] pt-1 md:pt-4", NUM, place === 1 ? "h-[92px] bg-ink text-[32px] text-ink-inverse md:h-40" : place === 2 ? "h-14 bg-tint-3 text-[26px] text-ink md:h-[104px]" : "h-9 bg-tint-2 text-[26px] text-ink-2 md:h-[68px]")}>{o.rank}</div>
                         </li>
                     ))}
                 </ol>
@@ -289,31 +284,30 @@ export const Leaderboard = () => {
         </div>
     );
 
-    /** F: full brand-colour hero with a soft sunburst, white-bordered avatars with ribbon rank tags, and the list as a sheet at its foot. */
+    /** F: a tinted hero with ribbon rank tags under the avatars, and the list as a sheet at its foot. */
     const Ribbons = ({ rows }: { rows: Row[] }) => (
-        <section aria-label="Top supporters" className="relative overflow-hidden rounded-[36px] bg-brand-solid px-3 pt-8 text-white md:px-8">
-            <div aria-hidden="true" className="absolute top-[42%] left-1/2 size-[1600px] -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ background: "repeating-conic-gradient(from 0deg, rgb(255 255 255 / 0.1) 0deg 9deg, transparent 9deg 18deg)" }} />
+        <section aria-label="Top supporters" className="relative overflow-hidden rounded-[28px] bg-tint-1 px-3 pt-8 text-ink md:px-8">
             <div className="relative flex flex-col items-center gap-1.5 pb-11 text-center">
-                <span className="mb-2 flex size-16 items-center justify-center rounded-full bg-neutral-950 text-brand-300"><Crown className="size-[30px]" /></span>
-                <h3 className="text-display-xs font-extrabold tracking-tight">Top supporters</h3>
-                <p className="text-sm font-semibold text-white/90">{brand.name} · {brand.tagline}</p>
+                <span className="mb-2 flex size-16 items-center justify-center rounded-full bg-ink text-ink-inverse"><Crown className="size-[30px]" /></span>
+                <h3 className="text-display-xs leading-[0.95] font-extrabold tracking-[-0.045em]">Top supporters</h3>
+                <p className="text-sm font-medium text-ink-3">{brand.name} · {brand.tagline}</p>
             </div>
             <ol className="relative flex items-start justify-center gap-2.5 px-2 pb-14 md:gap-9 md:px-6">
                 {stand(rows).map(({ o, place }) => (
                     <li key={o.id} id={`row-${o.id}`} className={cx("group relative flex min-w-0 flex-1 flex-col items-center text-center", place === 1 ? "max-w-[280px]" : "max-w-[240px] pt-9")}>
-                        {claimPill(o, cx("bg-neutral-950", place !== 1 && "top-5"))}
+                        {claimPill(o, cx(place !== 1 && "top-5"))}
                         <div className="relative mb-9">
-                            <span aria-hidden="true" className={cx("flex items-center justify-center rounded-full border-white font-extrabold shadow-lg", place === 1 ? "size-24 border-[7px] bg-brand-100 text-[26px] text-brand-800 md:size-36 md:text-[40px]" : "size-[72px] border-[6px] text-xl md:size-28 md:text-[30px]", place === 2 && "bg-brand-200 text-brand-800", place === 3 && "bg-neutral-800 text-white", you === o.id && "ring-4 ring-neutral-950")}>{initials(o.name)}</span>
-                            <Ribbon band={place === 1 ? "h-9 bg-neutral-950 text-sm text-brand-300 md:h-10 md:text-[15px]" : place === 2 ? "h-7 bg-white text-xs text-brand-700 md:h-8 md:text-[13px]" : "h-7 bg-brand-100 text-xs text-brand-800 md:h-8 md:text-[13px]"} tail={place === 1 ? "bg-neutral-700" : place === 2 ? "bg-brand-200" : "bg-brand-300"}>{place === 1 && <Crown className="size-3.5" />}{ord(o.rank)}</Ribbon>
+                            <span aria-hidden="true" className={cx("flex items-center justify-center rounded-full font-semibold", place === 1 ? "size-24 bg-ink text-[26px] text-ink-inverse md:size-36 md:text-[40px]" : "size-[72px] text-xl md:size-28 md:text-[30px]", place === 2 && "bg-raised text-ink-2 shadow-edge", place === 3 && "bg-tint-3 text-ink", you === o.id && "ring-2 ring-ink ring-offset-4 ring-offset-tint-1")}>{initials(o.name)}</span>
+                            <Ribbon band={place === 1 ? "h-9 bg-ink text-sm text-ink-inverse md:h-10 md:text-[15px]" : place === 2 ? "h-7 bg-raised text-xs text-ink shadow-edge md:h-8 md:text-[13px]" : "h-7 bg-tint-3 text-xs text-ink md:h-8 md:text-[13px]"} tail={place === 1 ? "bg-ink-3" : place === 2 ? "bg-tint-3" : "bg-ink-faint"}>{place === 1 && <Crown className="size-3.5" />}{ord(o.rank)}</Ribbon>
                         </div>
-                        <h3 className="flex max-w-full items-center justify-center gap-1.5"><span className={cx("truncate font-extrabold tracking-tight underline-offset-4 group-hover:underline", place === 1 ? "text-sm md:text-[19px]" : "text-xs md:text-[17px]")}>{o.name}</span>{youBadge(o)}</h3>
-                        <div className={cx("leading-tight font-extrabold tracking-tight tabular-nums", place === 1 ? "text-[22px] md:text-4xl" : "text-lg md:text-[28px]")}>{val(o)}</div>
-                        <div className="text-[13px] font-semibold text-white/90 tabular-nums">{o.visits.toLocaleString("en")} visits</div>
-                        <span className="text-xs md:hidden [&_button]:text-white [&_button]:underline">{claimLink(o)}</span>
+                        <h3 className="flex max-w-full items-center justify-center gap-1.5"><span className={cx("truncate font-semibold tracking-tight underline-offset-4 group-hover:underline", place === 1 ? "text-sm md:text-[19px]" : "text-xs md:text-[17px]")}>{o.name}</span>{youBadge(o)}</h3>
+                        <div className={cx("leading-tight tracking-tight", NUM, place === 1 ? "text-[22px] md:text-4xl" : "text-lg md:text-[28px]")}>{val(o)}</div>
+                        <div className="text-[13px] font-medium text-ink-3 tabular-nums">{o.visits.toLocaleString("en")} visits</div>
+                        <span className="text-xs md:hidden">{claimLink(o)}</span>
                     </li>
                 ))}
             </ol>
-            {rows.length > 3 && <ol className="relative -mx-3 rounded-t-[28px] bg-primary px-4 pt-2 pb-3 text-primary md:mx-0 md:px-7">{rows.slice(3).map((o) => flatRow(o, "f", 1))}</ol>}
+            {rows.length > 3 && <ol className="relative -mx-3 rounded-t-[28px] bg-raised px-4 pt-2 pb-3 text-primary md:mx-0 md:px-7">{rows.slice(3).map((o) => flatRow(o, "f", 1))}</ol>}
         </section>
     );
 
@@ -324,16 +318,16 @@ export const Leaderboard = () => {
                 const inTier = rows.filter((o) => tierOf(o.rank) === t);
                 const cut = ti > 0 ? ranked[TIERS[ti - 1].upTo - 1] : undefined;
                 return inTier.length > 0 && (
-                    <section key={t.name} className="rounded-2xl ring-1 ring-secondary ring-inset">
-                        <h3 className="flex items-center gap-2 rounded-t-2xl bg-secondary px-4 py-2.5 text-sm font-semibold text-primary"><t.icon className={cx("size-4", t.tone)} />{t.name} league<span className="font-normal text-tertiary">#{ti === 0 ? 1 : TIERS[ti - 1].upTo + 1}{t.upTo === Infinity ? "+" : `–${t.upTo}`}</span>{cut && <span className="ml-auto text-xs font-medium text-tertiary">promotion at {fmt(cut[period] + 1)}</span>}</h3>
-                        <ol>
+                    <section key={t.name} className="rounded-[28px] bg-tint-1 p-2">
+                        <h3 className="flex items-center gap-2 px-3 pt-1.5 pb-2.5 text-sm font-semibold text-primary"><t.icon className={cx("size-4", t.tone)} />{t.name} league<span className="font-normal text-tertiary">#{ti === 0 ? 1 : TIERS[ti - 1].upTo + 1}{t.upTo === Infinity ? "+" : `–${t.upTo}`}</span>{cut && <span className="ml-auto text-xs font-medium text-tertiary">promotion at {fmt(cut[period] + 1)}</span>}</h3>
+                        <ol className="flex flex-col gap-0.5">
                             {inTier.map((o) => (
-                                <li key={o.id} id={`row-${o.id}`} className={cx("group relative flex items-center gap-3 border-t border-secondary px-4 py-2.5 transition-colors last:rounded-b-2xl hover:bg-secondary", you === o.id && cx(YOU, "rounded-2xl"))}>
+                                <li key={o.id} id={`row-${o.id}`} className={cx("group relative flex items-center gap-3 rounded-[18px] px-3 py-2.5 hover:bg-tint-2", EASE, you === o.id && YOU)}>
                                     {claimPill(o)}
-                                    <span className={cx("w-8 text-sm font-semibold tabular-nums", t.tone)}>#{o.rank}</span>
+                                    <span className={cx("w-8 text-sm text-tertiary", NUM)}>#{o.rank}</span>
                                     <Avatar size="sm" initials={initials(o.name)} />
-                                    <div className="min-w-0 flex-1"><div className="flex items-center gap-2"><span className={cx("truncate text-sm font-semibold text-primary", NAME)}>{o.name}</span>{youBadge(o)}</div><div className="truncate text-xs text-tertiary">{o.tagline}</div><span className="text-xs md:hidden">{claimLink(o)}</span></div>
-                                    <div className="flex shrink-0 flex-col items-end"><span className="text-sm font-semibold text-brand-secondary tabular-nums">{val(o)}</span>{climb(o)}</div>
+                                    <div className="min-w-0 flex-1"><div className="flex items-center gap-2"><span className="truncate text-sm font-semibold text-primary">{o.name}</span>{youBadge(o)}</div><div className="truncate text-xs text-tertiary">{o.tagline}</div><span className="text-xs md:hidden">{claimLink(o)}</span></div>
+                                    <div className="flex shrink-0 flex-col items-end"><span className={cx("text-sm text-primary", NUM)}>{val(o)}</span>{climb(o)}</div>
                                 </li>
                             ))}
                         </ol>
@@ -349,21 +343,21 @@ export const Leaderboard = () => {
             {rows.map((o) => {
                 const lv = levelOf(o.total); const t = tierOf(o.rank);
                 return (
-                    <li key={o.id} id={`row-${o.id}`} className={cx("group relative flex min-w-0 flex-col gap-3 rounded-2xl p-4 ring-1 ring-secondary transition duration-200 ring-inset hover:-translate-y-0.5 hover:shadow-md hover:ring-brand", you === o.id && YOU)}>
+                    <li key={o.id} id={`row-${o.id}`} className={cx("group relative flex min-w-0 flex-col gap-3 rounded-[28px] bg-tint-1 p-5 hover:-translate-y-0.5", EASE, you === o.id && YOU)}>
                         {claimPill(o)}
                         <div className="flex items-center gap-3">
-                            <span className="relative shrink-0"><Avatar size="lg" initials={initials(o.name)} /><span aria-hidden="true" className="absolute -right-1 -bottom-1 flex size-6 items-center justify-center rounded-full bg-brand-solid text-[11px] font-bold text-white ring-2 ring-bg-primary">{lv.n}</span></span>
-                            <div className="min-w-0 flex-1"><div className="flex items-center gap-2"><span className={cx("truncate text-md font-semibold text-primary", NAME)}>{o.name}</span>{youBadge(o)}</div><div className="truncate text-xs text-tertiary">#{o.rank} · Level {lv.n} {lv.title}</div></div>
-                            <span className="shrink-0 text-md font-semibold text-brand-secondary tabular-nums">{val(o)}</span>
+                            <span className="relative shrink-0"><Avatar size="lg" initials={initials(o.name)} /><span aria-hidden="true" className={cx("absolute -right-1 -bottom-1 flex size-6 items-center justify-center rounded-full bg-ink text-[11px] text-ink-inverse ring-2 ring-tint-1", NUM)}>{lv.n}</span></span>
+                            <div className="min-w-0 flex-1"><div className="flex items-center gap-2"><span className="truncate text-md font-semibold text-primary">{o.name}</span>{youBadge(o)}</div><div className="truncate text-xs text-tertiary">#{o.rank} · Level {lv.n} {lv.title}</div></div>
+                            <span className={cx("shrink-0 text-md text-primary", NUM)}>{val(o)}</span>
                         </div>
                         <div>
-                            <div className="h-2 overflow-hidden rounded-full bg-secondary" role="progressbar" aria-label={`Progress to level ${lv.n + 1}`} aria-valuenow={lv.pct} aria-valuemin={0} aria-valuemax={100}><div className="h-full rounded-full bg-brand-solid transition-[width] duration-700" style={{ width: `${lv.pct}%` }} /></div>
+                            <div className="h-2 overflow-hidden rounded-full bg-tint-3" role="progressbar" aria-label={`Progress to level ${lv.n + 1}`} aria-valuenow={lv.pct} aria-valuemin={0} aria-valuemax={100}><div className="h-full rounded-full bg-ink transition-[width] duration-700" style={{ width: `${lv.pct}%` }} /></div>
                             <div className="mt-1 flex justify-between text-xs text-tertiary"><span>{lv.pct}% to level {lv.n + 1}</span><span>{money(lv.next - o.total)} to go</span></div>
                         </div>
                         <div className="flex flex-wrap items-center gap-1.5">
                             <span className={CHIP}><t.icon className={cx("size-3", t.tone)} />{t.name}</span>
-                            {o.days === 0 ? <span className={CHIP}>New today</span> : o.days >= 7 && <span className={CHIP}><Zap className="size-3 text-brand-secondary" />{o.days}-day streak</span>}
-                            {todayTop.some((x) => x.id === o.id) && <span className={CHIP}><TrendUp01 className="size-3 text-brand-secondary" />Hot today</span>}
+                            {o.days === 0 ? <span className={CHIP}>New today</span> : o.days >= 7 && <span className={CHIP}><Zap className="size-3 text-ink-3" />{o.days}-day streak</span>}
+                            {todayTop.some((x) => x.id === o.id) && <span className={CHIP}><TrendUp01 className="size-3 text-ink-3" />Hot today</span>}
                             <span className="ml-auto text-xs md:hidden">{claimLink(o)}</span>
                         </div>
                     </li>
@@ -372,15 +366,15 @@ export const Leaderboard = () => {
         </ol>
     );
 
-    /** High-score table. The panel stays dark in both themes; selecting a row claims its rank. */
+    /** High-score table. Selecting a row claims its rank. */
     const Arcade = ({ rows }: { rows: Row[] }) => (
-        <div className="rounded-2xl bg-neutral-950 p-4 font-mono text-sm tracking-wider text-neutral-50 uppercase ring-1 ring-secondary ring-inset md:p-6">
-            <div className="mb-4 flex items-center justify-between gap-3"><span className="text-lg font-bold tracking-[0.2em] text-brand-400">High scores</span><button type="button" onClick={() => openClaim(heroUsd, 1)} className="animate-pulse cursor-pointer text-brand-300 uppercase outline-focus-ring hover:text-white focus-visible:outline-2 motion-reduce:animate-none">▶ Insert coin</button></div>
-            <div className="grid grid-cols-[3.5rem_1fr_auto] gap-x-3 border-b border-white/15 px-2 pb-2 text-xs text-white/50"><span>Rank</span><span>Name</span><span>Score</span></div>
+        <div className="rounded-[28px] bg-tint-1 p-4 font-mono text-sm tracking-wider text-ink uppercase md:p-6">
+            <div className="mb-4 flex items-center justify-between gap-3"><span className="text-lg font-bold tracking-[0.2em] text-ink">High scores</span><button type="button" onClick={() => openClaim(heroUsd, 1)} className="animate-pulse cursor-pointer text-ink-2 uppercase outline-focus-ring hover:text-ink focus-visible:outline-2 motion-reduce:animate-none">▶ Insert coin</button></div>
+            <div className="grid grid-cols-[3.5rem_1fr_auto] gap-x-3 border-b border-hairline px-2 pb-2 text-xs text-ink-3"><span>Rank</span><span>Name</span><span>Score</span></div>
             <ol>
                 {rows.map((o) => (
-                    <li key={o.id} id={`row-${o.id}`} className={cx(you === o.id && "ring-2 ring-brand")}>
-                        <button type="button" onClick={() => claimRow(o)} className={cx("group grid w-full cursor-pointer grid-cols-[3.5rem_1fr_auto] items-center gap-x-3 px-2 py-2 text-left uppercase outline-focus-ring hover:bg-brand-solid hover:text-white focus-visible:bg-brand-solid focus-visible:text-white focus-visible:outline-2", o.rank <= 3 ? "font-bold text-brand-300" : "text-white/85")}>
+                    <li key={o.id} id={`row-${o.id}`} className={cx("rounded-[14px]", you === o.id && YOU)}>
+                        <button type="button" onClick={() => claimRow(o)} className={cx("group grid w-full cursor-pointer grid-cols-[3.5rem_1fr_auto] items-center gap-x-3 rounded-[14px] px-2 py-2 text-left uppercase outline-focus-ring hover:bg-ink hover:text-ink-inverse focus-visible:bg-ink focus-visible:text-ink-inverse focus-visible:outline-2", o.rank <= 3 ? "font-bold text-ink" : "text-ink-2")}>
                             <span>{ord(o.rank)}</span>
                             <span className="truncate"><span aria-hidden="true" className="invisible group-hover:visible group-focus-visible:visible">▶ </span>{o.name}{you === o.id && " (you)"}</span>
                             <span className="tabular-nums">{boardDef.money ? <><span className="group-hover:hidden group-focus-visible:hidden">{val(o)}</span><span className="hidden group-hover:inline group-focus-visible:inline">Claim {money(o.total + 1)}</span></> : val(o)}</span>
@@ -388,31 +382,26 @@ export const Leaderboard = () => {
                     </li>
                 ))}
             </ol>
-            <p className="mt-4 text-center text-xs text-white/40">Select a row to take its rank</p>
+            <p className="mt-4 text-center text-xs text-ink-faint">Select a row to take its rank</p>
         </div>
     );
 
     return (
         <div className="flex min-h-dvh flex-col bg-primary">
-            <div className="on-brand relative overflow-hidden bg-brand-solid">
-                {/* Dashed orbits and sparkles, as on the moodboard. Decorative only. */}
-                <svg aria-hidden="true" className="pointer-events-none absolute -top-40 -left-48 size-[620px] text-white/25 md:-left-24" viewBox="0 0 200 200" fill="none" stroke="currentColor" strokeWidth="0.6" strokeDasharray="3 3"><circle cx="100" cy="100" r="98" /><circle cx="100" cy="100" r="70" /></svg>
-                <svg aria-hidden="true" className="pointer-events-none absolute -right-40 -bottom-56 size-[560px] text-white/20" viewBox="0 0 200 200" fill="none" stroke="currentColor" strokeWidth="0.6" strokeDasharray="3 3"><circle cx="100" cy="100" r="98" /></svg>
-                <Sparkle className="pointer-events-none absolute top-28 right-[8%] size-6 text-pop-300 max-md:hidden" />
-                <Sparkle className="pointer-events-none absolute top-[58%] left-[6%] size-4 text-white/70 max-md:hidden" />
+            <div className="relative">
                 <Container className="relative flex flex-col gap-4 pt-6 md:px-4 lg:max-w-5xl">
                     <header className="flex flex-col gap-3">
                         <div className="flex items-center justify-between gap-4">
                             <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
-                                <BrandLogo mark="bg-white text-brand-700" />
-                                <span className="hidden items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs whitespace-nowrap text-tertiary md:inline-flex">
-                                    <span className="relative inline-flex size-2 shrink-0"><span className="absolute inline-flex size-full animate-ping rounded-full bg-pop-300 opacity-75 motion-reduce:animate-none" /><span className="relative inline-flex size-2 rounded-full bg-pop-300" /></span>
-                                    <span className="font-semibold text-primary">{board.length} on the board</span><span>· {todayTotal} given today</span>
+                                <BrandLogo />
+                                <span className="hidden h-8 items-center gap-1.5 rounded-full bg-tint-1 px-3 text-xs whitespace-nowrap text-ink-3 md:inline-flex">
+                                    <span className="relative inline-flex size-2 shrink-0"><span className="absolute inline-flex size-full animate-ping rounded-full bg-brand-solid opacity-75 motion-reduce:animate-none" /><span className="relative inline-flex size-2 rounded-full bg-brand-solid" /></span>
+                                    <span className="font-semibold text-ink tabular-nums">{board.length} on the board</span><span>· {todayTotal} given today</span>
                                 </span>
                             </div>
                             <div className="flex shrink-0 items-center gap-2 sm:gap-4">
-                                <nav aria-label="Main" className="flex items-center gap-3 text-xs font-medium text-secondary sm:gap-6 sm:text-sm">
-                                    {([["dashboard", "Dashboard"], ["about", "About"], ["rules", "Rules"]] as const).map(([n, l]) => <button key={n} type="button" onClick={() => go({ name: n })} className="cursor-pointer rounded outline-white transition-colors hover:text-primary focus-visible:outline-2 max-md:last:hidden">{l}</button>)}
+                                <nav aria-label="Main" className="flex items-center gap-1 text-xs font-semibold sm:text-sm">
+                                    {([["dashboard", "Dashboard"], ["about", "About"], ["rules", "Rules"]] as const).map(([n, l]) => <button key={n} type="button" onClick={() => go({ name: n })} className={cx("h-8 cursor-pointer rounded-full px-2 text-ink-3 outline-focus-ring hover:bg-tint-2 hover:text-ink focus-visible:outline-2 max-md:last:hidden sm:px-3", EASE)}>{l}</button>)}
                                 </nav>
                                 <div className="flex items-center gap-1">
                                     <button type="button" aria-label="Live screen" title="Live screen" onClick={() => go({ name: "live" })} className={ICON_BTN}><Tv01 className="size-4" /></button>
@@ -422,54 +411,49 @@ export const Leaderboard = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="flex items-center gap-1 rounded-full bg-white/12 p-1.5 ring-1 ring-white/15 ring-inset">
-                            <div className="no-scrollbar flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto" role="group" aria-label="Who">
-                                {["All", ...KINDS].map((c) => { const Icon = KIND_ICON[c]; return <button key={c} type="button" aria-pressed={kind === c} onClick={() => setKind(c)} className={tab(kind === c)}>{Icon && <Icon className={cx("size-3.5", kind === c ? "text-brand-600" : "text-white/75")} />}{c}</button>; })}
+                        <div className="flex items-center gap-1.5">
+                            <div className="no-scrollbar flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto" role="group" aria-label="Who">
+                                {["All", ...KINDS].map((c) => { const Icon = KIND_ICON[c]; return <button key={c} type="button" aria-pressed={kind === c} onClick={() => setKind(c)} className={tab(kind === c)}>{Icon && <Icon className="size-3.5 opacity-70" />}{c}</button>; })}
                             </div>
-                            <button type="button" onClick={() => go({ name: "create" })} className={cx(tab(false), "pl-1.5")}><Plus className="size-3.5" /><span className="max-sm:hidden">Start fundraising</span><span className="sm:hidden">Fundraise</span></button>
+                            <button type="button" onClick={() => go({ name: "create" })} className={cx("inline-flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-raised px-3 text-[13px] font-semibold whitespace-nowrap text-ink shadow-edge outline-focus-ring hover:bg-raised-hover focus-visible:outline-2", EASE)}><Plus className="size-3.5" /><span className="max-sm:hidden">Start fundraising</span><span className="sm:hidden">Fundraise</span></button>
                         </div>
                     </header>
 
                     <section className="flex flex-col items-center gap-6 pt-6 pb-16 md:pb-20">
-                        <div role="group" aria-label="Board" className="no-scrollbar flex max-w-full gap-0.5 overflow-x-auto rounded-full bg-white/10 p-1">
-                            {BOARDS.map((b) => { const Icon = BOARD_ICON[b.key]; return <button key={b.key} type="button" aria-pressed={period === b.key} onClick={() => setPeriod(b.key)} className={tab(period === b.key)}>{Icon ? <Icon className="size-3.5" /> : <span className={cx("size-1.5 rounded-full", period === b.key ? "bg-brand-600" : "bg-white")} />}{b.label}</button>; })}
+                        <div role="group" aria-label="Board" className="no-scrollbar flex max-w-full gap-1.5 overflow-x-auto">
+                            {BOARDS.map((b) => { const Icon = BOARD_ICON[b.key]; return <button key={b.key} type="button" aria-pressed={period === b.key} onClick={() => setPeriod(b.key)} className={tab(period === b.key)}>{Icon ? <Icon className="size-3.5" /> : <span className="size-1.5 rounded-full bg-current" />}{b.label}</button>; })}
                         </div>
                         <div className="relative flex flex-col items-center">
-                            <span aria-hidden="true" className="hand absolute top-1 -left-44 hidden -rotate-6 flex-col items-center text-2xl leading-none text-white/90 lg:flex">
-                                your name here
-                                <svg viewBox="0 0 90 40" className="mt-1 ml-16 h-8 w-20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6 C 30 4, 60 14, 82 32" strokeDasharray="4 5" /><path d="M71 33 L83 33 L80 21" /></svg>
-                            </span>
-                            <h1 className="flex flex-col items-center text-center text-[44px] leading-[0.95] font-extrabold tracking-[-0.03em] text-primary md:text-[76px]">
+                            <h1 className="flex flex-col items-center text-center text-[44px] leading-[0.95] font-extrabold tracking-[-0.045em] text-ink md:text-[76px]">
                                 <span>Take #1 for</span>
                                 <span className="mt-2 flex items-center gap-3 md:gap-4">
                                     <button type="button" aria-label="Lower amount" onClick={() => setBump((b) => Math.max(1, b - 100))} className={STEP}><Minus className="size-4" /></button>
-                                    <span className="bubble text-[52px] leading-none text-brand-600 tabular-nums md:text-[96px]">{money(heroUsd)}</span>
+                                    <span className={cx("text-[52px] leading-none tracking-normal text-ink md:text-[96px]", NUM)}>{money(heroUsd)}</span>
                                     <button type="button" aria-label="Raise amount" onClick={() => setBump((b) => (b === 1 ? 100 : b + 100))} className={STEP}><Plus className="size-4" /></button>
                                 </span>
                             </h1>
                         </div>
-                        <div className="flex flex-wrap items-center justify-center gap-2.5">
-                            <span className="inline-flex -rotate-2 items-center gap-2 rounded-2xl bg-white px-3.5 py-1.5 text-brand-700 shadow-lg shadow-brand-900/20"><Eye className="size-5" /><span className="font-bubble text-xl font-bold tabular-nums">{compact(board.reduce((n, o) => n + o.visits, 0))}</span><span className="text-xs font-semibold text-neutral-500">visits</span></span>
-                            <span className="inline-flex rotate-2 items-center gap-2 rounded-2xl bg-white px-3.5 py-1.5 text-brand-700 shadow-lg shadow-brand-900/20"><HeartFilled className="size-5 text-heart" /><span className="font-bubble text-xl font-bold tabular-nums">{todayTotal}</span><span className="text-xs font-semibold text-neutral-500">given today</span></span>
+                        <div className="flex flex-wrap items-center justify-center gap-2">
+                            <span className="inline-flex h-9 items-center gap-2 rounded-full bg-tint-1 px-3.5 text-ink"><Eye className="size-4 text-ink-3" /><span className={cx("text-[15px]", NUM)}>{compact(board.reduce((n, o) => n + o.visits, 0))}</span><span className="text-xs font-medium text-ink-3">visits</span></span>
+                            <span className="inline-flex h-9 items-center gap-2 rounded-full bg-tint-1 px-3.5 text-ink"><HeartFilled className="size-4 text-ink-3" /><span className={cx("text-[15px]", NUM)}>{todayTotal}</span><span className="text-xs font-medium text-ink-3">given today</span></span>
                         </div>
-                        <form className="flex w-full max-w-[57rem] flex-col gap-2 rounded-[28px] bg-white/12 p-2 ring-1 ring-white/20 ring-inset sm:flex-row" onSubmit={(e) => { e.preventDefault(); openClaim(heroUsd, 1, heroName, heroKind); }}>
-                            <label className="relative flex-1"><User01 aria-hidden="true" className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-neutral-400" /><input aria-label="Your name or team" className={cx(FIELD, "h-12 w-full pl-10")} placeholder="Your name, team or company" value={heroName} onChange={(e) => setHeroName(e.target.value)} /></label>
+                        <form className="flex w-full max-w-[57rem] flex-col gap-2 rounded-[28px] bg-tint-1 p-2 sm:flex-row" onSubmit={(e) => { e.preventDefault(); openClaim(heroUsd, 1, heroName, heroKind); }}>
+                            <label className="relative flex-1"><User01 aria-hidden="true" className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-ink-faint" /><input aria-label="Your name or team" className={cx(FIELD, "h-12 w-full pl-10")} placeholder="Your name, team or company" value={heroName} onChange={(e) => setHeroName(e.target.value)} /></label>
                             <PillSelect label="Giving as" className="sm:w-56 [&_select]:h-12" value={heroKind} onChange={setHeroKind} options={KINDS} placeholder="Giving as" />
-                            <button type="submit" className="h-12 cursor-pointer rounded-full bg-pop-300 px-7 text-md font-bold text-brand-950 shadow-[0_4px_0_rgb(0_0_0/0.18)] outline-white transition hover:-translate-y-0.5 hover:bg-pop-400 focus-visible:outline-2 focus-visible:outline-offset-2 active:translate-y-0">Claim rank</button>
+                            <button type="submit" className={cx("h-12 cursor-pointer rounded-full bg-ink px-7 text-sm font-semibold text-ink-inverse outline-focus-ring hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2", EASE)}>Claim rank</button>
                         </form>
-                        <p className="-mt-2 text-center text-xs text-tertiary">{brand.tagline}. Every gift goes to {brand.name}; your name goes on the board.</p>
+                        <p className="-mt-2 text-center text-xs text-ink-3">{brand.tagline}. Every gift goes to {brand.name}; your name goes on the board.</p>
                     </section>
                 </Container>
-                <div aria-hidden="true" className="relative h-10 rounded-t-[40px] bg-primary" />
             </div>
             <Container className="flex flex-1 flex-col gap-4 pb-5 md:px-4 lg:max-w-5xl">
                 <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_230px]">
                     <main className="flex min-w-0 flex-col gap-2">
-                        {nextUp && <div className="mb-1 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-2xl bg-brand-primary px-4 py-3 text-sm text-secondary"><span className="flex min-w-0 items-center gap-2"><ArrowUp aria-hidden="true" className="size-4 shrink-0 text-brand-secondary" /><span>{nextUp.text}</span></span>{nextUp.cta && <Button color="primary" size="sm" className="rounded-full" onPress={nextUp.run}>{nextUp.cta}</Button>}</div>}
-                        <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-sm font-semibold text-tertiary">{boardDef.title} · {shown.length}</h2><div className="flex flex-wrap gap-2"><PillSelect label="Layout" size="sm" className="w-44" value={ALL_VARIANTS.find(([k]) => k === variant)?.[1] ?? ""} onChange={(l) => setBrand({ ...brand, variant: ALL_VARIANTS.find(([, x]) => x === l)?.[0] ?? "list" })} options={ALL_VARIANTS.map(([, l]) => l)} /><PillSelect label="Currency" size="sm" className="w-24" value={currency} onChange={setCurrency} options={Object.keys(CURRENCIES)} /><PillSelect label="Region" size="sm" className="w-44" value={region} onChange={setRegion} options={["Worldwide", ...REGIONS]} /></div></div>
+                        {nextUp && <div className="mb-1 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-[18px] bg-tint-1 px-4 py-3 text-sm text-ink-2"><span className="flex min-w-0 items-center gap-2"><ArrowUp aria-hidden="true" className="size-4 shrink-0 text-ink-3" /><span>{nextUp.text}</span></span>{nextUp.cta && <Button color="primary" size="sm" className="rounded-full" onPress={nextUp.run}>{nextUp.cta}</Button>}</div>}
+                        <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-[11px] font-semibold tracking-wide text-ink-3 uppercase">{boardDef.title} · {shown.length}</h2><div className="flex flex-wrap gap-2"><PillSelect label="Layout" size="sm" className="w-44" value={ALL_VARIANTS.find(([k]) => k === variant)?.[1] ?? ""} onChange={(l) => setBrand({ ...brand, variant: ALL_VARIANTS.find(([, x]) => x === l)?.[0] ?? "list" })} options={ALL_VARIANTS.map(([, l]) => l)} /><PillSelect label="Currency" size="sm" className="w-24" value={currency} onChange={setCurrency} options={Object.keys(CURRENCIES)} /><PillSelect label="Region" size="sm" className="w-44" value={region} onChange={setRegion} options={["Worldwide", ...REGIONS]} /></div></div>
                         {boardDef.note && <p className="-mt-1 text-xs text-tertiary">{boardDef.note}</p>}
-                        {shown.length === 0 && <p className="rounded-2xl bg-secondary p-5 text-sm text-tertiary">Nobody here yet. Be the first to claim a rank for this group and region.</p>}
-                        {shown.length > 0 && variant === "list" && <ol className="flex flex-col gap-1.5">{shown.map((o) => <ListRow key={o.id} o={o} />)}</ol>}
+                        {shown.length === 0 && <p className="rounded-[28px] bg-tint-1 p-6 text-sm text-ink-3">Nobody here yet. Be the first to claim a rank for this group and region.</p>}
+                        {shown.length > 0 && variant === "list" && <ol className="flex flex-col gap-0.5 rounded-[28px] bg-tint-1 p-2">{shown.map((o) => <ListRow key={o.id} o={o} />)}</ol>}
                         {shown.length > 0 && variant === "podium" && <Podium rows={shown} />}
                         {shown.length > 0 && variant === "race" && <Race rows={shown} />}
                         {shown.length > 0 && variant === "league" && <League rows={shown} />}
@@ -483,33 +467,33 @@ export const Leaderboard = () => {
 
                     <aside className="flex min-w-0 flex-col gap-5">
                         <section className="flex flex-col gap-2.5"><div className="flex items-center justify-between"><h2 className="flex items-center gap-1.5 text-sm font-semibold text-primary"><span className="size-1.5 rounded-full bg-brand-solid" />Today's ranking</h2><button type="button" onClick={() => setPeriod("today")} className="cursor-pointer text-xs font-medium text-brand-secondary hover:underline">See all ›</button></div>
-                            <ol className="flex flex-col gap-2 text-sm">{todayTop.map((o, i) => (<li key={o.id} className="flex items-center gap-2"><span className="w-5 text-xs font-semibold text-tertiary">#{i + 1}</span><Avatar size="xs" initials={initials(o.name)} /><span className="min-w-0 flex-1 truncate text-secondary">{o.name}</span><span className="text-xs font-semibold text-brand-secondary tabular-nums">{money(o.today)}</span></li>))}</ol>
+                            <ol className="flex flex-col gap-2 text-sm">{todayTop.map((o, i) => (<li key={o.id} className="flex items-center gap-2"><span className={cx("w-5 text-xs text-ink-3", NUM)}>#{i + 1}</span><Avatar size="xs" initials={initials(o.name)} /><span className="min-w-0 flex-1 truncate text-secondary">{o.name}</span><span className={cx("text-xs text-ink", NUM)}>{money(o.today)}</span></li>))}</ol>
                         </section>
                         <section className="flex flex-col gap-2.5"><h2 className="text-sm font-semibold text-primary">Latest activity</h2>
                             <ul className="flex flex-col gap-2 text-xs text-tertiary">{activity.slice(0, 4).map((a, i) => (<li key={i}><span className="font-semibold text-primary">{a.who}</span> claimed a rank with {money(a.usd)} · {ago(Math.round((Date.now() - a.at) / 60000))}</li>))}</ul>
                         </section>
-                        {rival && <section className="flex flex-col gap-2.5 rounded-2xl p-4 ring-1 ring-secondary ring-inset"><h2 className="text-sm font-semibold text-primary">Rivalry to watch</h2>
-                            {rival.map((o, i) => (<div key={o.id} className="flex flex-col gap-1"><div className="flex items-baseline justify-between gap-2 text-xs"><span className="truncate font-medium text-secondary">{o.name}</span><span className="font-semibold text-brand-secondary tabular-nums">{money(o.total)}</span></div><div className="h-1.5 overflow-hidden rounded-full bg-secondary"><div className={cx("h-full rounded-full", i === 0 ? "bg-brand-solid" : "bg-brand-300")} style={{ width: `${(o.total / rival[0].total) * 100}%` }} /></div></div>))}
+                        {rival && <section className="flex flex-col gap-2.5 rounded-[28px] bg-tint-1 p-5"><h2 className="text-sm font-semibold text-primary">Rivalry to watch</h2>
+                            {rival.map((o, i) => (<div key={o.id} className="flex flex-col gap-1"><div className="flex items-baseline justify-between gap-2 text-xs"><span className="truncate font-medium text-secondary">{o.name}</span><span className={cx("text-ink", NUM)}>{money(o.total)}</span></div><div className="h-1.5 overflow-hidden rounded-full bg-tint-3"><div className={cx("h-full rounded-full", i === 0 ? "bg-ink" : "bg-ink-3")} style={{ width: `${(o.total / rival[0].total) * 100}%` }} /></div></div>))}
                             <p className="text-xs text-tertiary">{rival[1].name} needs {money(rival[0].total + 1 - rival[1].total)} to pass {rival[0].name}.</p>
                             <Button color="secondary" size="sm" className="rounded-full" onPress={() => openClaim(rival[0].total + 1, byTotal.findIndex((x) => x.id === rival[0].id) + 1, rival[1].name, rival[1].kind, rival[0].total + 1 - rival[1].total)}>Back the challenger</Button>
                         </section>}
-                        <section className="flex flex-col gap-2.5"><h2 className="flex items-center gap-1.5 text-sm font-semibold text-primary"><Award01 aria-hidden="true" className="size-4 text-brand-secondary" />Hall of fame</h2>
+                        <section className="flex flex-col gap-2.5"><h2 className="flex items-center gap-1.5 text-sm font-semibold text-primary"><Award01 aria-hidden="true" className="size-4 text-ink-3" />Hall of fame</h2>
                             {hall.length === 0 && <p className="text-xs text-tertiary">The first full week's winner appears here.</p>}
-                            <ol className="flex flex-col gap-2 text-xs text-tertiary">{hall.map(([week, who, usd]) => (<li key={week} className="flex items-baseline justify-between gap-2"><span className="min-w-0 truncate"><span className="font-semibold text-primary">{who}</span> · week of {week}</span><span className="shrink-0 font-semibold text-brand-secondary tabular-nums">{money(usd)}</span></li>))}</ol>
+                            <ol className="flex flex-col gap-2 text-xs text-tertiary">{hall.map(([week, who, usd]) => (<li key={week} className="flex items-baseline justify-between gap-2"><span className="min-w-0 truncate"><span className="font-semibold text-primary">{who}</span> · week of {week}</span><span className={cx("shrink-0 text-ink", NUM)}>{money(usd)}</span></li>))}</ol>
                         </section>
-                        <div className="flex flex-col items-start gap-2 rounded-2xl bg-brand-primary p-4">
+                        <div className="flex flex-col items-start gap-2 rounded-[28px] bg-tint-1 p-5">
                             <h2 className="text-sm font-semibold text-primary">Fundraising for {brand.name}?</h2>
                             <p className="text-xs text-tertiary">Set up a page in one of 12 layouts. Every gift to it counts toward your rank.</p>
                             <Button color="primary" size="sm" className="rounded-full" iconTrailing={ArrowRight} onPress={() => go({ name: "create" })}>Start fundraising</Button>
                         </div>
-                        <div className="flex flex-col items-start gap-2 rounded-2xl p-4 ring-1 ring-secondary ring-inset">
+                        <div className="flex flex-col items-start gap-2 rounded-[28px] bg-tint-1 p-5">
                             <h2 className="text-sm font-semibold text-primary">Run this for your charity</h2>
                             <p className="text-xs text-tertiary">Your name, logo, colour and font. See it in ten seconds.</p>
                             <Button color="secondary" size="sm" className="rounded-full" iconLeading={Brush03} onPress={() => setBranding(true)}>Your branding</Button>
                         </div>
                     </aside>
                 </div>
-                <footer className="mt-6 flex flex-col items-center gap-3 border-t border-secondary pt-6 pb-4 text-center text-sm text-tertiary">
+                <footer className="mt-6 flex flex-col items-center gap-3 border-t border-hairline pt-6 pb-4 text-center text-sm text-tertiary">
                     <p><span className="font-semibold text-primary">{board.length}</span> supporters have given <span className="font-semibold text-primary">{money(board.reduce((n, o) => n + o.total, 0))}</span> to {brand.name} through this board{impact(board.reduce((n, o) => n + o.total, 0)) && <>, enough for <span className="font-semibold text-primary">{impact(board.reduce((n, o) => n + o.total, 0))}</span></>}.</p>
                     <p className="text-xs">{isDemo ? "Demo with fictional supporters. No payments are taken. " : org?.remove_branding ? "" : "Gifts are paid to the charity through Stripe. "}{!org?.remove_branding && <>Leaderboard by <a href="/" data-umami-event="board-to-product" onClick={(e) => { e.preventDefault(); go({ name: "landing" }); }} className="font-semibold text-primary underline-offset-2 hover:underline">Outgive</a>.</>}</p>
                     <nav aria-label="Footer" className="flex flex-wrap items-center justify-center gap-x-1 text-xs font-medium">
@@ -525,19 +509,19 @@ export const Leaderboard = () => {
                 <Modal className="max-w-md"><Dialog aria-label="Claim a rank">
                     <form className="flex w-full flex-col gap-5 p-5 md:p-6" onSubmit={(e) => { e.preventDefault(); submit(); }}>
                         <div className="flex items-start gap-3.5">
-                            <span aria-hidden="true" className="flex h-12 min-w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-solid px-2 text-lg font-bold text-white tabular-nums">#{landing}</span>
+                            <span aria-hidden="true" className={cx("flex h-12 min-w-12 shrink-0 items-center justify-center rounded-[18px] bg-ink px-2 text-lg text-ink-inverse", NUM)}>#{landing}</span>
                             <div className="min-w-0 flex-1"><h2 className="text-lg font-semibold text-primary">Claim your rank</h2><p className="text-sm text-tertiary">Every gift goes to {brand.name}. {claim && money(claim.usd)} takes #{claim?.rank}.</p></div>
-                            <button type="button" aria-label="Close" onClick={() => setClaim(null)} className="-mt-1 -mr-1 flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-tertiary outline-focus-ring transition hover:bg-secondary hover:text-primary focus-visible:outline-2"><XClose className="size-5" /></button>
+                            <button type="button" aria-label="Close" onClick={() => setClaim(null)} className="-mt-1 -mr-1 flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-3 outline-focus-ring transition hover:bg-tint-2 hover:text-ink focus-visible:outline-2"><XClose className="size-5" /></button>
                         </div>
 
                         <div className="flex flex-col gap-2.5">
-                            <label className={cx("flex h-16 items-center gap-2 rounded-2xl bg-primary px-4 ring-1 ring-inset transition focus-within:ring-2", error ? "ring-error" : "ring-primary focus-within:ring-brand")}>
-                                <span className="text-xl font-semibold text-tertiary">{symbol}</span>
-                                <input aria-label={`Gift amount in ${currency}`} aria-invalid={!!error} type="number" inputMode="numeric" min={1} value={form.amount} onChange={(e) => { setForm({ ...form, amount: e.target.value }); setError(""); }} className="w-full min-w-0 [appearance:textfield] bg-transparent text-display-xs font-semibold text-primary tabular-nums outline-none [&::-webkit-inner-spin-button]:appearance-none" />
+                            <label className={cx("flex h-16 items-center gap-2 rounded-[18px] bg-raised px-4 shadow-edge ring-1 ring-inset", EASE, error ? "ring-error" : "ring-transparent focus-within:ring-[color-mix(in_srgb,var(--ts-fg)_24%,transparent)]")}>
+                                <span className={cx("text-xl text-ink-3", NUM)}>{symbol}</span>
+                                <input aria-label={`Gift amount in ${currency}`} aria-invalid={!!error} type="number" inputMode="numeric" min={1} value={form.amount} onChange={(e) => { setForm({ ...form, amount: e.target.value }); setError(""); }} className={cx("w-full min-w-0 [appearance:textfield] bg-transparent text-display-xs text-ink outline-none [&::-webkit-inner-spin-button]:appearance-none", NUM)} />
                                 <span className="text-sm font-medium text-tertiary">{currency}</span>
                             </label>
                             <div role="group" aria-label="Pick a rank" className="flex flex-wrap gap-1.5">
-                                {quick.map((r) => { const g = giftFor(r); const on = giftUsd === g; return <button key={r} type="button" aria-pressed={on} onClick={() => setGift(g)} className={cx("cursor-pointer rounded-full px-3 py-1.5 text-sm font-semibold outline-focus-ring transition focus-visible:outline-2", on ? "bg-brand-solid text-white" : "bg-secondary text-secondary hover:bg-tertiary")}>#{r} · {money(g)}</button>; })}
+                                {quick.map((r) => { const g = giftFor(r); const on = giftUsd === g; return <button key={r} type="button" aria-pressed={on} onClick={() => setGift(g)} className={cx("h-8 cursor-pointer rounded-full px-3 text-[13px] font-semibold tabular-nums outline-focus-ring focus-visible:outline-2", EASE, on ? "bg-ink text-ink-inverse" : "bg-tint-2 text-ink-2 hover:text-ink")}>#{r} · {money(g)}</button>; })}
                             </div>
                             <p role="status" className={cx("text-sm", error ? "text-error-primary" : "text-tertiary")}>
                                 {error || (giftUsd > 0
@@ -550,9 +534,9 @@ export const Leaderboard = () => {
                         <Input label="Email" type="email" placeholder="For your receipt" value={form.email} onChange={(v) => { setForm({ ...form, email: v }); setError(""); }} isRequired={!isDemo} />
                         {existing ? <Badge type="pill-color" color="success" size="md">Already on the board. This gift is added to your total.</Badge> : <>
                             <div role="group" aria-label="Giving as" className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
-                                {KINDS.map((k) => <button key={k} type="button" aria-pressed={form.kind === k} onClick={() => setForm({ ...form, kind: k })} className={cx("cursor-pointer rounded-xl px-2 py-2 text-sm font-semibold ring-1 outline-focus-ring transition ring-inset focus-visible:outline-2", form.kind === k ? "bg-brand-primary text-brand-secondary ring-brand" : "text-secondary ring-secondary hover:bg-secondary")}>{one(k)}</button>)}
+                                {KINDS.map((k) => <button key={k} type="button" aria-pressed={form.kind === k} onClick={() => setForm({ ...form, kind: k })} className={cx("h-10 cursor-pointer rounded-full px-2 text-sm font-semibold outline-focus-ring focus-visible:outline-2", EASE, form.kind === k ? "bg-ink text-ink-inverse" : "bg-tint-2 text-ink-2 hover:text-ink")}>{one(k)}</button>)}
                             </div>
-                            <details className="group/more rounded-xl ring-1 ring-secondary ring-inset">
+                            <details className="group/more rounded-[18px] bg-tint-1">
                                 <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-3.5 py-2.5 text-sm font-medium text-secondary outline-focus-ring focus-visible:outline-2 [&::-webkit-details-marker]:hidden">Add a message, page or country<span className="text-xs text-tertiary">optional</span></summary>
                                 <div className="flex flex-col gap-3 px-3.5 pb-3.5">
                                     {form.show && <Input label="Why you're giving" placeholder="One line shown under your name" value={form.tagline} onChange={(v) => setForm({ ...form, tagline: v })} />}
@@ -562,7 +546,7 @@ export const Leaderboard = () => {
                             </details>
                         </>}
 
-                        <div className="flex flex-col gap-3 rounded-xl bg-secondary p-3.5">
+                        <div className="flex flex-col gap-3 rounded-[18px] bg-tint-1 p-3.5">
                             <Checkbox isSelected={form.show} onChange={(v) => setForm({ ...form, show: v })} label="Show my name on the board" hint="Untick to give as Anonymous. It still counts for your team, company or school." />
                             <Checkbox isSelected={form.alerts} onChange={(v) => setForm({ ...form, alerts: v })} label="Tell me if I'm overtaken" hint="At most one message a day. Stop any time." />
                         </div>

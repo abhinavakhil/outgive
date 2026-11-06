@@ -29,44 +29,43 @@ export const Give = ({ pageRef }: { pageRef?: PageRef }) => {
     const pageUrl = `${window.location.origin}${pageRef ? href({ name: "page", org: org.slug, page: pageRef }) : href({ name: "home" })}`;
     return (
         <div className="min-h-dvh bg-primary" style={{ fontFamily: `"${brand.font}", ui-sans-serif, system-ui` }}>
-            <header className="relative overflow-hidden px-5 pt-6 pb-8 text-white" style={{ background: "linear-gradient(135deg, var(--color-brand-700), var(--color-brand-500) 60%, var(--color-brand-400))" }}>
-                <div aria-hidden="true" className="pointer-events-none absolute -top-24 -right-24 size-72 rounded-full bg-white/10 blur-2xl" />
-                <div className="relative mx-auto flex max-w-lg flex-col gap-5">
-                    <div className="flex items-center gap-3"><BrandMark className="size-11 rounded-xl text-base" /><div className="min-w-0"><div className="truncate text-lg leading-tight font-semibold">{brand.name}</div><div className="truncate text-sm text-white/80">{title}</div></div><span className="ml-auto flex shrink-0 items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 text-xs font-medium"><span className="relative inline-flex size-1.5"><span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-300 opacity-75" /><span className="relative inline-flex size-1.5 rounded-full bg-emerald-300" /></span>Live</span></div>
-                    {state.ask && <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl bg-white/15 px-4 py-3 text-sm font-medium backdrop-blur">{state.ask}{state.ask_usd ? <span className="ml-2 rounded-full bg-white px-2.5 py-0.5 text-xs font-semibold text-neutral-900">{money(state.ask_usd)}</span> : null}</motion.div>}
+            <header className="px-4 pt-6 pb-6">
+                <div className="mx-auto flex max-w-lg flex-col gap-5">
+                    <div className="flex items-center gap-3"><BrandMark className="size-11 rounded-xl text-base" /><div className="min-w-0"><div className="truncate text-lg leading-tight font-semibold tracking-tight text-ink">{brand.name}</div><div className="truncate text-sm text-ink-3">{title}</div></div><span className="ml-auto inline-flex h-6 shrink-0 items-center gap-1.5 rounded-full bg-tint-2 px-2.5 text-xs font-semibold text-ink-2"><span className="relative inline-flex size-1.5"><span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500 opacity-75" /><span className="relative inline-flex size-1.5 rounded-full bg-emerald-500" /></span>Live</span></div>
+                    {state.ask && <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="rounded-[18px] bg-tint-1 px-4 py-3 text-sm font-medium text-ink">{state.ask}{state.ask_usd ? <span className="ml-2 inline-flex h-6 items-center rounded-full bg-ink px-2.5 font-bubble text-xs font-bold text-ink-inverse tabular-nums">{money(state.ask_usd)}</span> : null}</motion.div>}
                     <div>
-                        <div className="text-xs tracking-[0.18em] text-white/70 uppercase">Raised so far</div>
-                        <div className="mt-1 text-[2.75rem] leading-none font-bold tracking-tight tabular-nums">{money(Math.round(shown))}</div>
-                        <div className="mt-2 text-sm text-white/80">{supporters.toLocaleString("en")} supporters{goalUsd > 0 && <> · {Math.round(pct)}% of {money(goalUsd)}</>}</div>
-                        {goalUsd > 0 && <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-white/20"><motion.div className="h-full rounded-full bg-white" animate={{ width: `${pct}%` }} transition={{ type: "spring", stiffness: 60, damping: 18 }} /></div>}
+                        <div className="text-[11px] font-semibold tracking-wide text-ink-3 uppercase">Raised so far</div>
+                        <div className="mt-1 font-bubble text-[2.75rem] leading-none font-bold text-ink tabular-nums">{money(Math.round(shown))}</div>
+                        <div className="mt-2 text-sm text-ink-3"><span className="font-bubble font-bold tabular-nums">{supporters.toLocaleString("en")}</span> supporters{goalUsd > 0 && <> · <span className="font-bubble font-bold tabular-nums">{Math.round(pct)}%</span> of <span className="font-bubble font-bold tabular-nums">{money(goalUsd)}</span></>}</div>
+                        {goalUsd > 0 && <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-tint-3"><motion.div className="h-full rounded-full bg-ink" animate={{ width: `${pct}%` }} transition={{ type: "spring", stiffness: 60, damping: 18 }} /></div>}
                     </div>
                 </div>
             </header>
 
-            <main className="mx-auto -mt-4 flex max-w-lg flex-col gap-6 px-4 pb-16">
-                <section className="flex flex-col gap-3 rounded-3xl bg-primary p-4 shadow-lg ring-1 ring-secondary ring-inset">
-                    <div className="px-1"><h1 className="text-lg font-semibold text-primary">{items.length ? "What will you fund?" : "Make your gift"}</h1><p className="text-sm text-tertiary">{items.length ? "Pick one, then pay on your phone. Your name lands on the screen in the room." : "Pay on your phone. Your name lands on the screen in the room."}</p></div>
+            <main className="mx-auto flex max-w-lg flex-col gap-6 px-4 pb-16">
+                <section className="flex flex-col gap-3 rounded-[28px] bg-tint-1 p-4">
+                    <div className="px-1"><h1 className="text-lg font-semibold tracking-tight text-ink">{items.length ? "What will you fund?" : "Make your gift"}</h1><p className="text-sm text-ink-3">{items.length ? "Pick one, then pay on your phone. Your name lands on the screen in the room." : "Pay on your phone. Your name lands on the screen in the room."}</p></div>
                     <ul className="flex flex-col gap-2">
                         {items.map((it) => <li key={it.label}><ItemButton item={it} count={fundedToday[it.label] ?? 0} onPress={() => setGift({ usd: it.usd, cause: it.label })} money={money} /></li>)}
-                        <li><button type="button" onClick={() => setGift({ usd: anyAmount })} className="flex w-full cursor-pointer items-center gap-4 rounded-2xl bg-secondary px-4 py-4 text-left ring-1 ring-secondary ring-inset outline-focus-ring hover:bg-tertiary focus-visible:outline-2"><span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-brand-solid text-white"><Heart className="size-5" /></span><span className="min-w-0 flex-1"><span className="block font-semibold text-primary">Give any amount</span><span className="block text-sm text-tertiary">Once or monthly, from {money(1)}</span></span><ArrowRight className="size-5 shrink-0 text-tertiary" /></button></li>
+                        <li><button type="button" onClick={() => setGift({ usd: anyAmount })} className="flex w-full cursor-pointer items-center gap-4 rounded-[18px] bg-raised px-4 py-4 text-left shadow-edge outline-focus-ring transition duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-raised-hover focus-visible:outline-2"><span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-ink text-ink-inverse"><Heart className="size-5" /></span><span className="min-w-0 flex-1"><span className="block font-semibold text-ink">Give any amount</span><span className="block text-sm text-ink-3">Once or monthly, from <span className="font-bubble font-bold tabular-nums">{money(1)}</span></span></span><ArrowRight className="size-5 shrink-0 text-ink-3" /></button></li>
                     </ul>
                 </section>
 
                 <section className="flex flex-col gap-3">
-                    <h2 className="px-1 text-sm font-semibold tracking-wide text-tertiary uppercase">Just now in the room</h2>
+                    <h2 className="px-1 text-[11px] font-semibold tracking-wide text-ink-3 uppercase">Just now in the room</h2>
                     <ul className="flex flex-col gap-2">
                         <AnimatePresence initial={false}>{feed.map((g, i) => (
-                            <motion.li key={`${g.at}-${g.who}-${i}`} layout initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3 rounded-2xl bg-primary px-4 py-3 ring-1 ring-secondary ring-inset">
-                                <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-secondary text-xs font-bold text-brand-secondary">{initials(g.who) || "A"}</span>
-                                <span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold text-primary">{g.who}</span>{(g.cause || g.message) && <span className="block truncate text-xs text-tertiary">{g.cause ? `for ${g.cause.toLowerCase()}` : `“${g.message}”`}</span>}</span>
-                                <span className="text-sm font-bold text-primary tabular-nums">{money(g.usd)}</span>
+                            <motion.li key={`${g.at}-${g.who}-${i}`} layout initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3 rounded-[18px] bg-tint-1 px-4 py-3">
+                                <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-tint-2 text-xs font-semibold text-ink-2">{initials(g.who) || "A"}</span>
+                                <span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold text-ink">{g.who}</span>{(g.cause || g.message) && <span className="block truncate text-xs text-ink-3">{g.cause ? `for ${g.cause.toLowerCase()}` : `“${g.message}”`}</span>}</span>
+                                <span className="font-bubble text-sm font-bold text-ink tabular-nums">{money(g.usd)}</span>
                             </motion.li>
                         ))}</AnimatePresence>
-                        {feed.length === 0 && <li className="rounded-2xl bg-secondary px-4 py-5 text-center text-sm text-tertiary">The first gift of the night appears here.</li>}
+                        {feed.length === 0 && <li className="rounded-[18px] bg-tint-1 px-4 py-5 text-center text-sm text-ink-3">The first gift of the night appears here.</li>}
                     </ul>
                 </section>
 
-                <div className="flex flex-col items-center gap-2 pt-2 text-center text-xs text-tertiary">
+                <div className="flex flex-col items-center gap-2 pt-2 text-center text-xs text-ink-3">
                     <button type="button" onClick={() => go(pageRef ? { name: "page", org: org.slug, page: pageRef } : { name: "home" })} className="cursor-pointer font-semibold text-brand-secondary hover:underline">{pageRef ? "See the full page" : "See the leaderboard"}</button>
                     {!org.remove_branding && <span>Powered by Outgive</span>}
                 </div>
@@ -79,8 +78,8 @@ export const Give = ({ pageRef }: { pageRef?: PageRef }) => {
 };
 
 const ItemButton = ({ item, count, onPress, money }: { item: LiveItem; count: number; onPress: () => void; money: (usd: number) => string }) => (
-    <button type="button" onClick={onPress} className={cx("group flex w-full cursor-pointer items-center gap-4 rounded-2xl px-4 py-4 text-left ring-1 ring-inset outline-focus-ring transition hover:-translate-y-px focus-visible:outline-2", "bg-primary ring-secondary hover:ring-brand")}>
-        <span className="min-w-0 flex-1"><span className="block font-semibold text-primary">{item.label}</span><span className="block text-sm text-tertiary">{count > 0 ? `${count} funded today` : "Be the first tonight"}</span></span>
-        <span className="shrink-0 rounded-full bg-brand-solid px-3.5 py-1.5 text-sm font-bold text-white tabular-nums group-hover:bg-brand-solid_hover">{money(item.usd)}</span>
+    <button type="button" onClick={onPress} className={cx("group flex w-full cursor-pointer items-center gap-4 rounded-[18px] px-4 py-4 text-left outline-focus-ring focus-visible:outline-2", "bg-raised shadow-edge transition duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-raised-hover")}>
+        <span className="min-w-0 flex-1"><span className="block font-semibold text-ink">{item.label}</span><span className="block text-sm text-ink-3">{count > 0 ? `${count} funded today` : "Be the first tonight"}</span></span>
+        <span className="inline-flex h-8 shrink-0 items-center rounded-full bg-ink px-3.5 font-bubble text-sm font-bold text-ink-inverse tabular-nums transition duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:opacity-90">{money(item.usd)}</span>
     </button>
 );

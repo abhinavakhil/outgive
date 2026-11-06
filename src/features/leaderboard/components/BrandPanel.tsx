@@ -19,13 +19,13 @@ export const BrandPanel = ({ open, onClose }: { open: boolean; onClose: () => vo
             <Modal className="max-w-lg"><Dialog aria-label="Your branding">
                 <div className="flex flex-col gap-5 p-5 md:p-6">
                     <div className="flex items-start gap-3">
-                        <BrandMark className="size-12 rounded-2xl text-lg" />
+                        <BrandMark className="size-12 rounded-[18px] text-lg" />
                         <div className="min-w-0 flex-1"><h2 className="text-lg font-semibold text-primary">See it with your branding</h2><p className="text-sm text-tertiary">The board recolours as you type. Nothing leaves your browser.</p></div>
                     </div>
                     <div className="flex flex-wrap gap-2" role="group" aria-label="Example charities">
                         {BRAND_PRESETS.map((p) => (
-                            <button key={p.name} type="button" onClick={() => setBrand(p)} className={cx("flex cursor-pointer items-center gap-2 rounded-full py-1.5 pr-3.5 pl-1.5 text-sm font-medium ring-1 ring-inset transition", brand.name === p.name && brand.color === p.color ? "bg-brand-primary text-primary ring-brand" : "text-secondary ring-secondary hover:bg-secondary")}>
-                                <span className="size-5 rounded-full" style={{ background: p.color }} />{p.name}
+                            <button key={p.name} type="button" onClick={() => setBrand(p)} className={cx("flex h-8 cursor-pointer items-center gap-2 rounded-full pr-3 pl-1.5 text-[13px] font-semibold outline-focus-ring transition duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-2", brand.name === p.name && brand.color === p.color ? "bg-ink text-ink-inverse" : "bg-tint-2 text-ink-2 hover:text-ink")}>
+                                <span className="size-5 rounded-full shadow-edge" style={{ background: p.color }} />{p.name}
                             </button>
                         ))}
                     </div>
@@ -33,9 +33,9 @@ export const BrandPanel = ({ open, onClose }: { open: boolean; onClose: () => vo
                         <Input label="Charity name" value={brand.name} onChange={(v) => set({ name: v })} />
                         <Input label="Tagline" value={brand.tagline} onChange={(v) => set({ tagline: v })} />
                         <label className="flex flex-col gap-1.5 text-sm font-medium text-secondary">Brand colour
-                            <span className="flex h-10 items-center gap-3 rounded-lg px-3 ring-1 ring-primary ring-inset">
-                                <input type="color" aria-label="Brand colour" value={brand.color} onChange={(e) => set({ color: e.target.value })} className="size-7 cursor-pointer rounded-md border-0 bg-transparent p-0" />
-                                <span className="font-mono text-sm text-tertiary uppercase">{brand.color}</span><Palette className="ml-auto size-4 text-quaternary" />
+                            <span className="flex h-12 items-center gap-3 rounded-[18px] bg-raised px-3.5 shadow-edge">
+                                <input type="color" aria-label="Brand colour" value={brand.color} onChange={(e) => set({ color: e.target.value })} className="size-7 cursor-pointer rounded-full border-0 bg-transparent p-0" />
+                                <span className="font-mono text-sm text-ink-3 uppercase">{brand.color}</span><Palette className="ml-auto size-4 text-ink-faint" />
                             </span>
                         </label>
                         <NativeSelect label="Font" value={brand.font} onChange={(e) => set({ font: e.target.value })} options={FONTS.map((f) => ({ label: f, value: f }))} />
@@ -43,7 +43,7 @@ export const BrandPanel = ({ open, onClose }: { open: boolean; onClose: () => vo
                         <Input label="What gifts buy (plural)" placeholder="boreholes" value={brand.impact?.unit ?? ""} onChange={(v) => set({ impact: { usd: brand.impact?.usd ?? 100, unit: v } })} />
                         <Input label="Cost of one (USD)" type="number" value={String(brand.impact?.usd ?? "")} onChange={(v) => set({ impact: { usd: Number(v), unit: brand.impact?.unit ?? "" } })} />
                         <label className="flex flex-col gap-1.5 text-sm font-medium text-secondary sm:col-span-2">Logo
-                            <span className="flex h-10 cursor-pointer items-center gap-2 rounded-lg px-3 text-sm text-tertiary ring-1 ring-primary ring-inset hover:bg-secondary"><Upload01 className="size-4" />{brand.logo ? "Replace image" : "Upload image"}
+                            <span className="flex h-12 cursor-pointer items-center gap-2 rounded-[18px] bg-raised px-3.5 text-sm text-ink-3 shadow-edge transition hover:bg-raised-hover"><Upload01 className="size-4" />{brand.logo ? "Replace image" : "Upload image"}
                                 <input type="file" accept="image/*" className="sr-only" onChange={(e) => onLogo(e.target.files?.[0])} /></span>
                         </label>
                     </div>

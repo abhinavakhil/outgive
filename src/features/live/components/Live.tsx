@@ -57,18 +57,32 @@ export const useCountUp = (value: number) => {
 
 
 /** Theme-aware surface classes. `t` is the theme; panels are translucent so the brand gradient shows through. */
-const skin = (t: "dark" | "light") => ({
-    page: t === "dark" ? "bg-neutral-950 text-white" : "bg-[#f7f5f2] text-neutral-950",
-    panel: t === "dark" ? "bg-white/5 ring-1 ring-white/10" : "bg-white ring-1 ring-black/5 shadow-sm",
-    muted: t === "dark" ? "text-white/60" : "text-neutral-500",
-    soft: t === "dark" ? "text-white/80" : "text-neutral-700",
-    row: t === "dark" ? "bg-white/5" : "bg-neutral-100",
-    row3: t === "dark" ? "bg-white/15" : "bg-neutral-200",
-    track: t === "dark" ? "bg-white/10" : "bg-neutral-200",
-    glow: t === "dark"
-        ? "radial-gradient(ellipse at 20% 0%, color-mix(in srgb, var(--color-brand-500) 28%, transparent), transparent 55%), radial-gradient(ellipse at 100% 100%, color-mix(in srgb, var(--color-brand-700) 30%, transparent), transparent 50%)"
-        : "radial-gradient(ellipse at 20% 0%, color-mix(in srgb, var(--color-brand-300) 35%, transparent), transparent 55%), radial-gradient(ellipse at 100% 100%, color-mix(in srgb, var(--color-brand-200) 45%, transparent), transparent 50%)",
-});
+const skin = (t: "dark" | "light") => {
+    const d = t === "dark";
+    return {
+        page: d ? "bg-[#0a0e20] text-white" : "bg-white text-[#12182c]",
+        panel: d ? "bg-[#121830]" : "bg-[#f5f7fc]",
+        muted: d ? "text-[#929cbc]" : "text-[#6e768e]",
+        soft: d ? "text-[#ced5eb]" : "text-[#3a4158]",
+        row: d ? "bg-[#1c2442]" : "bg-[#ecf0f8]",
+        row3: d ? "bg-[#242d50]" : "bg-[#e0e5f0]",
+        track: d ? "bg-[#1c2442]" : "bg-[#e0e5f0]",
+        chip: d ? "bg-white/10" : "bg-[#12182c]/[0.07]",
+        /** Thermometer fill, dots. */
+        fill: "bg-brand-solid",
+        /** Highlight: #1, last gift, the hot impact tile. */
+        hi: "bg-brand-solid text-white",
+        hiChip: "bg-white/20",
+        hiMuted: "text-white/80",
+        /** Dots on a highlight. */
+        inv: "bg-white",
+        /** The ask banner: inverse of the page. */
+        ask: d ? "bg-white text-[#12182c]" : "bg-[#12182c] text-white",
+        /** Pink accent chip, as on the homepage. */
+        pop: "bg-[#ffb0de] text-[#000d3d]",
+        veil: d ? "bg-[#0a0e20]/95" : "bg-white/95",
+    };
+};
 type Skin = ReturnType<typeof skin>;
 
 const Qr = ({ src, url, s, size = "md" }: { src: string; url: string; s: Skin; size?: "md" | "lg" }) => src ? (
@@ -76,19 +90,19 @@ const Qr = ({ src, url, s, size = "md" }: { src: string; url: string; s: Skin; s
 ) : null;
 
 const Thermo = ({ pct, goal, total, money, s, size = "md" }: { pct: number; goal: number; total: number; money: (n: number) => string; s: Skin; size?: "md" | "lg" }) => goal > 0 ? (
-    <div className="flex flex-col gap-3"><div className={cx("overflow-hidden rounded-full", s.track, size === "lg" ? "h-10" : "h-6")}><motion.div className="h-full rounded-full bg-brand-solid" animate={{ width: `${pct}%` }} transition={{ type: "spring", stiffness: 60, damping: 18 }} /></div><div className={cx("flex justify-between", s.soft, size === "lg" ? "text-2xl" : "text-lg")}><span>{Math.round(pct)}% of {money(goal)}</span><span>{money(Math.max(0, goal - total))} to go</span></div></div>
+    <div className="flex flex-col gap-3"><div className={cx("overflow-hidden rounded-full", s.track, size === "lg" ? "h-10" : "h-6")}><motion.div className={cx("h-full rounded-full", s.fill)} animate={{ width: `${pct}%` }} transition={{ type: "spring", stiffness: 60, damping: 18 }} /></div><div className={cx("flex justify-between", s.soft, size === "lg" ? "text-2xl" : "text-lg")}><span className="font-bubble font-bold tabular-nums">{Math.round(pct)}% of {money(goal)}</span><span className="font-bubble font-bold tabular-nums">{money(Math.max(0, goal - total))} to go</span></div></div>
 ) : null;
 
-const LastGift = ({ last, money, big }: { last: DonationRow | null; money: (n: number) => string; big?: boolean }) => (
-    <AnimatePresence mode="popLayout">{last && <motion.div key={last.id} initial={{ x: -30, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ opacity: 0 }} className={cx("flex items-center gap-4 rounded-2xl bg-brand-solid/90 px-5 py-4 text-white", big ? "text-2xl" : "text-xl")}><span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-white/20 text-lg font-bold">{initials(last.donor_name) || "A"}</span><span className="min-w-0"><b>{last.donor_name}</b> just gave <b>{money(usdOf(last))}</b>{last.cause && <span className="text-white/85"> for {last.cause.toLowerCase()}</span>}{last.message && <span className="block truncate text-base text-white/85">“{last.message}”</span>}</span></motion.div>}</AnimatePresence>
+const LastGift = ({ last, money, big, s }: { last: DonationRow | null; money: (n: number) => string; big?: boolean; s: Skin }) => (
+    <AnimatePresence mode="popLayout">{last && <motion.div key={last.id} initial={{ x: -30, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ opacity: 0 }} className={cx("flex items-center gap-4 rounded-[18px] px-5 py-4", s.hi, big ? "text-2xl" : "text-xl")}><span className={cx("flex size-12 shrink-0 items-center justify-center rounded-full text-lg font-semibold", s.hiChip)}>{initials(last.donor_name) || "A"}</span><span className="min-w-0"><b>{last.donor_name}</b> just gave <b className="font-bubble">{money(usdOf(last))}</b>{last.cause && <span className={s.hiMuted}> for {last.cause.toLowerCase()}</span>}{last.message && <span className={cx("block truncate text-base", s.hiMuted)}>“{last.message}”</span>}</span></motion.div>}</AnimatePresence>
 );
 
 const Rank = ({ o, s, size = "md" }: { o: { id: string; name: string; total: number; rank: number }; s: Skin; size?: "md" | "sm" }) => (
-    <motion.li key={o.id} layout initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30 }} className={cx("flex items-center gap-4 rounded-2xl", size === "sm" ? "px-3 py-2" : "px-4 py-3", o.rank === 1 ? "bg-brand-solid text-white" : o.rank <= 3 ? s.row3 : s.row)}>
-        <span className={cx("font-bold tabular-nums", size === "sm" ? "w-6 text-base" : "w-9 text-[clamp(1rem,1.6vw,1.6rem)]")}>{o.rank}</span>
-        <span className={cx("flex shrink-0 items-center justify-center rounded-full bg-black/10 text-sm font-bold", size === "sm" ? "size-8" : "size-10", o.rank === 1 && "bg-white/20")}>{initials(o.name)}</span>
+    <motion.li key={o.id} layout initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30 }} className={cx("flex items-center gap-4 rounded-[18px]", size === "sm" ? "px-3 py-2" : "px-4 py-3", o.rank === 1 ? s.hi : o.rank <= 3 ? s.row3 : s.row)}>
+        <span className={cx("font-bubble font-bold tabular-nums", size === "sm" ? "w-6 text-base" : "w-9 text-[clamp(1rem,1.6vw,1.6rem)]")}>{o.rank}</span>
+        <span className={cx("flex shrink-0 items-center justify-center rounded-full text-sm font-semibold", size === "sm" ? "size-8" : "size-10", o.rank === 1 ? s.hiChip : s.chip)}>{initials(o.name)}</span>
         <span className={cx("min-w-0 flex-1 truncate font-semibold", size === "sm" ? "text-base" : "text-[clamp(1rem,1.5vw,1.5rem)]")}>{o.name}</span>
-        <span className={cx("font-bold tabular-nums", size === "sm" ? "text-base" : "text-[clamp(1rem,1.5vw,1.5rem)]")}>{o.total.toLocaleString("en", { style: "currency", currency: "USD", maximumFractionDigits: 0 })}</span>
+        <span className={cx("font-bubble font-bold tabular-nums", size === "sm" ? "text-base" : "text-[clamp(1rem,1.5vw,1.5rem)]")}>{o.total.toLocaleString("en", { style: "currency", currency: "USD", maximumFractionDigits: 0 })}</span>
     </motion.li>
 );
 
@@ -121,60 +135,60 @@ export const Live = ({ pageRef, layout: linkLayout, theme: linkTheme }: { pageRe
     const left = endsAt ? Math.max(0, endsAt - now) : null;
     const leftText = left === null ? "" : left === 0 ? "Closed" : left > 86400000 * 2 ? `${Math.ceil(left / 86400000)} days left` : `${Math.floor(left / 3600000)}h ${Math.floor((left % 3600000) / 60000)}m left`;
     const supporters = bundle ? bundle.page.donor_count : board.length;
-    const impact = brand.impact && brand.impact.usd > 0 && totalUsd >= brand.impact.usd ? <div className={cx("text-xl", s.soft)}>Enough for <b>{Math.floor(totalUsd / brand.impact.usd).toLocaleString("en")} {brand.impact.unit}</b></div> : null;
+    const impact = brand.impact && brand.impact.usd > 0 && totalUsd >= brand.impact.usd ? <div className={cx("text-xl", s.soft)}>Enough for <b><span className="font-bubble">{Math.floor(totalUsd / brand.impact.usd).toLocaleString("en")}</span> {brand.impact.unit}</b></div> : null;
 
     if (!org) return null;
-    const Total = ({ size }: { size: "md" | "lg" | "xl" }) => <div><div className={cx("text-sm tracking-[0.2em] uppercase", s.muted)}>Raised so far</div><div className={cx("leading-none font-bold tracking-tight tabular-nums", size === "xl" ? "text-[clamp(3.5rem,11vw,11rem)]" : size === "lg" ? "text-[clamp(3rem,9vw,9rem)]" : "text-[clamp(2rem,5vw,4.5rem)]")}>{money(Math.round(shown))}</div></div>;
+    const Total = ({ size }: { size: "md" | "lg" | "xl" }) => <div><div className={cx("text-sm font-medium tracking-wide uppercase", s.muted)}>Raised so far</div><div className={cx("mt-2 leading-none font-bubble font-bold tabular-nums tracking-[-0.02em]", size === "xl" ? "text-[clamp(3.5rem,11vw,11rem)]" : size === "lg" ? "text-[clamp(3rem,9vw,9rem)]" : "text-[clamp(2rem,5vw,4.5rem)]")}>{money(Math.round(shown))}</div></div>;
     const Board = ({ limit = 10, size = "md" as "md" | "sm", heading = bundle ? "Top supporters" : "Leaderboard" }) => (
-        <section className={cx("flex flex-col gap-3 rounded-[2rem] p-6 md:p-8", s.panel)}>
-            <h2 className={cx("text-sm tracking-[0.2em] uppercase", s.muted)}>{heading}</h2>
-            <ol className="flex flex-col gap-2"><AnimatePresence initial={false}>{top.slice(0, limit).map((o) => <Rank key={o.id} o={o} s={s} size={size} />)}</AnimatePresence>{top.length === 0 && <li className={cx("rounded-2xl px-4 py-6 text-center", s.row, s.muted)}>The first gift puts a name here.</li>}</ol>
+        <section className={cx("flex flex-col gap-3 rounded-[28px] p-6 md:p-8", s.panel)}>
+            <h2 className={cx("text-sm font-medium tracking-wide uppercase", s.muted)}>{heading}</h2>
+            <ol className="flex flex-col gap-2"><AnimatePresence initial={false}>{top.slice(0, limit).map((o) => <Rank key={o.id} o={o} s={s} size={size} />)}</AnimatePresence>{top.length === 0 && <li className={cx("rounded-[18px] px-4 py-6 text-center", s.row, s.muted)}>The first gift puts a name here.</li>}</ol>
         </section>
     );
 
     const layouts: Record<LiveLayout, ReactNode> = {
         classic: (
             <main className="grid flex-1 gap-6 lg:grid-cols-[1.1fr_1fr]">
-                <section className={cx("flex flex-col justify-center gap-6 rounded-[2rem] p-8 md:p-12", s.panel)}><Total size="lg" /><Thermo pct={pct} goal={goalUsd} total={totalUsd} money={money} s={s} />{impact}<LastGift last={last} money={money} />{state.show_qr !== false && <Qr src={qr} url={giveUrl} s={s} />}</section>
+                <section className={cx("flex flex-col justify-center gap-6 rounded-[28px] p-8 md:p-12", s.panel)}><Total size="lg" /><Thermo pct={pct} goal={goalUsd} total={totalUsd} money={money} s={s} />{impact}<LastGift last={last} money={money} s={s} />{state.show_qr !== false && <Qr src={qr} url={giveUrl} s={s} />}</section>
                 <Board />
             </main>
         ),
         thermo: (
-            <main className={cx("flex flex-1 flex-col items-center justify-center gap-8 rounded-[2rem] p-8 text-center md:p-12", s.panel)}>
+            <main className={cx("flex flex-1 flex-col items-center justify-center gap-8 rounded-[28px] p-8 text-center md:p-12", s.panel)}>
                 <Total size="xl" />
                 <div className="w-full max-w-5xl"><Thermo pct={pct} goal={goalUsd} total={totalUsd} money={money} s={s} size="lg" /></div>
                 {impact}
-                <div className="w-full max-w-3xl"><LastGift last={last} money={money} big /></div>
+                <div className="w-full max-w-3xl"><LastGift last={last} money={money} s={s} big /></div>
                 {state.show_qr !== false && <Qr src={qr} url={giveUrl} s={s} />}
             </main>
         ),
         impact: (
             <main className="grid flex-1 gap-6 lg:grid-cols-[1fr_minmax(16rem,22rem)]">
                 <section className="flex flex-col gap-6">
-                    <div className={cx("flex flex-wrap items-end justify-between gap-6 rounded-[2rem] p-8", s.panel)}><Total size="md" /><div className="w-full max-w-xl flex-1"><Thermo pct={pct} goal={goalUsd} total={totalUsd} money={money} s={s} /></div></div>
+                    <div className={cx("flex flex-wrap items-end justify-between gap-6 rounded-[28px] p-8", s.panel)}><Total size="md" /><div className="w-full max-w-xl flex-1"><Thermo pct={pct} goal={goalUsd} total={totalUsd} money={money} s={s} /></div></div>
                     <ul className="grid flex-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                         {items.map((it) => { const n = fundedToday[it.label] ?? 0; const hot = last?.cause === it.label; return (
-                            <motion.li key={it.label} animate={hot ? { scale: [1, 1.04, 1] } : {}} transition={{ duration: 0.6 }} className={cx("flex flex-col justify-between gap-4 rounded-[1.75rem] p-6", hot ? "bg-brand-solid text-white" : s.panel)}>
-                                <div className="flex items-start justify-between gap-4"><div className="text-[clamp(1.1rem,1.6vw,1.6rem)] leading-tight font-semibold">{it.label}</div><span className={cx("shrink-0 rounded-full px-3 py-1 text-base font-bold tabular-nums", hot ? "bg-white/20" : "bg-brand-solid text-white")}>{money(it.usd)}</span></div>
-                                <div className="flex items-end justify-between gap-3"><div><div className="text-[clamp(2rem,4vw,4rem)] leading-none font-bold tabular-nums">{n}</div><div className={cx("mt-1 text-sm", hot ? "text-white/80" : s.muted)}>funded today</div></div><div className="flex max-w-[50%] flex-wrap justify-end gap-1">{Array.from({ length: Math.min(n, 24) }, (_, i) => <span key={i} className={cx("size-2.5 rounded-full", hot ? "bg-white" : "bg-brand-solid")} />)}</div></div>
+                            <motion.li key={it.label} animate={hot ? { scale: [1, 1.04, 1] } : {}} transition={{ duration: 0.6 }} className={cx("flex flex-col justify-between gap-4 rounded-[28px] p-6", hot ? s.hi : s.panel)}>
+                                <div className="flex items-start justify-between gap-4"><div className="text-[clamp(1.1rem,1.6vw,1.6rem)] leading-tight font-semibold">{it.label}</div><span className={cx("shrink-0 rounded-full px-3 py-1 text-base font-bubble font-bold tabular-nums", hot ? s.hiChip : s.hi)}>{money(it.usd)}</span></div>
+                                <div className="flex items-end justify-between gap-3"><div><div className="text-[clamp(2rem,4vw,4rem)] leading-none font-bubble font-bold tabular-nums">{n}</div><div className={cx("mt-1 text-sm font-medium", hot ? s.hiMuted : s.muted)}>funded today</div></div><div className="flex max-w-[50%] flex-wrap justify-end gap-1">{Array.from({ length: Math.min(n, 24) }, (_, i) => <span key={i} className={cx("size-2.5 rounded-full", hot ? s.inv : s.fill)} />)}</div></div>
                             </motion.li>
                         ); })}
-                        {items.length === 0 && <li className={cx("rounded-[1.75rem] p-8 text-center text-lg sm:col-span-2 xl:col-span-3", s.panel, s.muted)}>Add impact items in the presenter console: what a gift of each size pays for.</li>}
+                        {items.length === 0 && <li className={cx("rounded-[28px] p-8 text-center text-lg sm:col-span-2 xl:col-span-3", s.panel, s.muted)}>Add impact items in the presenter console: what a gift of each size pays for.</li>}
                     </ul>
                 </section>
-                <aside className="flex flex-col gap-6"><div className={cx("flex flex-col gap-5 rounded-[2rem] p-6", s.panel)}><LastGift last={last} money={money} />{state.show_qr !== false && qr && <div className="flex flex-col items-center gap-3 text-center"><img src={qr} alt="QR code to give from your phone" className="w-full max-w-[16rem] rounded-2xl bg-white p-2" /><div className={cx("text-xl font-semibold", s.soft)}>Scan to fund one</div><div className={cx("text-sm", s.muted)}>{giveUrl.replace(/^https?:\/\//, "")}</div></div>}</div><Board limit={5} size="sm" /></aside>
+                <aside className="flex flex-col gap-6"><div className={cx("flex flex-col gap-5 rounded-[28px] p-6", s.panel)}><LastGift last={last} money={money} s={s} />{state.show_qr !== false && qr && <div className="flex flex-col items-center gap-3 text-center"><img src={qr} alt="QR code to give from your phone" className="w-full max-w-[16rem] rounded-2xl bg-white p-2" /><div className={cx("text-xl font-semibold", s.soft)}>Scan to fund one</div><div className={cx("text-sm", s.muted)}>{giveUrl.replace(/^https?:\/\//, "")}</div></div>}</div><Board limit={5} size="sm" /></aside>
             </main>
         ),
         podium: (
             <main className="flex flex-1 flex-col gap-6">
-                <div className={cx("flex flex-wrap items-end justify-between gap-6 rounded-[2rem] px-8 py-6", s.panel)}><Total size="md" /><div className="w-full max-w-xl flex-1"><Thermo pct={pct} goal={goalUsd} total={totalUsd} money={money} s={s} /></div>{state.show_qr !== false && <Qr src={qr} url={giveUrl} s={s} />}</div>
+                <div className={cx("flex flex-wrap items-end justify-between gap-6 rounded-[28px] px-8 py-6", s.panel)}><Total size="md" /><div className="w-full max-w-xl flex-1"><Thermo pct={pct} goal={goalUsd} total={totalUsd} money={money} s={s} /></div>{state.show_qr !== false && <Qr src={qr} url={giveUrl} s={s} />}</div>
                 <section className="grid flex-1 items-end gap-4 md:grid-cols-3">
                     {[top[1], top[0], top[2]].map((o, i) => o ? (
-                        <motion.div key={o.id} layout className={cx("flex flex-col items-center gap-3 rounded-[2rem] p-6 text-center", o.rank === 1 ? "bg-brand-solid text-white md:min-h-[26rem]" : cx(s.panel, i === 0 ? "md:min-h-[20rem]" : "md:min-h-[16rem]"))}>
-                            <span className={cx("flex items-center justify-center rounded-full text-2xl font-bold", o.rank === 1 ? "size-24 bg-white/20" : cx("size-20", s.row3))}>{initials(o.name)}</span>
-                            <span className={cx("text-5xl font-bold", o.rank === 1 ? "text-white/80" : s.muted)}>#{o.rank}</span>
+                        <motion.div key={o.id} layout className={cx("flex flex-col items-center gap-3 rounded-[28px] p-6 text-center", o.rank === 1 ? cx(s.hi, "md:min-h-[26rem]") : cx(s.panel, i === 0 ? "md:min-h-[20rem]" : "md:min-h-[16rem]"))}>
+                            <span className={cx("flex items-center justify-center rounded-full text-2xl font-semibold", o.rank === 1 ? cx("size-24", s.hiChip) : cx("size-20", s.row3))}>{initials(o.name)}</span>
+                            <span className={cx("text-5xl font-bubble font-bold tabular-nums", o.rank === 1 ? s.hiMuted : s.muted)}>#{o.rank}</span>
                             <span className="text-[clamp(1.2rem,2vw,2rem)] leading-tight font-semibold">{o.name}</span>
-                            <span className="text-[clamp(1.4rem,2.6vw,2.6rem)] font-bold tabular-nums">{money(o.total)}</span>
+                            <span className="text-[clamp(1.4rem,2.6vw,2.6rem)] font-bubble font-bold tabular-nums">{money(o.total)}</span>
                         </motion.div>
                     ) : <div key={i} />)}
                 </section>
@@ -183,36 +197,35 @@ export const Live = ({ pageRef, layout: linkLayout, theme: linkTheme }: { pageRe
         ),
         wall: (
             <main className="grid flex-1 gap-6 lg:grid-cols-[minmax(18rem,24rem)_1fr]">
-                <aside className={cx("flex flex-col justify-between gap-8 rounded-[2rem] p-8", s.panel)}><div className="flex flex-col gap-6"><Total size="md" /><Thermo pct={pct} goal={goalUsd} total={totalUsd} money={money} s={s} />{impact}</div>{state.show_qr !== false && qr && <div className="flex flex-col items-center gap-3 text-center"><img src={qr} alt="QR code to give from your phone" className="w-full max-w-[14rem] rounded-2xl bg-white p-2" /><div className={cx("text-lg font-semibold", s.soft)}>Scan to give</div></div>}</aside>
+                <aside className={cx("flex flex-col justify-between gap-8 rounded-[28px] p-8", s.panel)}><div className="flex flex-col gap-6"><Total size="md" /><Thermo pct={pct} goal={goalUsd} total={totalUsd} money={money} s={s} />{impact}</div>{state.show_qr !== false && qr && <div className="flex flex-col items-center gap-3 text-center"><img src={qr} alt="QR code to give from your phone" className="w-full max-w-[14rem] rounded-2xl bg-white p-2" /><div className={cx("text-lg font-semibold", s.soft)}>Scan to give</div></div>}</aside>
                 <section className="grid content-start gap-3 sm:grid-cols-2 xl:grid-cols-3"><AnimatePresence initial={false}>{feed.slice(0, 12).map((g, i) => (
-                    <motion.div key={g.id} layout initial={{ opacity: 0, scale: 0.9, y: -20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0 }} className={cx("flex flex-col gap-3 rounded-[1.5rem] p-5", i === 0 ? "bg-brand-solid text-white sm:col-span-2 xl:col-span-2" : s.panel)}>
-                        <div className="flex items-center gap-3"><span className={cx("flex size-10 shrink-0 items-center justify-center rounded-full text-sm font-bold", i === 0 ? "bg-white/20" : s.row3)}>{initials(g.who) || "A"}</span><span className={cx("min-w-0 flex-1 truncate font-semibold", i === 0 ? "text-2xl" : "text-lg")}>{g.who}</span><span className={cx("font-bold tabular-nums", i === 0 ? "text-3xl" : "text-xl")}>{money(g.usd)}</span></div>
-                        {(g.cause || g.message) && <div className={cx("truncate", i === 0 ? "text-lg text-white/85" : cx("text-sm", s.muted))}>{g.cause ? `for ${g.cause.toLowerCase()}` : `“${g.message}”`}</div>}
+                    <motion.div key={g.id} layout initial={{ opacity: 0, scale: 0.9, y: -20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0 }} className={cx("flex flex-col gap-3 rounded-3xl p-5", i === 0 ? cx(s.hi, "sm:col-span-2 xl:col-span-2") : s.panel)}>
+                        <div className="flex items-center gap-3"><span className={cx("flex size-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold", i === 0 ? s.hiChip : s.row3)}>{initials(g.who) || "A"}</span><span className={cx("min-w-0 flex-1 truncate font-semibold", i === 0 ? "text-2xl" : "text-lg")}>{g.who}</span><span className={cx("font-bubble font-bold tabular-nums", i === 0 ? "text-3xl" : "text-xl")}>{money(g.usd)}</span></div>
+                        {(g.cause || g.message) && <div className={cx("truncate", i === 0 ? cx("text-lg", s.hiMuted) : cx("text-sm", s.muted))}>{g.cause ? `for ${g.cause.toLowerCase()}` : `“${g.message}”`}</div>}
                     </motion.div>
-                ))}</AnimatePresence>{feed.length === 0 && <div className={cx("rounded-[1.5rem] p-8 text-center text-lg sm:col-span-2 xl:col-span-3", s.panel, s.muted)}>Gifts appear here as they land.</div>}</section>
+                ))}</AnimatePresence>{feed.length === 0 && <div className={cx("rounded-3xl p-8 text-center text-lg sm:col-span-2 xl:col-span-3", s.panel, s.muted)}>Gifts appear here as they land.</div>}</section>
             </main>
         ),
     };
 
     return (
         <div className={cx("min-h-dvh overflow-hidden", s.page)} style={{ fontFamily: `"${brand.font}", ui-sans-serif, system-ui` }}>
-            <div aria-hidden="true" className="pointer-events-none fixed inset-0" style={{ background: s.glow }} />
             {confetti > Date.now() - 6000 && <Confetti at={confetti} />}
-            {state.paused && <div className={cx("fixed inset-0 z-50 flex items-center justify-center text-2xl font-semibold", theme === "dark" ? "bg-neutral-950/95" : "bg-white/95")}>Back in a moment</div>}
+            {state.paused && <div className={cx("fixed inset-0 z-50 flex items-center justify-center text-2xl font-semibold", s.veil)}>Back in a moment</div>}
             <div className="relative mx-auto flex min-h-dvh max-w-[1700px] flex-col gap-6 p-6 md:p-10">
                 <header className="flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex items-center gap-4"><BrandMark className="size-14 rounded-2xl text-xl" /><div><div className="text-[clamp(1.4rem,2.5vw,2.4rem)] leading-none font-semibold">{brand.name}</div><div className={cx("mt-1 text-[clamp(0.9rem,1.3vw,1.3rem)]", s.soft)}>{title}</div></div></div>
-                    <div className="flex items-center gap-6 text-right">{leftText && <div><div className={cx("text-xs tracking-widest uppercase", s.muted)}>Time</div><div className="text-xl font-semibold">{leftText}</div></div>}<div><div className={cx("text-xs tracking-widest uppercase", s.muted)}>Supporters</div><div className="text-xl font-semibold tabular-nums">{supporters}</div></div><span className={cx("flex items-center gap-2 rounded-full px-3 py-1.5 text-sm", s.row)}><span className="relative inline-flex size-2"><span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75" /><span className="relative inline-flex size-2 rounded-full bg-emerald-400" /></span>Live</span></div>
+                    <div className="flex items-center gap-4"><BrandMark className="size-14 rounded-2xl text-xl" /><div><div className="text-[clamp(1.4rem,2.5vw,2.4rem)] leading-none font-extrabold tracking-[-0.045em]">{brand.name}</div><div className={cx("mt-1 text-[clamp(0.9rem,1.3vw,1.3rem)]", s.soft)}>{title}</div></div></div>
+                    <div className="flex items-center gap-6 text-right">{leftText && <div><div className={cx("text-xs font-medium tracking-wide uppercase", s.muted)}>Time</div><div className="font-bubble text-xl font-bold tabular-nums">{leftText}</div></div>}<div><div className={cx("text-xs font-medium tracking-wide uppercase", s.muted)}>Supporters</div><div className="text-xl font-bubble font-bold tabular-nums">{supporters}</div></div><span className={cx("flex items-center gap-2 rounded-full px-3 py-1.5 text-sm", s.row)}><span className="relative inline-flex size-2"><span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75" /><span className="relative inline-flex size-2 rounded-full bg-emerald-400" /></span>Live</span></div>
                 </header>
 
-                <AnimatePresence>{state.ask && <motion.div key={state.ask} initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }} className={cx("rounded-3xl px-8 py-5 text-center text-[clamp(1.3rem,2.6vw,2.6rem)] font-semibold shadow-2xl", theme === "dark" ? "bg-white text-neutral-950" : "bg-neutral-950 text-white")}>{state.ask}{state.ask_usd ? <span className="ml-3 rounded-full bg-brand-solid px-4 py-1 text-white">{money(state.ask_usd)}</span> : null}</motion.div>}</AnimatePresence>
-                <AnimatePresence>{milestone && <motion.div key={milestone} initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="fixed inset-x-0 top-1/3 z-30 mx-auto w-fit rounded-3xl bg-brand-solid px-10 py-6 text-center text-[clamp(1.6rem,4vw,4rem)] font-bold text-white shadow-2xl">{milestone === 100 ? "Goal reached!" : `${milestone}% of the way there`}</motion.div>}</AnimatePresence>
+                <AnimatePresence>{state.ask && <motion.div key={state.ask} initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }} className={cx("rounded-3xl px-8 py-5 text-center text-[clamp(1.3rem,2.6vw,2.6rem)] font-extrabold tracking-[-0.03em]", s.ask)}>{state.ask}{state.ask_usd ? <span className={cx("ml-3 rounded-full px-4 py-1 font-bubble font-bold tabular-nums", s.pop)}>{money(state.ask_usd)}</span> : null}</motion.div>}</AnimatePresence>
+                <AnimatePresence>{milestone && <motion.div key={milestone} initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className={cx("fixed inset-x-0 top-1/3 z-30 mx-auto w-fit rounded-[28px] px-10 py-6 text-center text-[clamp(1.6rem,4vw,4rem)] font-extrabold tracking-[-0.045em] shadow-2xl", s.hi)}>{milestone === 100 ? "Goal reached!" : `${milestone}% of the way there`}</motion.div>}</AnimatePresence>
 
                 {layouts[layout] ?? layouts.classic}
 
                 {layout !== "wall" && <footer className={cx("overflow-hidden rounded-full", s.panel)}>
                     <div className="flex gap-10 whitespace-nowrap px-6 py-3 text-lg motion-reduce:[animation:none]" style={{ animation: "outgive-ticker 40s linear infinite" }}>
-                        {(feed.length ? [...feed, ...feed] : [{ id: "e", who: "Be the first", usd: 0, message: "", cause: "" }]).map((g, i) => <span key={`${g.id}-${i}`} className="flex items-center gap-2"><span className="size-2 rounded-full bg-brand-400" /><b>{g.who}</b>{g.usd > 0 && <span className={s.soft}>{money(g.usd)}</span>}{g.cause ? <span className={s.muted}>for {g.cause.toLowerCase()}</span> : g.message && <span className={s.muted}>“{g.message}”</span>}</span>)}
+                        {(feed.length ? [...feed, ...feed] : [{ id: "e", who: "Be the first", usd: 0, message: "", cause: "" }]).map((g, i) => <span key={`${g.id}-${i}`} className="flex items-center gap-2"><span className={cx("size-1.5 rounded-full", s.fill)} /><b>{g.who}</b>{g.usd > 0 && <span className={cx("font-bubble font-bold tabular-nums", s.soft)}>{money(g.usd)}</span>}{g.cause ? <span className={s.muted}>for {g.cause.toLowerCase()}</span> : g.message && <span className={s.muted}>“{g.message}”</span>}</span>)}
                     </div>
                 </footer>}
             </div>
@@ -234,11 +247,11 @@ export const Overlay = ({ pageRef, style }: { pageRef?: PageRef; style?: "bar" |
     if (!org) return null;
     return (
         <div className="min-h-dvh bg-transparent p-4 text-white" style={{ fontFamily: `"${brand.font}", ui-sans-serif, system-ui`, textShadow: "0 1px 2px rgb(0 0 0 / .5)" }}>
-            {theme !== "alert" && <div className="w-full max-w-xl rounded-2xl bg-neutral-950/80 p-4 ring-1 ring-white/10 backdrop-blur">
-                <div className="flex items-center gap-3"><BrandMark className="size-9 rounded-xl text-sm" /><div className="min-w-0 flex-1"><div className="truncate text-sm font-semibold">{bundle?.page.title ?? brand.name}</div>{goalUsd > 0 && <div className="mt-1 h-3 overflow-hidden rounded-full bg-white/15"><motion.div className="h-full rounded-full bg-brand-solid" animate={{ width: `${pct}%` }} /></div>}</div><div className="text-right"><div className="text-2xl leading-none font-bold tabular-nums">{money(Math.round(totalUsd))}</div>{goalUsd > 0 && <div className="text-xs text-white/70">of {money(goalUsd)}</div>}</div></div>
-                {theme === "ticker" && gifts.length > 0 && <div className="mt-3 flex flex-col gap-1 text-sm">{gifts.slice(0, 5).map((g) => <div key={g.id} className="flex justify-between gap-3"><span className="truncate">{g.donor_name}{g.cause && <span className="text-white/60"> · {g.cause}</span>}</span><span className="font-semibold tabular-nums">{money(g.usd_cents / 100)}</span></div>)}</div>}
+            {theme !== "alert" && <div className="w-full max-w-xl rounded-[18px] bg-[#121830]/90 p-4">
+                <div className="flex items-center gap-3"><BrandMark className="size-9 rounded-xl text-sm" /><div className="min-w-0 flex-1"><div className="truncate text-sm font-semibold">{bundle?.page.title ?? brand.name}</div>{goalUsd > 0 && <div className="mt-1 h-3 overflow-hidden rounded-full bg-[#1c2442]"><motion.div className="h-full rounded-full bg-brand-solid" animate={{ width: `${pct}%` }} transition={{ type: "spring", stiffness: 60, damping: 18 }} /></div>}</div><div className="text-right"><div className="font-bubble text-2xl leading-none font-bold tabular-nums">{money(Math.round(totalUsd))}</div>{goalUsd > 0 && <div className="text-xs text-[#929cbc]">of {money(goalUsd)}</div>}</div></div>
+                {theme === "ticker" && gifts.length > 0 && <div className="mt-3 flex flex-col gap-1 text-sm">{gifts.slice(0, 5).map((g) => <div key={g.id} className="flex justify-between gap-3"><span className="truncate">{g.donor_name}{g.cause && <span className="text-[#929cbc]"> · {g.cause}</span>}</span><span className="font-bubble font-bold tabular-nums">{money(g.usd_cents / 100)}</span></div>)}</div>}
             </div>}
-            <AnimatePresence>{show && <motion.div key={show.id} initial={{ y: 30, opacity: 0, scale: 0.95 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: -20, opacity: 0 }} className="mt-4 flex w-full max-w-xl items-center gap-4 rounded-2xl bg-brand-solid px-5 py-4 shadow-2xl"><span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-white/25 text-lg font-bold">{initials(show.donor_name) || "A"}</span><div className="min-w-0"><div className="text-lg"><b>{show.donor_name}</b> gave <b>{money(show.usd_cents / 100)}</b>{show.cause && <span className="text-white/85"> for {show.cause.toLowerCase()}</span>}</div>{show.message && <div className="truncate text-sm text-white/85">“{show.message}”</div>}</div></motion.div>}</AnimatePresence>
+            <AnimatePresence>{show && <motion.div key={show.id} initial={{ y: 30, opacity: 0, scale: 0.95 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: -20, opacity: 0 }} className="mt-4 flex w-full max-w-xl items-center gap-4 rounded-[18px] bg-brand-solid px-5 py-4 text-white shadow-2xl"><span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-white/20 text-lg font-semibold">{initials(show.donor_name) || "A"}</span><div className="min-w-0"><div className="text-lg"><b>{show.donor_name}</b> gave <b className="font-bubble">{money(show.usd_cents / 100)}</b>{show.cause && <span className="text-white/80"> for {show.cause.toLowerCase()}</span>}</div>{show.message && <div className="truncate text-sm text-white/80">“{show.message}”</div>}</div></motion.div>}</AnimatePresence>
         </div>
     );
 };

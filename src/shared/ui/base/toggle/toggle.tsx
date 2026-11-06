@@ -69,7 +69,6 @@ export const ToggleBase = ({ className, isHovered, isDisabled, isFocusVisible, i
                 }}
                 className={cx(
                     "rounded-full bg-white shadow-sm",
-                    isSelected && "bg-ink-inverse",
 
                     slim && "shadow-xs",
                     slim && "border border-toggle-border",

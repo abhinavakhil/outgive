@@ -72,46 +72,55 @@
 }
 
 /*
- * Component look taken from teseria.dev: warm monochrome, ink-on-paper primary actions, flat tinted surfaces with large radii,
- * white controls lifted by a hairline edge in light mode, translucent fields in dark mode. The charity's brand colour stays for
- * accents (focus, selection, highlights) through the brand-* scale.
+ * Shapes from teseria.dev (flat surfaces, large radii, pill controls, hairline edges); colours and type from the Outgive homepage:
+ * navy text, cool greys, royal-blue highlights, a pink primary action and white buttons with blue text. Inter for text, Fredoka for numbers.
  */
 :root:not(.dark-mode) {
-    --ts-page: #ffffff; --ts-raised: #ffffff; --ts-tint-1: #f5f4f2; --ts-tint-2: #ecebe8; --ts-tint-3: #e3e1dd;
-    --ts-fg: #161514; --ts-fg-2: #3a3836; --ts-fg-3: #585552; --ts-fg-faint: #89857f; --ts-fg-inverse: #ffffff;
-    --ts-field: #ffffff; --ts-field-hover: #f9f8f7; --ts-raised-hover: #faf9f8; --ts-border: rgb(22 21 20 / 0.1);
-    --ts-edge: 0 0 0 1px rgb(22 21 20 / 0.07), 0 1px 2px rgb(22 21 20 / 0.05);
-    --ts-lift: 0 0 0 1px rgb(22 21 20 / 0.06), 0 24px 64px -16px rgb(22 21 20 / 0.22);
+    --ts-page: #ffffff; --ts-raised: #ffffff; --ts-tint-1: #f5f7fc; --ts-tint-2: #ecf0f8; --ts-tint-3: #e0e5f0;
+    --ts-fg: #12182c; --ts-fg-2: #3a4158; --ts-fg-3: #6e768e; --ts-fg-faint: #98a0b6; --ts-fg-inverse: #ffffff;
+    --ts-field: #ffffff; --ts-field-hover: #fbfcff; --ts-raised-hover: #fbfcff; --ts-border: rgb(18 24 44 / 0.08);
+    --ts-edge: 0 0 0 1px #ecf0f8, 0 1px 2px rgb(18 24 44 / 0.04);
+    --ts-lift: 0 0 0 1px #ecf0f8, 0 24px 64px -16px rgb(12 22 66 / 0.25);
+    --ts-cta-text: #002ac2;
 
     --color-bg-primary: var(--ts-page); --color-bg-secondary: var(--ts-tint-1); --color-bg-tertiary: var(--ts-tint-2);
     --color-bg-primary_hover: var(--ts-tint-1); --color-bg-secondary_hover: var(--ts-tint-2); --color-bg-secondary_alt: var(--ts-tint-1); --color-bg-primary_alt: var(--ts-page);
-    --color-border-primary: rgb(22 21 20 / 0.14); --color-border-secondary: rgb(22 21 20 / 0.08);
+    --color-border-primary: #e0e5f0; --color-border-secondary: #ecf0f8;
     --color-text-primary: var(--ts-fg); --color-text-secondary: var(--ts-fg-2); --color-text-tertiary: var(--ts-fg-3);
     --color-text-quaternary: var(--ts-fg-faint); --color-text-placeholder: var(--ts-fg-faint);
     --color-fg-primary: var(--ts-fg); --color-fg-quaternary: var(--ts-fg-faint);
 }
 .dark-mode {
-    --ts-page: #000000; --ts-raised: #24221f; --ts-tint-1: #131211; --ts-tint-2: #1b1a18; --ts-tint-3: #2b2926;
-    --ts-fg: #f6f5f3; --ts-fg-2: #bab8b4; --ts-fg-3: #9e9b97; --ts-fg-faint: #72706c; --ts-fg-inverse: #0b0a09;
-    --ts-field: rgb(246 245 243 / 0.06); --ts-field-hover: rgb(246 245 243 / 0.08); --ts-raised-hover: #2b2926; --ts-border: rgb(246 245 243 / 0.1);
+    --ts-page: rgb(10 14 32); --ts-raised: rgb(28 36 66); --ts-tint-1: rgb(18 24 48); --ts-tint-2: rgb(28 36 66); --ts-tint-3: rgb(36 45 80);
+    --ts-fg: rgb(242 245 255); --ts-fg-2: rgb(206 213 235); --ts-fg-3: rgb(146 156 188); --ts-fg-faint: rgb(110 118 142); --ts-fg-inverse: rgb(10 14 32);
+    --ts-field: rgb(28 36 66); --ts-field-hover: rgb(36 45 80); --ts-raised-hover: rgb(36 45 80); --ts-border: rgb(242 245 255 / 0.1);
     --ts-edge: 0 0 #0000;
-    --ts-lift: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 28px 72px -12px rgb(0 0 0 / 0.9);
+    --ts-lift: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 28px 72px -12px rgb(0 0 0 / 0.7);
+    --ts-cta-text: var(--color-brand-300);
 
     --color-bg-primary: var(--ts-page); --color-bg-secondary: var(--ts-tint-1); --color-bg-tertiary: var(--ts-tint-2);
     --color-bg-primary_hover: var(--ts-tint-2); --color-bg-secondary_hover: var(--ts-tint-3); --color-bg-secondary_alt: var(--ts-tint-1); --color-bg-primary_alt: var(--ts-tint-1);
-    --color-bg-brand-primary: color-mix(in srgb, var(--color-brand-500) 14%, #000);
-    --color-bg-brand-secondary: color-mix(in srgb, var(--color-brand-500) 24%, #000);
-    --color-border-primary: rgb(246 245 243 / 0.14); --color-border-secondary: rgb(246 245 243 / 0.08);
+    --color-bg-brand-primary: color-mix(in srgb, var(--color-brand-500) 16%, rgb(10 14 32));
+    --color-bg-brand-secondary: color-mix(in srgb, var(--color-brand-500) 28%, rgb(10 14 32));
+    --color-border-primary: rgb(52 63 104); --color-border-secondary: rgb(36 45 80);
     --color-text-primary: var(--ts-fg); --color-text-secondary: var(--ts-fg-2); --color-text-tertiary: var(--ts-fg-3);
     --color-text-quaternary: var(--ts-fg-faint); --color-text-placeholder: var(--ts-fg-faint);
     --color-fg-primary: var(--ts-fg); --color-fg-quaternary: var(--ts-fg-faint);
 }
-/* Utilities for the look: bg-ink, text-ink-inverse, bg-raised, bg-tint-2, bg-field, shadow-edge, shadow-lift. */
+/*
+ * Utilities: text-ink / text-ink-2 / text-ink-3 / text-ink-faint for type; bg-tint-1..3, bg-raised, bg-field for surfaces; shadow-edge, shadow-lift.
+ * A filled "ink" surface (bg-ink: selected chip, #1 row, current step, highlight stat, ticked box) is the homepage's royal blue with white text
+ * (text-ink-inverse); the background and text namespaces are separate so text-ink stays navy.
+ * bg-cta / text-cta-ink is the homepage pink action; text-cta is the blue text of its white buttons.
+ */
 @theme inline {
     --color-ink: var(--ts-fg); --color-ink-2: var(--ts-fg-2); --color-ink-3: var(--ts-fg-3); --color-ink-faint: var(--ts-fg-faint); --color-ink-inverse: var(--ts-fg-inverse);
+    --background-color-ink: var(--color-brand-600); --text-color-ink-inverse: #ffffff; --background-color-ink-inverse: #ffffff; --ring-color-ink: var(--color-brand-600); --border-color-ink: var(--color-brand-600);
     --color-raised: var(--ts-raised); --color-raised-hover: var(--ts-raised-hover); --color-tint-1: var(--ts-tint-1); --color-tint-2: var(--ts-tint-2); --color-tint-3: var(--ts-tint-3);
     --color-field: var(--ts-field); --color-field-hover: var(--ts-field-hover); --color-hairline: var(--ts-border);
+    --color-cta: var(--color-pop-300); --color-cta-hover: var(--color-pop-400); --color-cta-ink: #000d3d; --color-cta-blue: var(--ts-cta-text);
     --shadow-edge: var(--ts-edge); --shadow-lift: var(--ts-lift);
+    --shadow-press: 0 3px 0 rgb(0 0 0 / 0.15);
 }
 body { letter-spacing: -0.01em; }
 

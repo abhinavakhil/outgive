@@ -27,14 +27,14 @@ const COUNTRIES = ["India", "Kenya", "United Kingdom", "United States", "United 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
 const STEP_HINTS = ["What you are making", "Who it is for", "Amount and gifts", "Photo, video, words", "Title and link", "How it looks", "Check and publish"];
 const MAX_VIDEO = 150 * 1024 * 1024;
-const chip = (on: boolean) => cx("h-11 cursor-pointer rounded-full px-5 text-md font-semibold ring-1 ring-inset outline-focus-ring focus-visible:outline-2", on ? "bg-brand-solid text-white ring-transparent" : "bg-primary text-secondary ring-primary hover:bg-secondary");
+const chip = (on: boolean) => cx("h-11 cursor-pointer rounded-full px-5 font-bubble text-md font-bold tabular-nums outline-focus-ring transition duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-2", on ? "bg-ink text-ink-inverse" : "bg-tint-2 text-ink-2 hover:bg-tint-3 hover:text-ink");
 
-const Tick = ({ className }: { className?: string }) => (<span className={cx("flex size-6 items-center justify-center rounded-full bg-brand-solid text-white", className)}><Check className="size-3.5 stroke-[3px]" /></span>);
-const StepHead = ({ title, sub }: { title: string; sub: string }) => (<div><h1 className="text-display-xs font-semibold tracking-tight text-primary md:text-display-md">{title}</h1><p className="mt-2 text-lg text-tertiary">{sub}</p></div>);
+const Tick = ({ className }: { className?: string }) => (<span className={cx("flex size-6 items-center justify-center rounded-full bg-ink text-ink-inverse", className)}><Check className="size-3.5 stroke-[3px]" /></span>);
+const StepHead = ({ title, sub }: { title: string; sub: string }) => (<div><h1 className="text-display-xs leading-[0.95] font-extrabold tracking-[-0.045em] text-ink md:text-display-md">{title}</h1><p className="mt-3 text-lg text-ink-3">{sub}</p></div>);
 const Row = ({ children }: { children: ReactNode }) => <div className="grid gap-5 sm:grid-cols-2">{children}</div>;
 const Seg = ({ items, value, onChange, label }: { items: [string, string][]; value: string; onChange: (v: string) => void; label: string }) => (
-    <div role="group" aria-label={label} className="flex w-full gap-1 rounded-full bg-secondary p-1 ring-1 ring-secondary ring-inset sm:w-fit">
-        {items.map(([id, name]) => <button key={id} type="button" aria-pressed={value === id} onClick={() => onChange(id)} className={cx("h-11 flex-1 cursor-pointer rounded-full px-5 text-md font-semibold outline-focus-ring transition focus-visible:outline-2 sm:flex-none", value === id ? "bg-brand-solid text-white shadow-xs" : "text-tertiary hover:text-primary")}>{name}</button>)}
+    <div role="group" aria-label={label} className="flex w-full gap-1 rounded-full bg-tint-2 p-1 sm:w-fit">
+        {items.map(([id, name]) => <button key={id} type="button" aria-pressed={value === id} onClick={() => onChange(id)} className={cx("h-11 flex-1 cursor-pointer rounded-full px-5 text-md font-semibold outline-focus-ring transition duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-2 sm:flex-none", value === id ? "bg-ink text-ink-inverse" : "text-ink-2 hover:text-ink")}>{name}</button>)}
     </div>
 );
 
@@ -118,37 +118,37 @@ export const CreateFlow = ({ parent }: { parent?: string }) => {
 
     return (
         <div className="flex min-h-dvh flex-col bg-primary lg:h-dvh lg:overflow-hidden">
-            <header className="flex h-16 shrink-0 items-center justify-between gap-3 border-b border-secondary px-5 md:px-8">
+            <header className="flex h-16 shrink-0 items-center justify-between gap-3 border-b border-hairline px-5 md:px-8">
                 <Logo onClick={() => go({ name: "home" })} />
-                <span className="text-sm font-semibold whitespace-nowrap text-primary lg:hidden">{live ? "Published" : <>Step {step} of 7 <span className="font-medium text-tertiary max-sm:hidden">· {STEPS[step - 1]}</span></>}</span>
+                <span className="text-sm font-semibold whitespace-nowrap text-primary lg:hidden">{live ? "Published" : <>Step {step} of 7 <span className="font-medium text-ink-3 max-sm:hidden">· {STEPS[step - 1]}</span></>}</span>
                 <div className="flex items-center gap-1"><ThemeToggle /><Button color="secondary" size="md" className="rounded-full" onPress={() => go({ name: "home" })}><span className="max-sm:hidden">Save and exit</span><span className="sm:hidden">Exit</span></Button></div>
             </header>
 
             <div className="flex min-h-0 flex-1">
-                <nav aria-label="Steps" className="hidden w-72 shrink-0 flex-col gap-1 overflow-y-auto border-r border-secondary p-6 lg:flex">
-                    <span className="px-3 pb-3 text-xs font-semibold tracking-widest text-tertiary uppercase">{live ? "Published" : "Create a page"}</span>
+                <nav aria-label="Steps" className="hidden w-72 shrink-0 flex-col gap-1 overflow-y-auto border-r border-hairline p-6 lg:flex">
+                    <span className="px-3 pb-3 text-[11px] font-semibold uppercase tracking-wide text-ink-3">{live ? "Published" : "Create a page"}</span>
                     {STEPS.map((name, i) => {
                         const n = i + 1; const done = live || n < step; const here = n === step && !live;
                         return (
-                            <button key={name} type="button" aria-current={here ? "step" : undefined} disabled={live} onClick={() => setStep(n)} className={cx("flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-left outline-focus-ring transition focus-visible:outline-2 disabled:cursor-default", here ? "bg-brand-primary" : "hover:bg-secondary")}>
-                                <span className={cx("flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold", done ? "bg-brand-solid text-white" : here ? "bg-primary text-brand-secondary ring-2 ring-brand" : "bg-secondary text-tertiary ring-1 ring-secondary ring-inset")}>{done ? <Check className="size-4 stroke-[3px]" /> : n}</span>
-                                <span className="min-w-0"><span className={cx("block text-md font-semibold", here ? "text-primary" : "text-secondary")}>{name}</span><span className="block truncate text-xs text-tertiary">{STEP_HINTS[i]}</span></span>
+                            <button key={name} type="button" aria-current={here ? "step" : undefined} disabled={live} onClick={() => setStep(n)} className={cx("flex cursor-pointer items-center gap-3 rounded-[18px] px-3 py-2.5 text-left outline-focus-ring transition duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-2 disabled:cursor-default", here ? "bg-tint-2" : "hover:bg-tint-1")}>
+                                <span className={cx("flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold", done ? "bg-tint-2 text-ink-2" : here ? "bg-ink text-ink-inverse" : "bg-tint-1 text-ink-3")}>{done ? <Check className="size-4 stroke-[3px]" /> : n}</span>
+                                <span className="min-w-0"><span className={cx("block text-md font-semibold", here ? "text-ink" : "text-ink-2")}>{name}</span><span className="block truncate text-xs text-ink-3">{STEP_HINTS[i]}</span></span>
                             </button>
                         );
                     })}
                 </nav>
 
             <main className="flex min-h-0 min-w-0 flex-1 flex-col">
-                <div className="flex gap-1.5 px-5 pt-3 lg:hidden">{STEPS.map((s, i) => <span key={s} className={cx("h-1.5 flex-1 rounded-full", i + 1 <= step ? "bg-brand-solid" : "bg-tertiary")} />)}</div>
+                <div className="flex gap-1.5 px-5 pt-3 lg:hidden">{STEPS.map((s, i) => <span key={s} className={cx("h-1.5 flex-1 rounded-full", i + 1 <= step ? "bg-ink" : "bg-tint-3")} />)}</div>
                 <div className="flex-1 px-5 py-8 md:px-12 md:py-12 lg:min-h-0 lg:overflow-y-auto"><div className="form-xl mx-auto flex max-w-2xl flex-col gap-8">
                     {step === 1 && <>
                         <StepHead title="What are you setting up?" sub="Every type uses the same seven steps. Only step 2 changes." />
                         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{PAGE_TYPES.map((pt) => {
                             const on = pt.id === type;
                             return (
-                                <button key={pt.id} type="button" aria-pressed={on} onClick={() => setType(pt.id)} className={cx("flex cursor-pointer flex-col gap-2.5 rounded-2xl bg-primary p-2 text-left outline-focus-ring transition focus-visible:outline-2 focus-visible:outline-offset-2", on ? "shadow-md ring-2 ring-brand" : "ring-1 ring-secondary hover:bg-primary_hover")}>
-                                    <span className={cx("relative flex h-[4.5rem] items-center justify-center rounded-lg sm:h-24", pt.tile)}><pt.icon className="size-9 text-gray-900" />{on && <Tick className="absolute top-2 right-2" />}</span>
-                                    <span className="flex flex-col gap-0.5 px-2 pb-2"><span className="text-md font-semibold text-primary">{pt.label}</span><span className="text-sm text-tertiary">{pt.desc}</span></span>
+                                <button key={pt.id} type="button" aria-pressed={on} onClick={() => setType(pt.id)} className={cx("flex cursor-pointer flex-col gap-2.5 rounded-3xl bg-tint-1 p-2 text-left outline-focus-ring transition duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-2 focus-visible:outline-offset-2", on ? "ring-2 ring-ink" : "hover:bg-tint-2")}>
+                                    <span className={cx("relative flex h-[4.5rem] items-center justify-center rounded-[18px] sm:h-24", pt.tile)}><pt.icon className="size-9 text-gray-900" />{on && <Tick className="absolute top-2 right-2" />}</span>
+                                    <span className="flex flex-col gap-0.5 px-2 pb-2"><span className="text-md font-semibold text-ink">{pt.label}</span><span className="text-sm text-ink-3">{pt.desc}</span></span>
                                 </button>
                             );
                         })}</div>
@@ -166,16 +166,16 @@ export const CreateFlow = ({ parent }: { parent?: string }) => {
 
                     {step === 3 && <>
                         <StepHead title="What are you aiming to raise?" sub="Shown as a progress bar on your page. You can change it later." />
-                        <div className="flex flex-col gap-3 rounded-2xl bg-brand-primary p-5">
-                            <span className="text-xs font-semibold tracking-widest text-brand-secondary uppercase">Your goal</span>
-                            <label className="flex items-baseline gap-2"><span className="text-display-sm font-semibold text-tertiary">{currency}</span>
-                                <input aria-label={`Goal in ${currency}`} type="number" min={1} inputMode="numeric" value={Math.round(goal * rate)} onChange={(e) => { const n = Number(e.target.value); if (n > 0) setGoal(Math.max(1, Math.round(n / rate))); }} className="w-full min-w-0 bg-transparent text-display-lg font-semibold tracking-tight text-brand-secondary tabular-nums outline-hidden md:text-display-xl" /></label>
+                        <div className="flex flex-col gap-3 rounded-[28px] bg-tint-1 p-5 md:p-6">
+                            <span className="text-[11px] font-semibold uppercase tracking-wide text-ink-3">Your goal</span>
+                            <label className="flex items-baseline gap-2"><span className="font-bubble text-display-sm font-bold text-ink-3">{currency}</span>
+                                <input aria-label={`Goal in ${currency}`} type="number" min={1} inputMode="numeric" value={Math.round(goal * rate)} onChange={(e) => { const n = Number(e.target.value); if (n > 0) setGoal(Math.max(1, Math.round(n / rate))); }} className="w-full min-w-0 bg-transparent font-bubble text-display-lg font-bold text-ink tabular-nums outline-hidden md:text-display-xl" /></label>
                             <div className="flex flex-wrap gap-2">{GOALS.map((g) => <button key={g} type="button" aria-pressed={goal === g} onClick={() => setGoal(g)} className={chip(goal === g)}>{money(g)}</button>)}</div>
                         </div>
                         <Row><NativeSelect label="Currency" options={Object.keys(CURRENCIES).map((c) => ({ label: c, value: c }))} value={currency} onChange={(e) => setCurrency(e.target.value)} /><Input label="Goal end date (optional)" type="date" value={endDate} onChange={setEndDate} /></Row>
-                        <div className="flex flex-col gap-2"><div><span className="text-sm font-medium text-secondary">Suggested gift amounts</span><p className="text-sm text-tertiary">Pick up to 4. These are the buttons on your donate card.</p></div>
+                        <div className="flex flex-col gap-2"><div><span className="text-sm font-semibold text-ink-2">Suggested gift amounts</span><p className="text-sm text-tertiary">Pick up to 4. These are the buttons on your donate card.</p></div>
                             <div className="flex flex-wrap gap-2">{GIFT_CHOICES.map((g) => <button key={g} type="button" aria-pressed={gifts.includes(g)} onClick={() => toggleGift(g)} className={chip(gifts.includes(g))}>{money(g)}</button>)}</div></div>
-                        <div className="flex flex-col gap-3"><div><span className="text-sm font-medium text-secondary">Where the money goes</span><p className="text-sm text-tertiary">Donors trust a page that says how gifts are spent. Shown as a bar on your page.</p></div>
+                        <div className="flex flex-col gap-3"><div><span className="text-sm font-semibold text-ink-2">Where the money goes</span><p className="text-sm text-tertiary">Donors trust a page that says how gifts are spent. Shown as a bar on your page.</p></div>
                             {alloc.map(([label, v], i) => <div key={i} className="grid grid-cols-[1fr_8rem] gap-3"><Input aria-label={`Use ${i + 1}`} value={label} onChange={(x) => setAlloc((a) => a.map((r, j) => (j === i ? [x, r[1]] : r)))} /><Input aria-label={`Percent ${i + 1}`} type="number" value={String(v)} onChange={(x) => setAlloc((a) => a.map((r, j) => (j === i ? [r[0], Math.max(0, Number(x) || 0)] : r)))} /></div>)}
                             <p className={cx("text-sm", alloc.reduce((n, [, v]) => n + v, 0) === 100 ? "text-tertiary" : "text-warning-primary")}>Adds up to {alloc.reduce((n, [, v]) => n + v, 0)}%{alloc.reduce((n, [, v]) => n + v, 0) === 100 ? "" : ". We scale it to 100% on your page."}</p></div>
                         <div className="flex flex-col gap-3"><Checkbox size="md" isSelected={showGoal} onChange={setShowGoal} label="Show the goal and progress bar on my page" /><Checkbox size="md" isSelected={autoGoal} onChange={setAutoGoal} label="Raise the goal automatically when it is reached" /></div>
@@ -184,7 +184,7 @@ export const CreateFlow = ({ parent }: { parent?: string }) => {
                     {step === 4 && <>
                         <StepHead title="Add a cover and tell the story" sub="A photo or video catches the eye. The story is why someone should give." />
                         <div className="flex flex-col gap-3">
-                            <span className="text-sm font-medium text-secondary">Cover</span>
+                            <span className="text-sm font-semibold text-ink-2">Cover</span>
                             <Seg label="Cover type" value={coverTab} onChange={(v) => { setCoverTab(v as typeof coverTab); setCoverError(""); if (cover.kind !== v) setCover({ kind: "none", src: "" }); }} items={[["image", "Image"], ["video", "Video"], ["youtube", "YouTube link"]]} />
                             {coverTab === "image" && cover.kind !== "image" && <FileUpload.DropZone className="min-h-64 justify-center" hint="JPG, PNG or WebP. Large photos are shrunk for you." accept="image/*" allowsMultiple={false} onDropFiles={pickImage} onDropUnacceptedFiles={() => setCoverError("Choose an image file.")} />}
                             {coverTab === "video" && cover.kind !== "video" && <FileUpload.DropZone className="min-h-64 justify-center" hint="MP4 or WebM, up to 150 MB" accept="video/mp4,video/webm,video/quicktime" allowsMultiple={false} maxSize={MAX_VIDEO} onDropFiles={pickVideo} onDropUnacceptedFiles={() => setCoverError("Choose an MP4 or WebM video.")} onSizeLimitExceed={() => setCoverError("That video is over 150 MB.")} />}
@@ -195,7 +195,7 @@ export const CreateFlow = ({ parent }: { parent?: string }) => {
                                     <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-tertiary"><span>{cover.kind === "video" ? "Videos from your computer play until you close this tab. Use a YouTube link to keep one." : "This is how it will look on your page."}</span><Button size="sm" color="secondary" className="rounded-full" iconLeading={Trash01} onPress={() => { setCover({ kind: "none", src: "" }); setCoverError(""); }}>Remove</Button></div></div>
                             )}
                         </div>
-                        <div className="flex flex-col gap-1.5"><span className="text-sm font-medium text-secondary">Description</span>
+                        <div className="flex flex-col gap-1.5"><span className="text-sm font-semibold text-ink-2">Description</span>
                             <DescriptionEditor value={story} onChange={setStory} />
                             <p className="text-sm text-tertiary">Type / for headings, lists, quotes, images and links. A strong story says who is helped, what a gift buys and why now.</p></div>
                     </>}
@@ -204,7 +204,7 @@ export const CreateFlow = ({ parent }: { parent?: string }) => {
                         <StepHead title="What should we call it?" sub="Shown wherever your page is shared." />
                         <Input label="Title" isRequired placeholder="e.g. Clean water for 40 villages" value={title} onChange={setTitle} />
                         <Input label="Page address" placeholder={slugify(title) || "your-page"} value={slug} onChange={(v) => setSlug(slugify(v))} hint={`${window.location.host}${href({ name: "page", key: path })}`} />
-                        <div className="flex flex-col gap-2"><span className="text-sm font-medium text-secondary">Causes · choose up to 3 ({causes.length}/3)</span>
+                        <div className="flex flex-col gap-2"><span className="text-sm font-semibold text-ink-2">Causes · choose up to 3 ({causes.length}/3)</span>
                             <div className="flex flex-wrap gap-2">{CAUSES.slice(0, 10).map((c) => <Button key={c} size="lg" color={causes.includes(c) ? "primary" : "secondary"} className="rounded-full" onPress={() => toggleCause(c)}>{c}</Button>)}</div>
                         </div>
                     </>}
@@ -214,10 +214,10 @@ export const CreateFlow = ({ parent }: { parent?: string }) => {
                         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{LAYOUTS.map((l) => {
                             const on = l.id === layout;
                             return (
-                                <button key={l.id} type="button" aria-pressed={on} onClick={() => setLayout(l.id)} className={cx("flex cursor-pointer flex-col gap-2 rounded-2xl bg-primary p-2.5 text-left outline-focus-ring transition focus-visible:outline-2 focus-visible:outline-offset-2", on ? "shadow-md ring-2 ring-brand" : "ring-1 ring-secondary hover:bg-primary_hover")}>
+                                <button key={l.id} type="button" aria-pressed={on} onClick={() => setLayout(l.id)} className={cx("flex cursor-pointer flex-col gap-2 rounded-3xl bg-tint-1 p-2.5 text-left outline-focus-ring transition duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-2 focus-visible:outline-offset-2", on ? "ring-2 ring-ink" : "hover:bg-tint-2")}>
                                     <span className="relative block"><LayoutThumb id={l.id} />{on && <Tick className="absolute top-1.5 right-1.5 size-5" />}</span>
-                                    <span className="flex flex-wrap items-center justify-between gap-1.5"><span className="font-semibold text-primary">{l.name}</span>{l.types.includes(type) && <Badge type="pill-color" color="brand" size="sm">Suggested</Badge>}</span>
-                                    <span className="text-xs text-tertiary">{l.desc}</span>
+                                    <span className="flex flex-wrap items-center justify-between gap-1.5"><span className="font-semibold text-ink">{l.name}</span>{l.types.includes(type) && <Badge type="pill-color" color="gray" size="sm">Suggested</Badge>}</span>
+                                    <span className="text-xs text-ink-3">{l.desc}</span>
                                 </button>
                             );
                         })}</div>
@@ -225,39 +225,39 @@ export const CreateFlow = ({ parent }: { parent?: string }) => {
 
                     {step === 7 && <>
                         <StepHead title="Review and publish" sub="Check each part, then publish." />
-                        <div className="rounded-2xl ring-1 ring-secondary ring-inset">{([["Type", t.label, 1, true], ["Charity", orgName || "Not added", 2, !!orgName], ["Goal", `${money(goal)}${endDate ? ` by ${endDate}` : ""}`, 3, true], ["Cover", !hasCover ? "No cover yet" : cover.kind === "youtube" ? "YouTube video" : cover.kind === "video" ? "Video" : "Image", 4, hasCover], ["Story", hasStory ? `${story.replace(/<[^>]*>/g, " ").trim().split(/\s+/).length} words` : "Not written yet", 4, hasStory], ["Title", title || "Missing", 5, !!title], ["Address", `/${path}`, 5, true], ["Layout", L.name, 6, true]] as [string, string, number, boolean][]).map(([label, value, n, ok]) => (
-                            <div key={label} className="flex items-center gap-3 border-b border-secondary px-4 py-3 last:border-b-0">
-                                <span className="w-20 shrink-0 text-sm text-tertiary">{label}</span>
-                                <span className="min-w-0 flex-1 truncate font-medium text-primary">{value}</span>
+                        <div className="rounded-3xl bg-tint-1 px-1">{([["Type", t.label, 1, true], ["Charity", orgName || "Not added", 2, !!orgName], ["Goal", `${money(goal)}${endDate ? ` by ${endDate}` : ""}`, 3, true], ["Cover", !hasCover ? "No cover yet" : cover.kind === "youtube" ? "YouTube video" : cover.kind === "video" ? "Video" : "Image", 4, hasCover], ["Story", hasStory ? `${story.replace(/<[^>]*>/g, " ").trim().split(/\s+/).length} words` : "Not written yet", 4, hasStory], ["Title", title || "Missing", 5, !!title], ["Address", `/${path}`, 5, true], ["Layout", L.name, 6, true]] as [string, string, number, boolean][]).map(([label, value, n, ok]) => (
+                            <div key={label} className="flex items-center gap-3 border-b border-hairline px-4 py-3 last:border-b-0">
+                                <span className="w-20 shrink-0 text-sm text-ink-3">{label}</span>
+                                <span className="min-w-0 flex-1 truncate font-medium text-ink">{value}</span>
                                 {!ok && <Badge type="pill-color" color={label === "Title" ? "error" : "warning"} size="sm">{label === "Title" ? "Required" : "Optional"}</Badge>}
                                 <Button size="sm" color="secondary" className="rounded-full" onPress={() => setStep(n)}>Edit</Button>
                             </div>
                         ))}</div>
                         <Checkbox size="md" isSelected={agree} onChange={setAgree} label={<>I agree to the Outgive <a href="/terms" target="_blank" rel="noopener" className="underline underline-offset-2">terms</a> and <a href="/privacy" target="_blank" rel="noopener" className="underline underline-offset-2">privacy policy</a></>} />
-                        {!user && !isDemo && <div className="rounded-2xl bg-secondary p-5"><SignIn next={window.location.pathname + window.location.search} title="Sign in to publish" sub="Your draft is saved in this browser. After signing in you come straight back here." /></div>}
+                        {!user && !isDemo && <div className="rounded-[28px] bg-tint-1 p-5"><SignIn next={window.location.pathname + window.location.search} title="Sign in to publish" sub="Your draft is saved in this browser. After signing in you come straight back here." /></div>}
                         {missing.length > 0 && <p className="text-sm text-error-primary">To publish, add {missing.join(" and ")}.</p>}
                         {publishError && <p className="text-sm text-error-primary">{publishError}</p>}
                     </>}
 
                     {live && <>
                         <StepHead title={`Your ${t.label.toLowerCase()} page is live`} sub="Share it to get your first gift." />
-                        <div className="flex flex-wrap items-center gap-4 rounded-2xl bg-brand-primary p-5">
+                        <div className="flex flex-wrap items-center gap-4 rounded-[28px] bg-tint-1 p-5">
                             <FeaturedIcon icon={Check} color="brand" theme="dark" size="lg" />
-                            <div className="min-w-0 flex-1"><div className="truncate text-lg font-semibold text-primary">{url.replace(/^https?:\/\//, "")}</div><div className="text-sm text-tertiary">Published just now · {L.name} layout</div></div>
+                            <div className="min-w-0 flex-1"><div className="truncate text-lg font-semibold text-ink">{url.replace(/^https?:\/\//, "")}</div><div className="text-sm text-ink-3">Published just now · {L.name} layout</div></div>
                             <Button size="md" color="secondary" className="rounded-full" iconLeading={Copy01} onPress={copy}>{copied ? "Copied" : "Copy link"}</Button>
                             <Button size="md" color="primary" className="rounded-full" iconLeading={Eye} onPress={() => go({ name: "page", key })}>View page</Button>
                         </div>
                         <div className="flex flex-col gap-2.5">{([[Share07, "Share your page", "A link, a QR code and your social apps", "Share", () => setShareOpen(true)], [Users01, "Invite fundraisers or a team", "Each one gets a page under yours", "Invite", () => setShareOpen(true)], [Trophy01, "Climb the leaderboard", "Every gift on this page counts toward your rank", "View leaderboard", () => go({ name: "home" })]] as const).map(([icon, a, b, cta, act]) => (
-                            <div key={a} className="flex flex-wrap items-center gap-3 rounded-2xl bg-primary p-4 shadow-xs ring-1 ring-secondary ring-inset">
+                            <div key={a} className="flex flex-wrap items-center gap-3 rounded-3xl bg-tint-1 p-4">
                                 <FeaturedIcon icon={icon} color="gray" theme="modern" size="md" />
-                                <div className="min-w-48 flex-1"><div className="font-semibold text-primary">{a}</div><div className="text-sm text-tertiary">{b}</div></div>
+                                <div className="min-w-48 flex-1"><div className="font-semibold text-ink">{a}</div><div className="text-sm text-ink-3">{b}</div></div>
                                 <Button size="sm" color="secondary" className="rounded-full" onPress={act}>{cta}</Button>
                             </div>
                         ))}</div>
                     </>}
                 </div></div>
 
-                <div className="z-10 shrink-0 border-t border-secondary bg-primary px-5 py-4 md:px-12"><div className="mx-auto flex max-w-2xl items-center gap-3">
+                <div className="z-10 shrink-0 border-t border-hairline bg-primary px-5 py-4 md:px-12"><div className="mx-auto flex max-w-2xl items-center gap-3">
                     {step > 1 && !live && <>
                         <Button size="xl" color="secondary" iconLeading={ArrowLeft} className="rounded-full max-sm:hidden" onPress={() => setStep((s) => s - 1)}>Back</Button>
                         <Button size="xl" color="secondary" iconLeading={ArrowLeft} aria-label="Back" className="rounded-full sm:hidden" onPress={() => setStep((s) => s - 1)} />
@@ -269,20 +269,20 @@ export const CreateFlow = ({ parent }: { parent?: string }) => {
                 </div></div>
             </main>
 
-            <aside className="hidden w-[26rem] shrink-0 flex-col justify-center overflow-y-auto border-l border-secondary bg-secondary p-8 xl:flex 2xl:w-[30rem]">
+            <aside className="hidden w-[26rem] shrink-0 flex-col justify-center overflow-y-auto bg-tint-1 p-8 xl:flex 2xl:w-[30rem]">
                 <div className="mx-auto flex w-full max-w-md flex-col gap-4">
-                    <div className="flex items-center justify-between"><span className="text-xs font-semibold tracking-widest text-brand-secondary uppercase">Live preview</span><span className="text-sm font-medium text-secondary">{L.name} layout</span></div>
-                    <div className="overflow-hidden rounded-2xl bg-primary shadow-xl ring-1 ring-secondary">
-                        <div className="flex items-center gap-1.5 bg-secondary px-4 py-3"><span className="size-2.5 rounded-full bg-quaternary" /><span className="size-2.5 rounded-full bg-quaternary" /><span className="size-2.5 rounded-full bg-quaternary" /><span className="ml-2 flex-1 truncate rounded-full bg-primary px-3 py-1 text-xs text-tertiary">{window.location.host}{href({ name: "page", key: key || path })}</span></div>
+                    <div className="flex items-center justify-between"><span className="text-[11px] font-semibold uppercase tracking-wide text-ink-3">Live preview</span><span className="text-sm font-semibold text-ink-2">{L.name} layout</span></div>
+                    <div className="overflow-hidden rounded-[28px] bg-raised shadow-lift">
+                        <div className="flex items-center gap-1.5 border-b border-hairline px-4 py-3"><span className="size-2.5 rounded-full bg-tint-3" /><span className="size-2.5 rounded-full bg-tint-3" /><span className="size-2.5 rounded-full bg-tint-3" /><span className="ml-2 flex-1 truncate rounded-full bg-tint-2 px-3 py-1 text-xs text-ink-3">{window.location.host}{href({ name: "page", key: key || path })}</span></div>
                         <div className="flex flex-col gap-3.5 p-5">
                             {hasCover ? <CoverMedia cover={cover} className="aspect-video w-full" /> : <LayoutThumb id={layout} className="h-56" />}
-                            <div className="flex flex-wrap gap-2"><Badge type="pill-color" color="brand" size="sm">{t.label}</Badge>{causes.map((c) => <Badge key={c} type="pill-color" color="gray" size="sm">{c}</Badge>)}</div>
-                            <div className="text-display-xs font-semibold tracking-tight text-primary">{page.title}</div>
-                            {showGoal && <><div><span className="text-lg font-semibold text-brand-secondary">{money(0)}</span> <span className="text-tertiary">raised of {money(goal)}</span></div><ProgressBarBase value={0} /></>}
-                            <div className="rounded-full bg-brand-solid py-2.5 text-center font-semibold text-white">{t.cta}</div>
+                            <div className="flex flex-wrap gap-2"><Badge type="pill-color" color="gray" size="sm">{t.label}</Badge>{causes.map((c) => <Badge key={c} type="pill-color" color="gray" size="sm">{c}</Badge>)}</div>
+                            <div className="text-display-xs leading-[0.95] font-extrabold tracking-[-0.045em] text-ink">{page.title}</div>
+                            {showGoal && <><div><span className="font-bubble text-lg font-bold text-ink tabular-nums">{money(0)}</span> <span className="text-ink-3">raised of {money(goal)}</span></div><ProgressBarBase value={0} /></>}
+                            <div className="rounded-full bg-ink py-2.5 text-center font-semibold text-ink-inverse">{t.cta}</div>
                         </div>
                     </div>
-                    <div className="rounded-xl bg-primary/70 px-4 py-3.5"><div className="font-semibold text-primary">{TIPS[step - 1][0]}</div><div className="text-sm text-tertiary">{TIPS[step - 1][1]}</div></div>
+                    <div className="rounded-[18px] bg-raised px-4 py-3.5 shadow-edge"><div className="font-semibold text-ink">{TIPS[step - 1][0]}</div><div className="text-sm text-ink-3">{TIPS[step - 1][1]}</div></div>
                 </div>
             </aside>
             </div>

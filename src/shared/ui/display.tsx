@@ -12,8 +12,8 @@ export const Ring = ({ value, size = 64 }: { value: number; size?: number }) => 
     const r = (size - 8) / 2; const c = 2 * Math.PI * r;
     return (
         <span className="relative inline-flex shrink-0" style={{ width: size, height: size }} role="img" aria-label={`${value}% funded`}>
-            <svg width={size} height={size} className="-rotate-90"><circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth="6" className="stroke-tint-3" /><circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth="6" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - value / 100)} className="stroke-ink" /></svg>
-            <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-primary">{value}%</span>
+            <svg width={size} height={size} className="-rotate-90"><circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth="6" className="stroke-tint-3" /><circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth="6" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - value / 100)} className="stroke-brand-600" /></svg>
+            <span className="absolute inset-0 flex items-center justify-center font-bubble text-sm font-bold text-brand-700 dark:text-brand-300">{value}%</span>
         </span>
     );
 };
@@ -22,7 +22,7 @@ export const Ring = ({ value, size = 64 }: { value: number; size?: number }) => 
 export const Stat = ({ icon: I, label, value, trend, tone = "default" }: { icon: Icon; label: string; value: string; trend?: ReactNode; tone?: "default" | "brand" }) => (
     <div className={cx("flex min-w-0 flex-col gap-3 p-5", tone === "brand" ? "rounded-3xl bg-ink text-ink-inverse" : "rounded-3xl bg-tint-1 text-ink")}>
         <div className="flex items-center justify-between gap-2"><span className={cx("text-[13px] font-semibold", tone === "brand" ? "opacity-70" : "text-ink-3")}>{label}</span><span className={cx("flex size-8 items-center justify-center", tone === "brand" ? "rounded-full bg-current/15" : "rounded-full bg-raised text-ink-2 shadow-edge")}><I className="size-4" /></span></div>
-        <span className="truncate text-[28px] leading-none font-semibold tracking-tight tabular-nums">{value}</span>
+        <span className="truncate font-bubble text-[28px] leading-none font-bold tabular-nums">{value}</span>
         {trend && <span className={cx("text-xs font-medium", tone === "brand" ? "opacity-70" : "text-ink-3")}>{trend}</span>}
     </div>
 );

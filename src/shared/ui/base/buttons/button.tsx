@@ -23,23 +23,23 @@ export const styles = sortCx({
     // Teseria control heights: 32 / 40 / 48, medium weight, pill shape.
     sizes: {
         xs: {
-            root: "h-7 gap-1 rounded-full px-2.5 text-xs font-medium before:rounded-full data-icon-only:w-7 data-icon-only:px-0 *:data-icon:size-3.5",
+            root: "h-7 gap-1 rounded-full px-2.5 text-xs font-semibold before:rounded-full data-icon-only:w-7 data-icon-only:px-0 *:data-icon:size-3.5",
             linkRoot: "gap-1 *:data-text:underline-offset-3",
         },
         sm: {
-            root: "h-8 gap-1.5 rounded-full px-3.5 text-[13px] font-medium before:rounded-full data-icon-only:w-8 data-icon-only:px-0 *:data-icon:size-4",
+            root: "h-8 gap-1.5 rounded-full px-3.5 text-[13px] font-semibold before:rounded-full data-icon-only:w-8 data-icon-only:px-0 *:data-icon:size-4",
             linkRoot: "gap-1 *:data-text:underline-offset-3",
         },
         md: {
-            root: "h-10 gap-1.5 rounded-full px-4 text-sm font-medium before:rounded-full data-icon-only:w-10 data-icon-only:px-0 *:data-icon:size-4",
+            root: "h-10 gap-1.5 rounded-full px-4 text-sm font-semibold before:rounded-full data-icon-only:w-10 data-icon-only:px-0 *:data-icon:size-4",
             linkRoot: "gap-1 *:data-text:underline-offset-4",
         },
         lg: {
-            root: "h-12 gap-2 rounded-full px-5 text-sm font-medium before:rounded-full data-icon-only:w-12 data-icon-only:px-0 *:data-icon:size-5",
+            root: "h-12 gap-2 rounded-full px-5 text-sm font-semibold before:rounded-full data-icon-only:w-12 data-icon-only:px-0 *:data-icon:size-5",
             linkRoot: "gap-1.5 *:data-text:underline-offset-4",
         },
         xl: {
-            root: "h-12 gap-2 rounded-full px-6 text-[15px] font-medium before:rounded-full data-icon-only:w-12 data-icon-only:px-0 *:data-icon:size-5",
+            root: "h-12 gap-2 rounded-full px-6 text-[15px] font-semibold before:rounded-full data-icon-only:w-12 data-icon-only:px-0 *:data-icon:size-5",
             linkRoot: "gap-1.5 *:data-text:underline-offset-4",
         },
     },
@@ -47,16 +47,16 @@ export const styles = sortCx({
     colors: {
         primary: {
             root: [
-                "bg-ink text-ink-inverse shadow-[inset_0_1px_0_0_rgb(255_255_255/0.14),0_1px_2px_0_rgb(0_0_0/0.16)] hover:opacity-90 data-loading:opacity-90",
+                "bg-cta text-cta-ink shadow-press hover:bg-cta-hover active:translate-y-px active:shadow-none data-loading:bg-cta-hover",
                 // Icon styles
                 "*:data-icon:text-current",
             ].join(" "),
         },
         secondary: {
             root: [
-                "bg-raised text-ink shadow-edge hover:bg-field-hover dark:hover:bg-tint-3 data-loading:bg-field-hover",
+                "bg-raised text-cta-blue shadow-[0_0_0_1px_var(--color-border-secondary),0_3px_0_rgb(18_24_44/0.08)] hover:bg-raised-hover active:translate-y-px active:shadow-[0_0_0_1px_var(--color-border-secondary)] data-loading:bg-raised-hover dark:shadow-press",
                 // Icon styles
-                "*:data-icon:text-ink-3 hover:*:data-icon:text-ink",
+                "*:data-icon:text-current",
             ].join(" "),
         },
         tertiary: {

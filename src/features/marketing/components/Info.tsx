@@ -54,21 +54,21 @@ export const Info = ({ kind }: { kind: "about" | "rules" | "faq" | "terms" | "pr
         <div className="min-h-dvh bg-primary"><Container className="flex max-w-3xl flex-col gap-10 py-5">
             <SiteHeader right={<Button color="secondary" size="sm" className="rounded-full" iconLeading={ArrowLeft} onPress={() => go({ name: "home" })}>Leaderboard</Button>} />
             {kind === "about" && <article className="flex flex-col gap-4 text-md text-tertiary">
-                <h1 className="text-display-sm font-semibold text-primary">About</h1>
+                <h1 className="text-display-sm leading-[0.95] font-extrabold tracking-[-0.045em] text-ink">About</h1>
                 <p>This is the <span className="font-semibold text-primary">{brand.name}</span> leaderboard, run on <span className="font-semibold text-primary">Outgive</span>. It has one rule: your rank is set by what you have given to {brand.name}. Anyone can move up by giving more than the supporter above them.</p>
                 <p>Seeing your own name on the board, and knowing exactly what it takes to climb, is what makes people give again. The board takes nothing from a gift.</p>
                 <p>Outgive is white-label. Any charity can run its own board with its own name, logo, colour, font and ranking layout. Supporters can also set up fundraising pages, in 12 layouts, and every gift to a page counts toward its rank.</p>
             </article>}
-            {kind === "rules" && <article className="flex flex-col gap-4"><h1 className="text-display-sm font-semibold text-primary">Rules</h1>
-                <ol className="flex flex-col gap-3">{RULES.map(([a, b], i) => (<li key={a} className="flex gap-4 rounded-2xl p-4 ring-1 ring-secondary ring-inset"><span className="font-semibold text-brand-secondary">{i + 1}</span><span className="text-tertiary"><span className="font-semibold text-primary">{a}</span> {b}</span></li>))}</ol>
+            {kind === "rules" && <article className="flex flex-col gap-4"><h1 className="text-display-sm leading-[0.95] font-extrabold tracking-[-0.045em] text-ink">Rules</h1>
+                <ol className="flex flex-col gap-3">{RULES.map(([a, b], i) => (<li key={a} className="flex gap-4 rounded-3xl bg-tint-1 p-4"><span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-tint-2 font-bubble text-xs font-bold tabular-nums text-ink-2">{i + 1}</span><span className="text-tertiary"><span className="font-semibold text-primary">{a}</span> {b}</span></li>))}</ol>
             </article>}
             {(kind === "terms" || kind === "privacy") && <article className="flex flex-col gap-6 pb-12">
-                <div><h1 className="text-display-sm font-semibold text-primary">{kind === "terms" ? "Terms of use" : "Privacy policy"}</h1><p className="mt-2 flex flex-wrap items-center gap-2 text-sm text-tertiary">Last updated {LEGAL.updated}{LEGAL_DRAFT && <span className="rounded-full bg-warning-primary px-2 py-0.5 text-xs font-semibold text-warning-primary">Draft: company details to be added</span>}</p></div>
-                {(kind === "terms" ? TERMS : privacy()).map(([t, ps], i) => <section key={t} className="border-t border-secondary pt-5"><h2 className="text-lg font-semibold text-primary">{i + 1}. {t}</h2>{ps.map((p) => <p key={p} className="mt-2 max-w-prose text-md text-tertiary">{p}</p>)}</section>)}
+                <div><h1 className="text-display-sm leading-[0.95] font-extrabold tracking-[-0.045em] text-ink">{kind === "terms" ? "Terms of use" : "Privacy policy"}</h1><p className="mt-2 flex flex-wrap items-center gap-2 text-sm text-tertiary">Last updated {LEGAL.updated}{LEGAL_DRAFT && <span className="inline-flex h-6 items-center rounded-full bg-tint-2 px-2.5 text-xs font-semibold text-warning-primary">Draft: company details to be added</span>}</p></div>
+                {(kind === "terms" ? TERMS : privacy()).map(([t, ps], i) => <section key={t} className="border-t border-hairline pt-5"><h2 className="text-lg font-semibold text-primary">{i + 1}. {t}</h2>{ps.map((p) => <p key={p} className="mt-2 max-w-prose text-md text-tertiary">{p}</p>)}</section>)}
                 <p className="text-sm text-tertiary">See also the {kind === "terms" ? <a href="/privacy" onClick={(e) => { e.preventDefault(); go({ name: "privacy" }); }} className="font-semibold text-primary underline underline-offset-2">privacy policy</a> : <a href="/terms" onClick={(e) => { e.preventDefault(); go({ name: "terms" }); }} className="font-semibold text-primary underline underline-offset-2">terms of use</a>} and the <a href="/rules" onClick={(e) => { e.preventDefault(); go({ name: "rules" }); }} className="font-semibold text-primary underline underline-offset-2">leaderboard rules</a>.</p>
             </article>}
-            {kind === "faq" && <article className="flex flex-col gap-4"><h1 className="text-display-sm font-semibold text-primary">FAQ</h1>
-                {FAQ.map(([q, a]) => (<section key={q} className="border-t border-secondary pt-4"><h2 className="text-lg font-semibold text-primary">{q}</h2><p className="mt-1 text-tertiary">{a}</p></section>))}
+            {kind === "faq" && <article className="flex flex-col gap-4"><h1 className="text-display-sm leading-[0.95] font-extrabold tracking-[-0.045em] text-ink">FAQ</h1>
+                {FAQ.map(([q, a]) => (<section key={q} className="border-t border-hairline pt-4"><h2 className="text-lg font-semibold text-primary">{q}</h2><p className="mt-1 text-tertiary">{a}</p></section>))}
             </article>}
         </Container></div>
     );
