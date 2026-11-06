@@ -20,6 +20,8 @@ const CreateFlow = screen(() => import("@/features/create"), "CreateFlow");
 const Admin = screen(() => import("@/features/admin"), "Admin");
 const PageScreen = screen(() => import("@/features/campaign"), "PageScreen");
 const NotFound = screen(() => import("@/shared/ui"), "NotFound");
+/** Design-system gallery; only built into dev. */
+const Gallery = import.meta.env.DEV ? screen(() => import("@/shared/ui/gallery"), "Gallery") : NotFound;
 const SamplePage = screen(() => import("@/features/campaign"), "SamplePage");
 
 /** The screen for a view. The landing page is handled before this, so it renders without waiting for any chunk. */
@@ -27,6 +29,7 @@ export const screenFor = (view: View): ReactNode => {
     switch (view.name) {
         case "landing-b": return <LandingB />;
         case "layouts": return <SamplePage />;
+        case "ui": return <Gallery />;
         case "pricing": return <Pricing />;
         case "start": return <Start />;
         case "login": return <Login />;

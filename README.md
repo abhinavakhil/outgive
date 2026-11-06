@@ -29,7 +29,7 @@ Copy `.env.example` to `.env.local` and fill in the Supabase URL and anon key to
 ## How it is put together
 
     Browser (React SPA)
-      └─ src/lib/db.ts       one interface: rpc(name,args), auth, realtime, functions, uploads
+      └─ src/shared/lib/db.ts      one interface: rpc(name,args), auth, realtime, functions, uploads
            ├─ supabase mode   supabase-js (PostgREST RPC, Realtime, Auth, Storage)   when VITE_SUPABASE_URL is set
            └─ demo mode       PGlite in the browser, seeded with a sample charity    otherwise (/demo)
     Supabase
@@ -67,7 +67,7 @@ bare domain. Tenant routes: `/` board, `/live` and `/overlay` (wall display and 
 
 Press **Your branding** on the leaderboard to see the board as your own charity: name, tagline, logo, brand colour,
 font and default ranking layout. Four example charities are one click away. The colour you pick is turned into the
-full brand scale (`src/brand.ts`), so buttons, tints, rank highlights and dark mode all follow it. The brand is kept
+full brand scale (`src/shared/lib/brand.ts`), so buttons, tints, rank highlights and dark mode all follow it. The brand is kept
 in `localStorage` and nothing leaves the browser.
 
 ## Three ranking layouts
@@ -80,33 +80,52 @@ After you claim a rank, your row is marked **You** and scrolled into view in whi
 
 ## Where things are
 
-- `src/App.tsx`: router (tenant from host or `/o/<slug>`), organisation loading, realtime refresh, shared state
-- `src/lib/db.ts`: the data interface; `src/lib/demo.ts` is the in-browser PGlite implementation with the sample charity
-- `src/lib/route.ts`: path parsing and tenant resolution; `src/lib/types.ts`: SQL API row types and adapters
-- `src/views/Admin.tsx`: organiser dashboard (stats, donations, refunds, members, branding, domain, Stripe, pledges)
-- `src/views/Live.tsx`: wall display and OBS overlay; `src/views/PageManage.tsx`: page owner tools and presenter console
-- `src/views/Dashboard.tsx`: donor dashboard; `Start`, `Login`, `Pricing`, `Thanks`, `Embed`: the remaining screens
-- `supabase/migrations/`: schema, triggers, SQL API, RLS; `supabase/functions/`: checkout, stripe-webhook, connect
-- `tests/db.test.ts`: the schema and API on real Postgres; `tests/seed.test.ts`: the demo seed
-- `src/brand.ts`: turns one hex colour and a font into the CSS variables the whole app uses
-- `src/views/Leaderboard.tsx`: the ranking in three layouts, the claim dialog, filters
-- `src/components/outgive/BrandPanel.tsx`: the "see it with your branding" dialog
-- `src/views/CreateFlow.tsx`: the seven steps, live preview and the published screen
-- `src/views/CampaignPage.tsx`: the 12 layouts and the layout switcher
-- `src/views/Info.tsx`: About, Rules, FAQ
-- `src/components/outgive/shared.tsx`: brand logo, donate card, boards, layout thumbnails
-- `src/data.ts`: supporters, kinds, currencies, brand presets, page types, layouts
-- `src/styles/outgive.css`: Poppins and the brand scale that replaces Untitled UI's default purple
+    src/
+      app/          wiring only: main.tsx, App.tsx (tenant, org loading, realtime, shared state), routes.tsx (lazy screens), prerender.tsx
+      features/     one folder per product area; each exposes its public API in index.ts
+        launch/       coming-soon landing and gate (eager: it is the first paint)
+        marketing/    LandingB, Pricing, Info (About, Rules, FAQ, Terms, Privacy)
+        auth/         Login, SignIn          onboarding/  Start (charity sign-up)
+        leaderboard/  the board, 29 board styles, BrandPanel ("see it with your branding")
+        campaign/     page screen, the 12 page layouts, PageManage (owner tools), page-parts (donate card, story, levels)
+        create/       CreateFlow: the seven steps, live preview, published screen
+        donate/       donate dialog, phone give screen, thank-you page
+        live/         wall display, OBS overlay, embed widget, presenter console
+        dashboard/    donor dashboard       admin/  organiser console
+      shared/
+        ui/           the design system; import only from "@/shared/ui"
+        domain/       model.ts (page types, layouts, brand, currencies), types.ts (SQL API rows and adapters)
+        lib/          db.ts (data interface), demo.ts (in-browser PGlite), route.ts, money.ts, brand.ts, seo.ts, app-context.ts, format.ts
+        styles/       Tailwind 4 theme tokens, typography, globals
+    supabase/migrations/   schema, triggers, SQL API, RLS; supabase/functions/: checkout, stripe-webhook, connect
+    tests/                 db.test.ts (schema on real Postgres), seed.test.ts, browser/ (headless flows)
 
-## Untitled UI
+### Adding a feature
 
-`src/components/{base,application,foundations,...}`, `src/hooks`, `src/utils` and `src/styles` are copied from
-https://github.com/untitleduico/react (MIT; licence in `src/components/UNTITLED-UI-LICENSE`), with stories and demos removed.
-Only the components the app imports end up in the build. Some unused component files need extra packages
-(charts, carousel, date picker and so on) that are not installed; add them if you start using those components.
+1. Create `src/features/<name>/` with `components/` and an `index.ts` that exports only what other code needs. Add
+   `hooks/`, `api.ts` or `model.ts` when the feature has them, not before.
+2. Give it a view in `src/shared/lib/route.ts` (and a test in `route.test.ts`), then one line in `src/app/routes.tsx`:
+   `const Ramadan = screen(() => import("@/features/ramadan"), "Ramadan");`. Every feature is its own lazily loaded chunk.
+3. Build the screens from `@/shared/ui`. If a component is missing, add it to `src/shared/ui/` and export it from
+   `index.ts`, so the next feature can use it too. Style with Tailwind classes and theme tokens (`bg-primary`,
+   `text-tertiary`, `bg-brand-solid`), never hard-coded colours; the charity brand and dark mode then apply automatically.
 
-One change was made to the copied source: in `src/components/base/select/select-native.tsx` the select only sets
-`aria-labelledby` when a visible label is rendered, so an `aria-label` passed by the caller is respected.
+`src/app/boundaries.test.ts` enforces the rules on every `npm test`:
+
+- `shared/` never imports `features/` or `app/`, and features never import `app/`.
+- One feature reaches another only through its index (`@/features/live`, never `@/features/live/components/Live`).
+- Features take UI only from `@/shared/ui`, never from its inner files or from react-aria directly.
+
+`/ui` (dev only) shows every design-system component and variant in the current theme.
+
+## Design system (`src/shared/ui`)
+
+`base/`, `application/` and `foundations/` started as copies of https://github.com/untitleduico/react (MIT; licence in
+`src/shared/ui/UNTITLED-UI-LICENSE`). They are now our own code: only the components the app uses were kept. `layout.tsx`,
+`display.tsx`, `brand.tsx`, `dialog.tsx`, `search-bar.tsx` and `pill-select.tsx` are Outgive's own components on top of them.
+
+One change was made to the copied source: in `base/select/select-native.tsx` the select only sets `aria-labelledby` when a
+visible label is rendered, so an `aria-label` passed by the caller is respected.
 
 ## Not built yet
 

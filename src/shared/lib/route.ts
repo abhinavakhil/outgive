@@ -24,7 +24,7 @@ export const LIVE_LINK_LAYOUTS = ["classic", "thermo", "impact", "podium", "wall
 export const OVERLAY_STYLES = ["bar", "alert", "ticker"] as const;
 type LiveLink = { layout?: (typeof LIVE_LINK_LAYOUTS)[number]; theme?: "dark" | "light" };
 export type View =
-    | { name: "landing" } | { name: "landing-b" } | { name: "layouts" } | { name: "pricing" } | { name: "start" } | { name: "login" } | { name: "dashboard" }
+    | { name: "landing" } | { name: "landing-b" } | { name: "layouts" } | { name: "ui" } | { name: "pricing" } | { name: "start" } | { name: "login" } | { name: "dashboard" }
     | { name: "about" } | { name: "rules" } | { name: "faq" } | { name: "terms" } | { name: "privacy" } | { name: "notfound" }
     | { name: "board"; org: string } | ({ name: "live"; org: string; page?: PageRef } & LiveLink) | { name: "give"; org: string; page?: PageRef }
     | { name: "overlay"; org: string; page?: PageRef; style?: (typeof OVERLAY_STYLES)[number] }
@@ -36,7 +36,7 @@ export type View =
     | { name: "embed"; org: string; page?: PageRef; theme?: "dark"; limit?: number };
 
 const TYPE_OF: Record<string, PageType> = Object.fromEntries(Object.entries(PREFIX).map(([t, p]) => [p, t as PageType]));
-const STATIC: Record<string, View> = { "/": { name: "landing" }, "/landing-b": { name: "landing-b" }, "/layouts": { name: "layouts" }, "/pricing": { name: "pricing" }, "/start": { name: "start" }, "/login": { name: "login" }, "/dashboard": { name: "dashboard" }, "/about": { name: "about" }, "/rules": { name: "rules" }, "/faq": { name: "faq" }, "/terms": { name: "terms" }, "/privacy": { name: "privacy" } };
+const STATIC: Record<string, View> = { "/": { name: "landing" }, "/landing-b": { name: "landing-b" }, "/layouts": { name: "layouts" }, "/ui": { name: "ui" }, "/pricing": { name: "pricing" }, "/start": { name: "start" }, "/login": { name: "login" }, "/dashboard": { name: "dashboard" }, "/about": { name: "about" }, "/rules": { name: "rules" }, "/faq": { name: "faq" }, "/terms": { name: "terms" }, "/privacy": { name: "privacy" } };
 const clean = (p: string) => (p.length > 1 ? p.replace(/\/+$/, "") : p) || "/";
 
 /** /live/podium/light: an optional layout and theme, in either order. */
