@@ -209,7 +209,7 @@ export const Live = ({ pageRef, layout: linkLayout, theme: linkTheme }: { pageRe
     };
 
     return (
-        <div className={cx("min-h-dvh overflow-hidden", s.page)} style={{ fontFamily: `"${brand.font}", ui-sans-serif, system-ui` }}>
+        <div className={cx("min-h-dvh overflow-hidden", s.page)}>
             {confetti > Date.now() - 6000 && <Confetti at={confetti} />}
             {state.paused && <div className={cx("fixed inset-0 z-50 flex items-center justify-center text-2xl font-semibold", s.veil)}>Back in a moment</div>}
             <div className="relative mx-auto flex min-h-dvh max-w-[1700px] flex-col gap-6 p-6 md:p-10">
@@ -246,7 +246,7 @@ export const Overlay = ({ pageRef, style }: { pageRef?: PageRef; style?: "bar" |
     const pct = goalUsd > 0 ? Math.min(100, (totalUsd / goalUsd) * 100) : 0;
     if (!org) return null;
     return (
-        <div className="min-h-dvh bg-transparent p-4 text-white" style={{ fontFamily: `"${brand.font}", ui-sans-serif, system-ui`, textShadow: "0 1px 2px rgb(0 0 0 / .5)" }}>
+        <div className="min-h-dvh bg-transparent p-4 text-white" style={{ textShadow: "0 1px 2px rgb(0 0 0 / .5)" }}>
             {theme !== "alert" && <div className="w-full max-w-xl rounded-2xl bg-[#121830]/90 p-4">
                 <div className="flex items-center gap-3"><BrandMark className="size-9 rounded-xl text-sm" /><div className="min-w-0 flex-1"><div className="truncate text-sm font-semibold">{bundle?.page.title ?? brand.name}</div>{goalUsd > 0 && <div className="mt-1 h-3 overflow-hidden rounded-full bg-[#1c2442]"><motion.div className="h-full rounded-full bg-brand-solid" animate={{ width: `${pct}%` }} transition={{ type: "spring", stiffness: 60, damping: 18 }} /></div>}</div><div className="text-right"><div className="font-bubble text-2xl leading-none font-bold tabular-nums">{money(Math.round(totalUsd))}</div>{goalUsd > 0 && <div className="text-xs text-[#929cbc]">of {money(goalUsd)}</div>}</div></div>
                 {theme === "ticker" && gifts.length > 0 && <div className="mt-3 flex flex-col gap-1 text-sm">{gifts.slice(0, 5).map((g) => <div key={g.id} className="flex justify-between gap-3"><span className="truncate">{g.donor_name}{g.cause && <span className="text-[#929cbc]"> · {g.cause}</span>}</span><span className="font-bubble font-bold tabular-nums">{money(g.usd_cents / 100)}</span></div>)}</div>}

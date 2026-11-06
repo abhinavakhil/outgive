@@ -9,7 +9,7 @@ export const BrandMark = ({ className }: { className?: string }) => {
     const { brand } = useApp();
     return brand.logo
         ? <img src={brand.logo} alt="" className={cx("size-9 shrink-0 rounded-xl object-cover", className)} />
-        : <span className={cx("flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-solid text-sm font-bold text-white", className)}>{initials(brand.name) || "?"}</span>;
+        : <span className={cx("flex size-9 shrink-0 items-center justify-center rounded-xl bg-[var(--color-charity,var(--color-brand-600))] text-sm font-bold text-white", className)}>{initials(brand.name) || "?"}</span>;
 };
 /** The charity's name and mark; links home. */
 export const BrandLogo = ({ onClick, mark }: { onClick?: () => void; mark?: string }) => {

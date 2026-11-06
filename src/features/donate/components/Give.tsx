@@ -28,7 +28,7 @@ export const Give = ({ pageRef }: { pageRef?: PageRef }) => {
     if (!org) return null;
     const pageUrl = `${window.location.origin}${pageRef ? href({ name: "page", org: org.slug, page: pageRef }) : href({ name: "home" })}`;
     return (
-        <div className="min-h-dvh bg-primary" style={{ fontFamily: `"${brand.font}", ui-sans-serif, system-ui` }}>
+        <div className="min-h-dvh bg-primary">
             <header className="px-4 pt-6 pb-6">
                 <div className="mx-auto flex max-w-lg flex-col gap-5">
                     <div className="flex items-center gap-3"><BrandMark className="size-11 rounded-xl text-base" /><div className="min-w-0"><div className="truncate text-lg leading-tight font-semibold tracking-tight text-ink">{brand.name}</div><div className="truncate text-sm text-ink-3">{title}</div></div><span className="ml-auto inline-flex h-6 shrink-0 items-center gap-1.5 rounded-full bg-tint-2 px-2.5 text-xs font-semibold text-ink-2"><span className="relative inline-flex size-1.5"><span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500 opacity-75" /><span className="relative inline-flex size-1.5 rounded-full bg-emerald-500" /></span>Live</span></div>
