@@ -26,9 +26,9 @@ export const Start = () => {
     return (
         <div className="min-h-dvh bg-primary"><Container className="flex max-w-3xl flex-col gap-8 py-5"><SiteHeader />
             <div><h1 className="text-display-sm leading-[0.95] font-extrabold tracking-[-0.045em] text-ink">Run a board for your organisation</h1><p className="mt-2 text-lg text-tertiary">Your name, colours and address. You can change all of it later and connect Stripe when you are ready to take gifts.</p></div>
-            {!user && !isDemo ? <div className="rounded-[28px] bg-tint-1 p-6"><SignIn next="/start" title="Sign in to start" sub="Your account becomes the organisation's owner." /></div> : (
+            {!user && !isDemo ? <div className="rounded-3xl bg-tint-1 p-6"><SignIn next="/start" title="Sign in to start" sub="Your account becomes the organisation's owner." /></div> : (
                 <form className="flex flex-col gap-5" onSubmit={(e) => { e.preventDefault(); submit(); }}>
-                    {isDemo && <p className="rounded-[18px] bg-tint-1 px-4 py-3 text-sm text-ink-3">Demo: the organisation you create lives in this browser only.</p>}
+                    {isDemo && <p className="rounded-2xl bg-tint-1 px-4 py-3 text-sm text-ink-3">Demo: the organisation you create lives in this browser only.</p>}
                     <Panel>
                         <Fieldset title="Identity" sub="Name and address can be changed later.">
                             <Input label="Organisation name" isRequired value={f.name} onChange={set("name")} placeholder="Clearwell Trust" />
@@ -38,7 +38,7 @@ export const Start = () => {
                             <TextArea label="About your organisation" rows={3} value={f.description} onChange={set("description")} className="sm:col-span-2" />
                         </Fieldset>
                         <Fieldset title="Look" sub="One colour becomes your whole palette.">
-                            <label className="flex flex-col gap-1.5 text-sm font-semibold text-ink-2">Brand colour<span className="flex h-12 items-center gap-3 rounded-[18px] bg-raised px-3.5 shadow-edge"><input type="color" aria-label="Brand colour" value={f.color} onChange={(e) => set("color")(e.target.value)} className="size-7 cursor-pointer rounded-full border-0 bg-transparent p-0" /><span className="font-mono text-sm text-ink-3 uppercase">{f.color}</span></span></label>
+                            <label className="flex flex-col gap-1.5 text-sm font-semibold text-ink-2">Brand colour<span className="flex h-12 items-center gap-3 rounded-2xl bg-raised px-3.5 shadow-edge"><input type="color" aria-label="Brand colour" value={f.color} onChange={(e) => set("color")(e.target.value)} className="size-7 cursor-pointer rounded-full border-0 bg-transparent p-0" /><span className="font-mono text-sm text-ink-3 uppercase">{f.color}</span></span></label>
                             <NativeSelect label="Font" value={f.font} onChange={(e) => set("font")(e.target.value)} options={FONTS.map((x) => ({ label: x, value: x }))} />
                             <NativeSelect label="Board layout" value={f.variant} onChange={(e) => set("variant")(e.target.value)} options={ALL_VARIANTS.map(([v, l]) => ({ label: l, value: v }))} />
                             <NativeSelect label="Currency" value={f.currency} onChange={(e) => set("currency")(e.target.value)} options={Object.keys(CURRENCIES).map((c) => ({ label: c, value: c }))} />

@@ -35,8 +35,8 @@ export const INV = "bg-ink text-ink-inverse [--text-color-primary:#fff] [--text-
 export const NUM = "font-bubble font-bold tabular-nums";
 export const EASE = "transition duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]";
 const NAME = "truncate font-semibold";
-const CARD = "rounded-[28px] bg-tint-1 p-2";
-const ROW = cx("rounded-[18px] hover:bg-tint-2", EASE);
+const CARD = "rounded-3xl bg-tint-1 p-2";
+const ROW = cx("rounded-2xl hover:bg-tint-2", EASE);
 const li = (c: BoardCtx, o: Row, className: string, you = YOU) => ({ id: `row-${o.id}`, className: cx("group relative", className, c.you === o.id && you) });
 const one = (kind: string) => ({ Individuals: "Individual", Teams: "Team", Companies: "Company", Schools: "School" })[kind] ?? kind;
 const top = (rows: Row[], c: BoardCtx) => Math.max(1, ...rows.map((o) => o[c.metric]));
@@ -68,7 +68,7 @@ const Minimal: B = ({ rows, c }) => (
 const Glass: B = ({ rows, c }) => (
     <ol className={cx("flex flex-col gap-1.5 md:p-3", CARD)}>
         {rows.map((o) => (
-            <li key={o.id} {...li(c, o, cx("flex items-center gap-3 rounded-[18px] bg-raised px-3.5 py-3 shadow-edge hover:bg-raised-hover", EASE))}>
+            <li key={o.id} {...li(c, o, cx("flex items-center gap-3 rounded-2xl bg-raised px-3.5 py-3 shadow-edge hover:bg-raised-hover", EASE))}>
                 {c.pill(o)}<span className={cx("w-6 text-sm text-tertiary", NUM)}>{o.rank}</span><Disc o={o} className="size-9 text-xs" /><Who o={o} c={c} sub={`${one(o.kind)} · ${o.country}`} />
                 <span className="shrink-0 text-right"><span className={cx("block text-md text-primary", NUM)}>{c.val(o)}</span><span className="block text-[11px] text-tertiary">{c.label.toLowerCase()}</span></span>
             </li>
@@ -125,7 +125,7 @@ const Season: B = ({ rows, c }) => {
     const lead = rows[0]; const chase = rows[1];
     return (
         <div className={CARD}>
-            <div className="flex items-center gap-3 rounded-[18px] bg-raised px-4 py-3.5 shadow-edge"><span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-ink text-ink-inverse"><Trophy01 className="size-5" /></span>
+            <div className="flex items-center gap-3 rounded-2xl bg-raised px-4 py-3.5 shadow-edge"><span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-ink text-ink-inverse"><Trophy01 className="size-5" /></span>
                 <div className="min-w-0 flex-1"><div className="text-sm font-semibold text-primary">{c.label} season</div>
                     {chase && <><div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-tint-3"><div className="h-full rounded-full bg-ink" style={{ width: `${(chase[c.metric] / Math.max(1, lead[c.metric])) * 100}%` }} /></div><div className="mt-1 truncate text-xs text-tertiary"><b className={cx("text-secondary", NUM)}>{c.fmt(c.gap(chase))}</b> puts {chase.name} ahead of {lead.name}</div></>}</div>
             </div>
@@ -144,7 +144,7 @@ const Season: B = ({ rows, c }) => {
 /** A strip of leaders to swipe through, then cards with the rank set large. Ref: Fi rank. */
 const Strip: B = ({ rows, c }) => (
     <div className="flex flex-col gap-3">
-        <div className="rounded-[28px] bg-tint-1 px-4 py-5 text-center">
+        <div className="rounded-3xl bg-tint-1 px-4 py-5 text-center">
             <ol className="no-scrollbar flex justify-start gap-4 overflow-x-auto pb-1 md:justify-center">{rows.slice(0, 8).map((o, i) => <li key={o.id} className="flex shrink-0 flex-col items-center"><Disc o={o} className={cx(i === 0 ? "size-16 bg-ink text-lg text-ink-inverse" : "size-12 bg-raised text-sm shadow-edge")} /><span className={cx("-mt-2 rounded-full bg-raised px-1.5 text-[11px] text-ink-2 shadow-edge", NUM)}>#{o.rank}</span></li>)}</ol>
             <div className="mt-3 text-[11px] font-semibold tracking-wide text-ink-3 uppercase">{c.label} leaders</div><div className="text-xs text-ink-3">{rows.length} in the race</div>
         </div>
@@ -178,7 +178,7 @@ const Zones: B = ({ rows, c }) => (
 const Columns: B = ({ rows, c }) => (
     <ol className="gap-x-10 md:columns-2">
         {rows.map((o) => (
-            <li key={o.id} {...li(c, o, cx("flex break-inside-avoid items-center gap-3 rounded-[18px] px-2 py-2.5 hover:bg-tint-1", EASE))}>
+            <li key={o.id} {...li(c, o, cx("flex break-inside-avoid items-center gap-3 rounded-2xl px-2 py-2.5 hover:bg-tint-1", EASE))}>
                 {c.pill(o)}<span className={cx("w-5 text-xs text-tertiary", NUM)}>{o.rank}</span><Avatar size="sm" initials={initials(o.name)} /><Who o={o} c={c} />
                 <span className={cx("shrink-0 text-xs text-secondary", NUM)}>{c.val(o)}</span>
             </li>
@@ -205,9 +205,9 @@ const Earners: B = ({ rows, c }) => (
 
 /** Dense, with how long each has been on the board. Ref: Garmin Connect leaderboard. */
 const Night: B = ({ rows, c }) => (
-    <ol className="rounded-[28px] bg-tint-1 px-4 py-2">
+    <ol className="rounded-3xl bg-tint-1 px-4 py-2">
         {rows.map((o) => (
-            <li key={o.id} {...li(c, o, "flex items-center gap-3.5 border-b border-hairline py-3 last:border-0", "rounded-[18px] bg-tint-2 px-2")}>
+            <li key={o.id} {...li(c, o, "flex items-center gap-3.5 border-b border-hairline py-3 last:border-0", "rounded-2xl bg-tint-2 px-2")}>
                 {c.pill(o)}<span className={cx("w-5 text-xs text-tertiary", NUM)}>{o.rank}</span><Disc o={o} className="size-9 text-xs" />
                 <Who o={o} c={c} sub={o.days === 0 ? "Joined today" : `${o.days}d on the board`} /><span className={cx("shrink-0 text-sm text-secondary", NUM)}>{c.val(o)}</span>
             </li>
@@ -219,7 +219,7 @@ const Night: B = ({ rows, c }) => (
 const Follow: B = ({ rows, c }) => (
     <ol className="flex flex-col">
         {rows.map((o) => (
-            <li key={o.id} {...li(c, o, "flex items-center gap-3.5 border-b border-hairline py-3.5 last:border-0", cx(YOU, "rounded-[18px]"))}>
+            <li key={o.id} {...li(c, o, "flex items-center gap-3.5 border-b border-hairline py-3.5 last:border-0", cx(YOU, "rounded-2xl"))}>
                 <span className="relative ml-3 shrink-0"><Avatar size="lg" initials={initials(o.name)} /><span className={cx("absolute top-1/2 -left-3 flex size-6 -translate-y-1/2 items-center justify-center rounded-full bg-ink text-xs text-ink-inverse ring-2 ring-bg-primary", NUM)}>{o.rank}</span></span>
                 <Who o={o} c={c} big sub={`${c.val(o)} · ${o.country}`} />
                 {claimBtn(c, o, "h-8 rounded-full bg-ink px-4 text-sm font-semibold text-ink-inverse hover:opacity-90 max-md:hidden", "Outgive")}
@@ -248,7 +248,7 @@ const Numerals: B = ({ rows, c }) => (
 const Carousel: B = ({ rows, c }) => (
     <ol className="no-scrollbar -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pt-3 pb-2">
         {rows.map((o, i) => (
-            <li key={o.id} {...li(c, o, cx("flex w-52 shrink-0 snap-start flex-col items-center gap-1.5 rounded-[28px] p-5 text-center", i === 0 ? INV : "bg-tint-1"))}>
+            <li key={o.id} {...li(c, o, cx("flex w-52 shrink-0 snap-start flex-col items-center gap-1.5 rounded-3xl p-5 text-center", i === 0 ? INV : "bg-tint-1"))}>
                 {c.pill(o)}<span className={cx("inline-flex h-6 items-center rounded-full bg-tertiary px-2.5 text-xs text-primary", NUM)}>#{o.rank}</span>
                 <Avatar size="2xl" initials={initials(o.name)} className="mt-1" />
                 <span className="flex max-w-full items-center gap-1.5"><span className={cx(NAME, "text-md text-primary")}>{o.name}</span>{c.badge(o)}</span>
@@ -264,7 +264,7 @@ const Skyline: B = ({ rows, c }) => {
     const max = top(rows, c);
     return (
         <div className="flex flex-col gap-3">
-            <ol className="no-scrollbar flex h-72 items-end gap-2 overflow-x-auto rounded-[28px] bg-tint-1 px-4 pt-10 pb-4">
+            <ol className="no-scrollbar flex h-72 items-end gap-2 overflow-x-auto rounded-3xl bg-tint-1 px-4 pt-10 pb-4">
                 {rows.slice(0, 10).map((o, i) => (
                     <li key={o.id} {...li(c, o, "flex h-full min-w-12 flex-1 flex-col items-center justify-end gap-1.5", cx(YOU, "rounded-xl"))}>
                         {c.pill(o, "top-0")}<span className={cx("text-[11px] whitespace-nowrap text-primary", NUM)}>{c.val(o)}</span>
@@ -288,7 +288,7 @@ const Ladder: B = ({ rows, c }) => {
             {rows.map((o, i) => (
                 <li key={o.id} className="contents">
                     {i > 0 && <div className="relative flex items-center gap-3 pl-12" style={{ height: `${Math.round(18 + (c.gap(o) / widest) * 54)}px` }}><span className={cx("inline-flex h-6 items-center rounded-full bg-tint-1 px-2.5 text-[11px] text-ink-3", NUM)}>{c.fmt(c.gap(o))} to climb</span></div>}
-                    <div {...li(c, o, "flex items-center gap-3 rounded-[18px] py-1 pr-2")}>
+                    <div {...li(c, o, "flex items-center gap-3 rounded-2xl py-1 pr-2")}>
                         {c.pill(o)}<span className={cx("relative flex size-11 shrink-0 items-center justify-center rounded-full text-sm ring-4 ring-bg-primary", NUM, i === 0 ? "bg-ink text-ink-inverse" : "bg-tint-2 text-ink-2")}>{o.rank}</span>
                         <Who o={o} c={c} big /><span className={cx("shrink-0 text-md text-primary", NUM)}>{c.val(o)}</span>
                     </div>
@@ -304,13 +304,13 @@ const Duel: B = ({ rows, c }) => (
         {Array.from({ length: Math.ceil(rows.length / 2) }, (_, k) => [rows[k * 2], rows[k * 2 + 1]] as const).map(([a, b]) => {
             const share = b ? (a[c.metric] / Math.max(1, a[c.metric] + b[c.metric])) * 100 : 100;
             const side = (o: Row, right?: boolean) => (
-                <div {...li(c, o, cx("flex min-w-0 flex-1 items-center gap-2.5 rounded-[18px] p-1", right && "sm:flex-row-reverse sm:text-right"))}>
+                <div {...li(c, o, cx("flex min-w-0 flex-1 items-center gap-2.5 rounded-2xl p-1", right && "sm:flex-row-reverse sm:text-right"))}>
                     {c.pill(o)}<Avatar size="md" initials={initials(o.name)} />
                     <div className="min-w-0"><div className={cx("flex items-center gap-1.5", right && "sm:justify-end")}><span className={cx(NAME, "text-sm text-primary")}>{o.name}</span>{c.badge(o)}</div><div className={cx("text-xs text-tertiary", NUM)}>#{o.rank} · <b className="text-secondary">{c.val(o)}</b></div><span className="text-xs md:hidden">{c.link(o)}</span></div>
                 </div>
             );
             return (
-                <li key={a.id} className="rounded-[28px] bg-tint-1 p-3">
+                <li key={a.id} className="rounded-3xl bg-tint-1 p-3">
                     <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">{side(a)}{b && <><span className="inline-flex h-6 shrink-0 items-center self-center rounded-full bg-raised px-2.5 text-[11px] font-semibold text-ink-3 shadow-edge">VS</span>{side(b, true)}</>}</div>
                     {b && <><div className="mt-2.5 flex h-2 overflow-hidden rounded-full bg-tint-3"><div className="h-full rounded-full bg-ink" style={{ width: `${share}%` }} /></div><p className="mt-1.5 text-center text-xs text-tertiary">{b.name} needs <b className={cx("text-secondary", NUM)}>{c.fmt(c.gap(b))}</b> to take #{a.rank}</p></>}
                 </li>
@@ -340,7 +340,7 @@ const Receipt: B = ({ rows, c }) => (
 const Bubbles: B = ({ rows, c }) => {
     const max = top(rows, c);
     return (
-        <ol className="flex flex-wrap items-center justify-center gap-2 rounded-[28px] bg-tint-1 p-4">
+        <ol className="flex flex-wrap items-center justify-center gap-2 rounded-3xl bg-tint-1 p-4">
             {rows.map((o, i) => { const d = Math.round(64 + Math.sqrt(o[c.metric] / max) * 112); return (
                 <li key={o.id} id={`row-${o.id}`}>
                     <button type="button" onClick={() => c.canClaim && c.claim(o)} title={`#${o.rank} ${o.name}: ${c.val(o)}`} style={{ width: d, height: d }} className={cx("flex cursor-pointer flex-col items-center justify-center rounded-full p-2 text-center outline-focus-ring hover:scale-105 focus-visible:outline-2", EASE, i === 0 ? "bg-ink text-ink-inverse" : i < 3 ? "bg-tint-3 text-ink" : "bg-raised text-ink shadow-edge", c.you === o.id && "ring-2 ring-ink ring-offset-2 ring-offset-tint-1")}>
@@ -358,7 +358,7 @@ const Bubbles: B = ({ rows, c }) => {
 const Scoreboard: B = ({ rows, c }) => (
     <ol className={cx("flex flex-col gap-1.5 md:p-3", CARD)}>
         {rows.map((o, i) => (
-            <li key={o.id} {...li(c, o, "flex items-center gap-2.5 rounded-[18px] bg-raised px-2.5 py-2 text-ink shadow-edge")}>
+            <li key={o.id} {...li(c, o, "flex items-center gap-2.5 rounded-2xl bg-raised px-2.5 py-2 text-ink shadow-edge")}>
                 {c.pill(o)}<span className={cx("flex h-8 min-w-9 items-center justify-center rounded-xl px-1 text-sm", NUM, i < 3 ? "bg-ink text-ink-inverse" : "bg-tint-2 text-ink-2")}>{o.rank}</span>
                 <div className="min-w-0 flex-1"><div className="truncate text-sm font-semibold tracking-wide uppercase">{o.name}{c.you === o.id && " · you"}</div><span className="text-xs md:hidden">{c.link(o)}</span></div>
                 <span aria-label={c.val(o)} className="flex shrink-0 gap-0.5">{[...c.val(o)].map((ch, k) => <span key={k} aria-hidden="true" className={cx("flex h-8 items-center justify-center rounded-md font-mono text-sm font-bold", /\d/.test(ch) ? "w-4 bg-tint-2 text-ink md:w-5" : "px-px text-ink-3 md:px-0.5")}>{ch}</span>)}</span>

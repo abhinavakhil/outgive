@@ -130,7 +130,7 @@ export const CreateFlow = ({ parent }: { parent?: string }) => {
                     {STEPS.map((name, i) => {
                         const n = i + 1; const done = live || n < step; const here = n === step && !live;
                         return (
-                            <button key={name} type="button" aria-current={here ? "step" : undefined} disabled={live} onClick={() => setStep(n)} className={cx("flex cursor-pointer items-center gap-3 rounded-[18px] px-3 py-2.5 text-left outline-focus-ring transition duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-2 disabled:cursor-default", here ? "bg-tint-2" : "hover:bg-tint-1")}>
+                            <button key={name} type="button" aria-current={here ? "step" : undefined} disabled={live} onClick={() => setStep(n)} className={cx("flex cursor-pointer items-center gap-3 rounded-2xl px-3 py-2.5 text-left outline-focus-ring transition duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-2 disabled:cursor-default", here ? "bg-tint-2" : "hover:bg-tint-1")}>
                                 <span className={cx("flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold", done ? "bg-tint-2 text-ink-2" : here ? "bg-ink text-ink-inverse" : "bg-tint-1 text-ink-3")}>{done ? <Check className="size-4 stroke-[3px]" /> : n}</span>
                                 <span className="min-w-0"><span className={cx("block text-md font-semibold", here ? "text-ink" : "text-ink-2")}>{name}</span><span className="block truncate text-xs text-ink-3">{STEP_HINTS[i]}</span></span>
                             </button>
@@ -147,7 +147,7 @@ export const CreateFlow = ({ parent }: { parent?: string }) => {
                             const on = pt.id === type;
                             return (
                                 <button key={pt.id} type="button" aria-pressed={on} onClick={() => setType(pt.id)} className={cx("flex cursor-pointer flex-col gap-2.5 rounded-3xl bg-tint-1 p-2 text-left outline-focus-ring transition duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-2 focus-visible:outline-offset-2", on ? "ring-2 ring-ink" : "hover:bg-tint-2")}>
-                                    <span className={cx("relative flex h-[4.5rem] items-center justify-center rounded-[18px] sm:h-24", pt.tile)}><pt.icon className="size-9 text-gray-900" />{on && <Tick className="absolute top-2 right-2" />}</span>
+                                    <span className={cx("relative flex h-[4.5rem] items-center justify-center rounded-2xl sm:h-24", pt.tile)}><pt.icon className="size-9 text-gray-900" />{on && <Tick className="absolute top-2 right-2" />}</span>
                                     <span className="flex flex-col gap-0.5 px-2 pb-2"><span className="text-md font-semibold text-ink">{pt.label}</span><span className="text-sm text-ink-3">{pt.desc}</span></span>
                                 </button>
                             );
@@ -166,7 +166,7 @@ export const CreateFlow = ({ parent }: { parent?: string }) => {
 
                     {step === 3 && <>
                         <StepHead title="What are you aiming to raise?" sub="Shown as a progress bar on your page. You can change it later." />
-                        <div className="flex flex-col gap-3 rounded-[28px] bg-tint-1 p-5 md:p-6">
+                        <div className="flex flex-col gap-3 rounded-3xl bg-tint-1 p-5 md:p-6">
                             <span className="text-[11px] font-semibold uppercase tracking-wide text-ink-3">Your goal</span>
                             <label className="flex items-baseline gap-2"><span className="font-bubble text-display-sm font-bold text-ink-3">{currency}</span>
                                 <input aria-label={`Goal in ${currency}`} type="number" min={1} inputMode="numeric" value={Math.round(goal * rate)} onChange={(e) => { const n = Number(e.target.value); if (n > 0) setGoal(Math.max(1, Math.round(n / rate))); }} className="w-full min-w-0 bg-transparent font-bubble text-display-lg font-bold text-ink tabular-nums outline-hidden md:text-display-xl" /></label>
@@ -234,14 +234,14 @@ export const CreateFlow = ({ parent }: { parent?: string }) => {
                             </div>
                         ))}</div>
                         <Checkbox size="md" isSelected={agree} onChange={setAgree} label={<>I agree to the Outgive <a href="/terms" target="_blank" rel="noopener" className="underline underline-offset-2">terms</a> and <a href="/privacy" target="_blank" rel="noopener" className="underline underline-offset-2">privacy policy</a></>} />
-                        {!user && !isDemo && <div className="rounded-[28px] bg-tint-1 p-5"><SignIn next={window.location.pathname + window.location.search} title="Sign in to publish" sub="Your draft is saved in this browser. After signing in you come straight back here." /></div>}
+                        {!user && !isDemo && <div className="rounded-3xl bg-tint-1 p-5"><SignIn next={window.location.pathname + window.location.search} title="Sign in to publish" sub="Your draft is saved in this browser. After signing in you come straight back here." /></div>}
                         {missing.length > 0 && <p className="text-sm text-error-primary">To publish, add {missing.join(" and ")}.</p>}
                         {publishError && <p className="text-sm text-error-primary">{publishError}</p>}
                     </>}
 
                     {live && <>
                         <StepHead title={`Your ${t.label.toLowerCase()} page is live`} sub="Share it to get your first gift." />
-                        <div className="flex flex-wrap items-center gap-4 rounded-[28px] bg-tint-1 p-5">
+                        <div className="flex flex-wrap items-center gap-4 rounded-3xl bg-tint-1 p-5">
                             <FeaturedIcon icon={Check} color="brand" theme="dark" size="lg" />
                             <div className="min-w-0 flex-1"><div className="truncate text-lg font-semibold text-ink">{url.replace(/^https?:\/\//, "")}</div><div className="text-sm text-ink-3">Published just now · {L.name} layout</div></div>
                             <Button size="md" color="secondary" className="rounded-full" iconLeading={Copy01} onPress={copy}>{copied ? "Copied" : "Copy link"}</Button>
@@ -272,7 +272,7 @@ export const CreateFlow = ({ parent }: { parent?: string }) => {
             <aside className="hidden w-[26rem] shrink-0 flex-col justify-center overflow-y-auto bg-tint-1 p-8 xl:flex 2xl:w-[30rem]">
                 <div className="mx-auto flex w-full max-w-md flex-col gap-4">
                     <div className="flex items-center justify-between"><span className="text-[11px] font-semibold uppercase tracking-wide text-ink-3">Live preview</span><span className="text-sm font-semibold text-ink-2">{L.name} layout</span></div>
-                    <div className="overflow-hidden rounded-[28px] bg-raised shadow-lift">
+                    <div className="overflow-hidden rounded-3xl bg-raised shadow-lift">
                         <div className="flex items-center gap-1.5 border-b border-hairline px-4 py-3"><span className="size-2.5 rounded-full bg-tint-3" /><span className="size-2.5 rounded-full bg-tint-3" /><span className="size-2.5 rounded-full bg-tint-3" /><span className="ml-2 flex-1 truncate rounded-full bg-tint-2 px-3 py-1 text-xs text-ink-3">{window.location.host}{href({ name: "page", key: key || path })}</span></div>
                         <div className="flex flex-col gap-3.5 p-5">
                             {hasCover ? <CoverMedia cover={cover} className="aspect-video w-full" /> : <LayoutThumb id={layout} className="h-56" />}
@@ -282,7 +282,7 @@ export const CreateFlow = ({ parent }: { parent?: string }) => {
                             <div className="rounded-full bg-cta shadow-press hover:bg-cta-hover py-2.5 text-center font-semibold text-cta-ink">{t.cta}</div>
                         </div>
                     </div>
-                    <div className="rounded-[18px] bg-raised px-4 py-3.5 shadow-edge"><div className="font-semibold text-ink">{TIPS[step - 1][0]}</div><div className="text-sm text-ink-3">{TIPS[step - 1][1]}</div></div>
+                    <div className="rounded-2xl bg-raised px-4 py-3.5 shadow-edge"><div className="font-semibold text-ink">{TIPS[step - 1][0]}</div><div className="text-sm text-ink-3">{TIPS[step - 1][1]}</div></div>
                 </div>
             </aside>
             </div>

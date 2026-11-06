@@ -144,7 +144,7 @@ export const Leaderboard = () => {
     const boardCtx: BoardCtx = { val, money, claim: claimRow, pill: claimPill, link: claimLink, badge: youBadge, gap: gapUp, fmt, you, metric: period, canClaim: boardDef.money, label: boardDef.label };
 
     const ListRow = ({ o }: { o: Row }) => (
-        <li id={`row-${o.id}`} className={cx("group relative shrink-0 rounded-[18px] px-4 py-3", EASE, o.rank === 1 ? INV : "hover:bg-tint-2", you === o.id && YOU)}>
+        <li id={`row-${o.id}`} className={cx("group relative shrink-0 rounded-2xl px-4 py-3", EASE, o.rank === 1 ? INV : "hover:bg-tint-2", you === o.id && YOU)}>
             {claimPill(o)}
             <div className="flex items-center gap-3.5">
                 <span className={cx("w-9 text-xl", NUM, o.rank <= 3 ? "text-primary" : "text-quaternary")}>#{o.rank}</span>
@@ -166,7 +166,7 @@ export const Leaderboard = () => {
             <>
                 <ol className="grid gap-3 md:grid-cols-3 md:items-end">
                     {stand(rows).map(({ o, place }) => (
-                        <li key={o.id} id={`row-${o.id}`} className={cx("group relative flex flex-col items-center gap-2 rounded-[28px] px-4 py-6 text-center hover:-translate-y-1", EASE, place === 1 ? "max-md:order-first" : place === 3 ? "max-md:order-last" : "max-md:order-2", h[place], you === o.id && YOU)}>
+                        <li key={o.id} id={`row-${o.id}`} className={cx("group relative flex flex-col items-center gap-2 rounded-3xl px-4 py-6 text-center hover:-translate-y-1", EASE, place === 1 ? "max-md:order-first" : place === 3 ? "max-md:order-last" : "max-md:order-2", h[place], you === o.id && YOU)}>
                             {claimPill(o)}
                             <span className={cx("flex items-center justify-center rounded-full bg-tertiary text-primary", NUM, place === 1 ? "h-9 min-w-9 px-2 text-md" : "h-7 min-w-7 px-1.5 text-sm")}>{o.rank}</span>
                             <Avatar size={place === 1 ? "2xl" : "xl"} initials={initials(o.name)} className="mt-1" />
@@ -178,7 +178,7 @@ export const Leaderboard = () => {
                         </li>
                     ))}
                 </ol>
-                {rows.length > 3 && <ol className="mt-3 flex flex-col gap-0.5 rounded-[28px] bg-tint-1 p-2">{rows.slice(3).map((o) => <ListRow key={o.id} o={o} />)}</ol>}
+                {rows.length > 3 && <ol className="mt-3 flex flex-col gap-0.5 rounded-3xl bg-tint-1 p-2">{rows.slice(3).map((o) => <ListRow key={o.id} o={o} />)}</ol>}
             </>
         );
     };
@@ -187,9 +187,9 @@ export const Leaderboard = () => {
     const Race = ({ rows }: { rows: Row[] }) => {
         const max = Math.max(1, ...rows.map((o) => o[period]));
         return (
-            <ol className="flex flex-col gap-0.5 rounded-[28px] bg-tint-1 p-2">
+            <ol className="flex flex-col gap-0.5 rounded-3xl bg-tint-1 p-2">
                 {rows.map((o) => (
-                    <li key={o.id} id={`row-${o.id}`} className={cx("group relative rounded-[18px] px-3 py-2 hover:bg-tint-2", EASE, you === o.id && YOU)}>
+                    <li key={o.id} id={`row-${o.id}`} className={cx("group relative rounded-2xl px-3 py-2 hover:bg-tint-2", EASE, you === o.id && YOU)}>
                         {claimPill(o)}
                         <div className="flex items-center gap-3">
                             <span className={cx("w-7 text-sm", NUM, o.rank <= 3 ? "text-primary" : "text-tertiary")}>#{o.rank}</span>
@@ -214,7 +214,7 @@ export const Leaderboard = () => {
 
     /** Rows below the top three in the Spotlight (a), Spotlight podium (d) and Ribbons (f) layouts. */
     const flatRow = (o: Row, v: "a" | "d" | "f", max: number) => (
-        <li key={o.id} id={`row-${o.id}`} className={cx("group relative flex items-center gap-2.5 border-b border-hairline py-4 last:border-0 md:gap-[18px]", you === o.id && cx(YOU, "rounded-[18px] px-2"))}>
+        <li key={o.id} id={`row-${o.id}`} className={cx("group relative flex items-center gap-2.5 border-b border-hairline py-4 last:border-0 md:gap-[18px]", you === o.id && cx(YOU, "rounded-2xl px-2"))}>
             {claimPill(o)}
             <span className={cx("shrink-0 text-center", NUM, v === "d" ? "flex size-9 items-center justify-center rounded-full bg-tint-2 text-sm text-ink-2" : "w-7 text-md text-quaternary")}>{o.rank}</span>
             <span className="shrink-0 rounded-full"><Avatar size="lg" initials={initials(o.name)} /></span>
@@ -234,11 +234,11 @@ export const Leaderboard = () => {
         const max = Math.max(1, ...rows.map((o) => o[period]));
         return (
             <div>
-                <section aria-label="Top three" className={cx("flex flex-col items-center gap-9 rounded-[28px] bg-tint-1 px-4 pt-8 md:px-10 md:pt-11", rows.length > 3 ? "pb-24 md:pb-28" : "pb-8")}>
+                <section aria-label="Top three" className={cx("flex flex-col items-center gap-9 rounded-3xl bg-tint-1 px-4 pt-8 md:px-10 md:pt-11", rows.length > 3 ? "pb-24 md:pb-28" : "pb-8")}>
                     <span className="inline-flex h-8 items-center gap-2 rounded-full bg-raised px-3 text-[13px] font-semibold text-ink shadow-edge"><Crown className="size-3.5" />Top 3 · {boardDef.label}</span>
                     <ol className="flex w-full items-end justify-center gap-2 md:gap-10">
                         {stand(rows).map(({ o, place }) => (
-                            <li key={o.id} id={`row-${o.id}`} className={cx("group relative flex min-w-0 flex-1 flex-col items-center gap-1 text-center", place === 1 ? "max-w-[300px] pb-7" : "max-w-[260px]", you === o.id && cx(YOU, "rounded-[18px]"))}>
+                            <li key={o.id} id={`row-${o.id}`} className={cx("group relative flex min-w-0 flex-1 flex-col items-center gap-1 text-center", place === 1 ? "max-w-[300px] pb-7" : "max-w-[260px]", you === o.id && cx(YOU, "rounded-2xl"))}>
                                 {claimPill(o, place === 1 ? "-top-12" : undefined)}
                                 <div className="relative mb-3.5">
                                     {place === 1 && <Crown className="absolute -top-8 left-1/2 size-8 -translate-x-1/2 text-ink" />}
@@ -253,7 +253,7 @@ export const Leaderboard = () => {
                         ))}
                     </ol>
                 </section>
-                {rows.length > 3 && <ol className="relative mx-2 -mt-[72px] rounded-[28px] bg-raised px-4 pt-2 pb-3 shadow-lift md:mx-6 md:px-7">{rows.slice(3).map((o) => flatRow(o, "a", max))}</ol>}
+                {rows.length > 3 && <ol className="relative mx-2 -mt-[72px] rounded-3xl bg-raised px-4 pt-2 pb-3 shadow-lift md:mx-6 md:px-7">{rows.slice(3).map((o) => flatRow(o, "a", max))}</ol>}
             </div>
         );
     };
@@ -261,7 +261,7 @@ export const Leaderboard = () => {
     /** D: a stepped podium on a tinted card. */
     const SpotPodium = ({ rows }: { rows: Row[] }) => (
         <div className="flex flex-col gap-2">
-            <section aria-label="Top three" className="relative overflow-hidden rounded-[28px] bg-tint-1 text-ink">
+            <section aria-label="Top three" className="relative overflow-hidden rounded-3xl bg-tint-1 text-ink">
                 <div className="relative flex justify-center pt-7"><span className="inline-flex h-8 items-center gap-2 rounded-full bg-raised px-3 text-[13px] font-semibold text-ink shadow-edge"><Crown className="size-3.5" />Top supporters</span></div>
                 <ol className="relative flex items-end gap-1.5 px-3 pt-14 md:gap-4 md:px-14">
                     {stand(rows).map(({ o, place }) => (
@@ -286,7 +286,7 @@ export const Leaderboard = () => {
 
     /** F: a tinted hero with ribbon rank tags under the avatars, and the list as a sheet at its foot. */
     const Ribbons = ({ rows }: { rows: Row[] }) => (
-        <section aria-label="Top supporters" className="relative overflow-hidden rounded-[28px] bg-tint-1 px-3 pt-8 text-ink md:px-8">
+        <section aria-label="Top supporters" className="relative overflow-hidden rounded-3xl bg-tint-1 px-3 pt-8 text-ink md:px-8">
             <div className="relative flex flex-col items-center gap-1.5 pb-11 text-center">
                 <span className="mb-2 flex size-16 items-center justify-center rounded-full bg-ink text-ink-inverse"><Crown className="size-[30px]" /></span>
                 <h3 className="text-display-xs leading-[0.95] font-extrabold tracking-[-0.045em]">Top supporters</h3>
@@ -318,11 +318,11 @@ export const Leaderboard = () => {
                 const inTier = rows.filter((o) => tierOf(o.rank) === t);
                 const cut = ti > 0 ? ranked[TIERS[ti - 1].upTo - 1] : undefined;
                 return inTier.length > 0 && (
-                    <section key={t.name} className="rounded-[28px] bg-tint-1 p-2">
+                    <section key={t.name} className="rounded-3xl bg-tint-1 p-2">
                         <h3 className="flex items-center gap-2 px-3 pt-1.5 pb-2.5 text-sm font-semibold text-primary"><t.icon className={cx("size-4", t.tone)} />{t.name} league<span className="font-normal text-tertiary">#{ti === 0 ? 1 : TIERS[ti - 1].upTo + 1}{t.upTo === Infinity ? "+" : `–${t.upTo}`}</span>{cut && <span className="ml-auto text-xs font-medium text-tertiary">promotion at {fmt(cut[period] + 1)}</span>}</h3>
                         <ol className="flex flex-col gap-0.5">
                             {inTier.map((o) => (
-                                <li key={o.id} id={`row-${o.id}`} className={cx("group relative flex items-center gap-3 rounded-[18px] px-3 py-2.5 hover:bg-tint-2", EASE, you === o.id && YOU)}>
+                                <li key={o.id} id={`row-${o.id}`} className={cx("group relative flex items-center gap-3 rounded-2xl px-3 py-2.5 hover:bg-tint-2", EASE, you === o.id && YOU)}>
                                     {claimPill(o)}
                                     <span className={cx("w-8 text-sm text-tertiary", NUM)}>#{o.rank}</span>
                                     <Avatar size="sm" initials={initials(o.name)} />
@@ -343,7 +343,7 @@ export const Leaderboard = () => {
             {rows.map((o) => {
                 const lv = levelOf(o.total); const t = tierOf(o.rank);
                 return (
-                    <li key={o.id} id={`row-${o.id}`} className={cx("group relative flex min-w-0 flex-col gap-3 rounded-[28px] bg-tint-1 p-5 hover:-translate-y-0.5", EASE, you === o.id && YOU)}>
+                    <li key={o.id} id={`row-${o.id}`} className={cx("group relative flex min-w-0 flex-col gap-3 rounded-3xl bg-tint-1 p-5 hover:-translate-y-0.5", EASE, you === o.id && YOU)}>
                         {claimPill(o)}
                         <div className="flex items-center gap-3">
                             <span className="relative shrink-0"><Avatar size="lg" initials={initials(o.name)} /><span aria-hidden="true" className={cx("absolute -right-1 -bottom-1 flex size-6 items-center justify-center rounded-full bg-ink text-[11px] text-ink-inverse ring-2 ring-tint-1", NUM)}>{lv.n}</span></span>
@@ -368,7 +368,7 @@ export const Leaderboard = () => {
 
     /** High-score table. Selecting a row claims its rank. */
     const Arcade = ({ rows }: { rows: Row[] }) => (
-        <div className="rounded-[28px] bg-tint-1 p-4 font-mono text-sm tracking-wider text-ink uppercase md:p-6">
+        <div className="rounded-3xl bg-tint-1 p-4 font-mono text-sm tracking-wider text-ink uppercase md:p-6">
             <div className="mb-4 flex items-center justify-between gap-3"><span className="text-lg font-bold tracking-[0.2em] text-ink">High scores</span><button type="button" onClick={() => openClaim(heroUsd, 1)} className="animate-pulse cursor-pointer text-ink-2 uppercase outline-focus-ring hover:text-ink focus-visible:outline-2 motion-reduce:animate-none">▶ Insert coin</button></div>
             <div className="grid grid-cols-[3.5rem_1fr_auto] gap-x-3 border-b border-hairline px-2 pb-2 text-xs text-ink-3"><span>Rank</span><span>Name</span><span>Score</span></div>
             <ol>
@@ -437,7 +437,7 @@ export const Leaderboard = () => {
                             <span className="inline-flex h-9 items-center gap-2 rounded-full bg-tint-1 px-3.5 text-ink"><Eye className="size-4 text-ink-3" /><span className={cx("text-[15px]", NUM)}>{compact(board.reduce((n, o) => n + o.visits, 0))}</span><span className="text-xs font-medium text-ink-3">visits</span></span>
                             <span className="inline-flex h-9 items-center gap-2 rounded-full bg-tint-1 px-3.5 text-ink"><HeartFilled className="size-4 text-ink-3" /><span className={cx("text-[15px]", NUM)}>{todayTotal}</span><span className="text-xs font-medium text-ink-3">given today</span></span>
                         </div>
-                        <form className="flex w-full max-w-[57rem] flex-col gap-2 rounded-[28px] bg-tint-1 p-2 sm:flex-row" onSubmit={(e) => { e.preventDefault(); openClaim(heroUsd, 1, heroName, heroKind); }}>
+                        <form className="flex w-full max-w-[57rem] flex-col gap-2 rounded-3xl bg-tint-1 p-2 sm:flex-row" onSubmit={(e) => { e.preventDefault(); openClaim(heroUsd, 1, heroName, heroKind); }}>
                             <label className="relative flex-1"><User01 aria-hidden="true" className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-ink-faint" /><input aria-label="Your name or team" className={cx(FIELD, "h-12 w-full pl-10")} placeholder="Your name, team or company" value={heroName} onChange={(e) => setHeroName(e.target.value)} /></label>
                             <PillSelect label="Giving as" className="sm:w-56 [&_select]:h-12" value={heroKind} onChange={setHeroKind} options={KINDS} placeholder="Giving as" />
                             <button type="submit" className={cx("h-12 cursor-pointer rounded-full bg-cta shadow-press hover:bg-cta-hover px-7 text-sm font-semibold text-cta-ink outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2", EASE)}>Claim rank</button>
@@ -449,11 +449,11 @@ export const Leaderboard = () => {
             <Container className="flex flex-1 flex-col gap-4 pb-5 md:px-4 lg:max-w-5xl">
                 <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_230px]">
                     <main className="flex min-w-0 flex-col gap-2">
-                        {nextUp && <div className="mb-1 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-[18px] bg-tint-1 px-4 py-3 text-sm text-ink-2"><span className="flex min-w-0 items-center gap-2"><ArrowUp aria-hidden="true" className="size-4 shrink-0 text-ink-3" /><span>{nextUp.text}</span></span>{nextUp.cta && <Button color="primary" size="sm" className="rounded-full" onPress={nextUp.run}>{nextUp.cta}</Button>}</div>}
+                        {nextUp && <div className="mb-1 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-2xl bg-tint-1 px-4 py-3 text-sm text-ink-2"><span className="flex min-w-0 items-center gap-2"><ArrowUp aria-hidden="true" className="size-4 shrink-0 text-ink-3" /><span>{nextUp.text}</span></span>{nextUp.cta && <Button color="primary" size="sm" className="rounded-full" onPress={nextUp.run}>{nextUp.cta}</Button>}</div>}
                         <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-[11px] font-semibold tracking-wide text-ink-3 uppercase">{boardDef.title} · {shown.length}</h2><div className="flex flex-wrap gap-2"><PillSelect label="Layout" size="sm" className="w-44" value={ALL_VARIANTS.find(([k]) => k === variant)?.[1] ?? ""} onChange={(l) => setBrand({ ...brand, variant: ALL_VARIANTS.find(([, x]) => x === l)?.[0] ?? "list" })} options={ALL_VARIANTS.map(([, l]) => l)} /><PillSelect label="Currency" size="sm" className="w-24" value={currency} onChange={setCurrency} options={Object.keys(CURRENCIES)} /><PillSelect label="Region" size="sm" className="w-44" value={region} onChange={setRegion} options={["Worldwide", ...REGIONS]} /></div></div>
                         {boardDef.note && <p className="-mt-1 text-xs text-tertiary">{boardDef.note}</p>}
-                        {shown.length === 0 && <p className="rounded-[28px] bg-tint-1 p-6 text-sm text-ink-3">Nobody here yet. Be the first to claim a rank for this group and region.</p>}
-                        {shown.length > 0 && variant === "list" && <ol className="flex flex-col gap-0.5 rounded-[28px] bg-tint-1 p-2">{shown.map((o) => <ListRow key={o.id} o={o} />)}</ol>}
+                        {shown.length === 0 && <p className="rounded-3xl bg-tint-1 p-6 text-sm text-ink-3">Nobody here yet. Be the first to claim a rank for this group and region.</p>}
+                        {shown.length > 0 && variant === "list" && <ol className="flex flex-col gap-0.5 rounded-3xl bg-tint-1 p-2">{shown.map((o) => <ListRow key={o.id} o={o} />)}</ol>}
                         {shown.length > 0 && variant === "podium" && <Podium rows={shown} />}
                         {shown.length > 0 && variant === "race" && <Race rows={shown} />}
                         {shown.length > 0 && variant === "league" && <League rows={shown} />}
@@ -472,7 +472,7 @@ export const Leaderboard = () => {
                         <section className="flex flex-col gap-2.5"><h2 className="text-sm font-semibold text-primary">Latest activity</h2>
                             <ul className="flex flex-col gap-2 text-xs text-tertiary">{activity.slice(0, 4).map((a, i) => (<li key={i}><span className="font-semibold text-primary">{a.who}</span> claimed a rank with {money(a.usd)} · {ago(Math.round((Date.now() - a.at) / 60000))}</li>))}</ul>
                         </section>
-                        {rival && <section className="flex flex-col gap-2.5 rounded-[28px] bg-tint-1 p-5"><h2 className="text-sm font-semibold text-primary">Rivalry to watch</h2>
+                        {rival && <section className="flex flex-col gap-2.5 rounded-3xl bg-tint-1 p-5"><h2 className="text-sm font-semibold text-primary">Rivalry to watch</h2>
                             {rival.map((o, i) => (<div key={o.id} className="flex flex-col gap-1"><div className="flex items-baseline justify-between gap-2 text-xs"><span className="truncate font-medium text-secondary">{o.name}</span><span className={cx("text-ink", NUM)}>{money(o.total)}</span></div><div className="h-1.5 overflow-hidden rounded-full bg-tint-3"><div className={cx("h-full rounded-full", i === 0 ? "bg-ink" : "bg-ink-3")} style={{ width: `${(o.total / rival[0].total) * 100}%` }} /></div></div>))}
                             <p className="text-xs text-tertiary">{rival[1].name} needs {money(rival[0].total + 1 - rival[1].total)} to pass {rival[0].name}.</p>
                             <Button color="secondary" size="sm" className="rounded-full" onPress={() => openClaim(rival[0].total + 1, byTotal.findIndex((x) => x.id === rival[0].id) + 1, rival[1].name, rival[1].kind, rival[0].total + 1 - rival[1].total)}>Back the challenger</Button>
@@ -481,12 +481,12 @@ export const Leaderboard = () => {
                             {hall.length === 0 && <p className="text-xs text-tertiary">The first full week's winner appears here.</p>}
                             <ol className="flex flex-col gap-2 text-xs text-tertiary">{hall.map(([week, who, usd]) => (<li key={week} className="flex items-baseline justify-between gap-2"><span className="min-w-0 truncate"><span className="font-semibold text-primary">{who}</span> · week of {week}</span><span className={cx("shrink-0 text-ink", NUM)}>{money(usd)}</span></li>))}</ol>
                         </section>
-                        <div className="flex flex-col items-start gap-2 rounded-[28px] bg-tint-1 p-5">
+                        <div className="flex flex-col items-start gap-2 rounded-3xl bg-tint-1 p-5">
                             <h2 className="text-sm font-semibold text-primary">Fundraising for {brand.name}?</h2>
                             <p className="text-xs text-tertiary">Set up a page in one of 12 layouts. Every gift to it counts toward your rank.</p>
                             <Button color="primary" size="sm" className="rounded-full" iconTrailing={ArrowRight} onPress={() => go({ name: "create" })}>Start fundraising</Button>
                         </div>
-                        <div className="flex flex-col items-start gap-2 rounded-[28px] bg-tint-1 p-5">
+                        <div className="flex flex-col items-start gap-2 rounded-3xl bg-tint-1 p-5">
                             <h2 className="text-sm font-semibold text-primary">Run this for your charity</h2>
                             <p className="text-xs text-tertiary">Your name, logo, colour and font. See it in ten seconds.</p>
                             <Button color="secondary" size="sm" className="rounded-full" iconLeading={Brush03} onPress={() => setBranding(true)}>Your branding</Button>
@@ -509,13 +509,13 @@ export const Leaderboard = () => {
                 <Modal className="max-w-md"><Dialog aria-label="Claim a rank">
                     <form className="flex w-full flex-col gap-5 p-5 md:p-6" onSubmit={(e) => { e.preventDefault(); submit(); }}>
                         <div className="flex items-start gap-3.5">
-                            <span aria-hidden="true" className={cx("flex h-12 min-w-12 shrink-0 items-center justify-center rounded-[18px] bg-ink px-2 text-lg text-ink-inverse", NUM)}>#{landing}</span>
+                            <span aria-hidden="true" className={cx("flex h-12 min-w-12 shrink-0 items-center justify-center rounded-2xl bg-ink px-2 text-lg text-ink-inverse", NUM)}>#{landing}</span>
                             <div className="min-w-0 flex-1"><h2 className="text-lg font-semibold text-primary">Claim your rank</h2><p className="text-sm text-tertiary">Every gift goes to {brand.name}. {claim && money(claim.usd)} takes #{claim?.rank}.</p></div>
                             <button type="button" aria-label="Close" onClick={() => setClaim(null)} className="-mt-1 -mr-1 flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-3 outline-focus-ring transition hover:bg-tint-2 hover:text-ink focus-visible:outline-2"><XClose className="size-5" /></button>
                         </div>
 
                         <div className="flex flex-col gap-2.5">
-                            <label className={cx("flex h-16 items-center gap-2 rounded-[18px] bg-raised px-4 shadow-edge ring-1 ring-inset", EASE, error ? "ring-error" : "ring-transparent focus-within:ring-[color-mix(in_srgb,var(--ts-fg)_24%,transparent)]")}>
+                            <label className={cx("flex h-16 items-center gap-2 rounded-2xl bg-raised px-4 shadow-edge ring-1 ring-inset", EASE, error ? "ring-error" : "ring-transparent focus-within:ring-[color-mix(in_srgb,var(--ts-fg)_24%,transparent)]")}>
                                 <span className={cx("text-xl text-ink-3", NUM)}>{symbol}</span>
                                 <input aria-label={`Gift amount in ${currency}`} aria-invalid={!!error} type="number" inputMode="numeric" min={1} value={form.amount} onChange={(e) => { setForm({ ...form, amount: e.target.value }); setError(""); }} className={cx("w-full min-w-0 [appearance:textfield] bg-transparent text-display-xs text-ink outline-none [&::-webkit-inner-spin-button]:appearance-none", NUM)} />
                                 <span className="text-sm font-medium text-tertiary">{currency}</span>
@@ -536,7 +536,7 @@ export const Leaderboard = () => {
                             <div role="group" aria-label="Giving as" className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
                                 {KINDS.map((k) => <button key={k} type="button" aria-pressed={form.kind === k} onClick={() => setForm({ ...form, kind: k })} className={cx("h-10 cursor-pointer rounded-full px-2 text-sm font-semibold outline-focus-ring focus-visible:outline-2", EASE, form.kind === k ? "bg-ink text-ink-inverse" : "bg-tint-2 text-ink-2 hover:text-ink")}>{one(k)}</button>)}
                             </div>
-                            <details className="group/more rounded-[18px] bg-tint-1">
+                            <details className="group/more rounded-2xl bg-tint-1">
                                 <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-3.5 py-2.5 text-sm font-medium text-secondary outline-focus-ring focus-visible:outline-2 [&::-webkit-details-marker]:hidden">Add a message, page or country<span className="text-xs text-tertiary">optional</span></summary>
                                 <div className="flex flex-col gap-3 px-3.5 pb-3.5">
                                     {form.show && <Input label="Why you're giving" placeholder="One line shown under your name" value={form.tagline} onChange={(v) => setForm({ ...form, tagline: v })} />}
@@ -546,7 +546,7 @@ export const Leaderboard = () => {
                             </details>
                         </>}
 
-                        <div className="flex flex-col gap-3 rounded-[18px] bg-tint-1 p-3.5">
+                        <div className="flex flex-col gap-3 rounded-2xl bg-tint-1 p-3.5">
                             <Checkbox isSelected={form.show} onChange={(v) => setForm({ ...form, show: v })} label="Show my name on the board" hint="Untick to give as Anonymous. It still counts for your team, company or school." />
                             <Checkbox isSelected={form.alerts} onChange={(v) => setForm({ ...form, alerts: v })} label="Tell me if I'm overtaken" hint="At most one message a day. Stop any time." />
                         </div>

@@ -30,7 +30,7 @@ export const Empty = ({ icon: I, title, sub, action }: { icon: Icon; title: stri
     <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-secondary px-6 py-10 text-center"><span className="flex size-12 items-center justify-center rounded-full bg-raised text-ink-2 shadow-edge"><I className="size-5" /></span><div><div className="font-semibold text-primary">{title}</div>{sub && <p className="mt-1 max-w-sm text-sm text-tertiary">{sub}</p>}</div>{action}</div>
 );
 /** Initials in a tinted circle. */
-export const Who = ({ name, className }: { name: string; className?: string }) => <span className={cx("flex size-9 shrink-0 items-center justify-center rounded-full bg-tint-2 text-xs font-semibold text-ink-2", className)}>{initials(name) || "?"}</span>;
+export const Who = ({ name, className }: { name: string; className?: string }) => <span className={cx("flex size-9 shrink-0 items-center justify-center rounded-full bg-pop-100 text-xs font-bold text-brand-700 dark:bg-brand-950 dark:text-brand-300", className)}>{initials(name) || "?"}</span>;
 /** A URL with copy and open buttons. */
 export const CopyRow = ({ label, url, hint }: { label: string; url: string; hint?: string }) => {
     const { toast } = useApp();

@@ -94,11 +94,11 @@ const Thermo = ({ pct, goal, total, money, s, size = "md" }: { pct: number; goal
 ) : null;
 
 const LastGift = ({ last, money, big, s }: { last: DonationRow | null; money: (n: number) => string; big?: boolean; s: Skin }) => (
-    <AnimatePresence mode="popLayout">{last && <motion.div key={last.id} initial={{ x: -30, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ opacity: 0 }} className={cx("flex items-center gap-4 rounded-[18px] px-5 py-4", s.hi, big ? "text-2xl" : "text-xl")}><span className={cx("flex size-12 shrink-0 items-center justify-center rounded-full text-lg font-semibold", s.hiChip)}>{initials(last.donor_name) || "A"}</span><span className="min-w-0"><b>{last.donor_name}</b> just gave <b className="font-bubble">{money(usdOf(last))}</b>{last.cause && <span className={s.hiMuted}> for {last.cause.toLowerCase()}</span>}{last.message && <span className={cx("block truncate text-base", s.hiMuted)}>“{last.message}”</span>}</span></motion.div>}</AnimatePresence>
+    <AnimatePresence mode="popLayout">{last && <motion.div key={last.id} initial={{ x: -30, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ opacity: 0 }} className={cx("flex items-center gap-4 rounded-2xl px-5 py-4", s.hi, big ? "text-2xl" : "text-xl")}><span className={cx("flex size-12 shrink-0 items-center justify-center rounded-full text-lg font-semibold", s.hiChip)}>{initials(last.donor_name) || "A"}</span><span className="min-w-0"><b>{last.donor_name}</b> just gave <b className="font-bubble">{money(usdOf(last))}</b>{last.cause && <span className={s.hiMuted}> for {last.cause.toLowerCase()}</span>}{last.message && <span className={cx("block truncate text-base", s.hiMuted)}>“{last.message}”</span>}</span></motion.div>}</AnimatePresence>
 );
 
 const Rank = ({ o, s, size = "md" }: { o: { id: string; name: string; total: number; rank: number }; s: Skin; size?: "md" | "sm" }) => (
-    <motion.li key={o.id} layout initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30 }} className={cx("flex items-center gap-4 rounded-[18px]", size === "sm" ? "px-3 py-2" : "px-4 py-3", o.rank === 1 ? s.hi : o.rank <= 3 ? s.row3 : s.row)}>
+    <motion.li key={o.id} layout initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30 }} className={cx("flex items-center gap-4 rounded-2xl", size === "sm" ? "px-3 py-2" : "px-4 py-3", o.rank === 1 ? s.hi : o.rank <= 3 ? s.row3 : s.row)}>
         <span className={cx("font-bubble font-bold tabular-nums", size === "sm" ? "w-6 text-base" : "w-9 text-[clamp(1rem,1.6vw,1.6rem)]")}>{o.rank}</span>
         <span className={cx("flex shrink-0 items-center justify-center rounded-full text-sm font-semibold", size === "sm" ? "size-8" : "size-10", o.rank === 1 ? s.hiChip : s.chip)}>{initials(o.name)}</span>
         <span className={cx("min-w-0 flex-1 truncate font-semibold", size === "sm" ? "text-base" : "text-[clamp(1rem,1.5vw,1.5rem)]")}>{o.name}</span>
@@ -140,21 +140,21 @@ export const Live = ({ pageRef, layout: linkLayout, theme: linkTheme }: { pageRe
     if (!org) return null;
     const Total = ({ size }: { size: "md" | "lg" | "xl" }) => <div><div className={cx("text-sm font-medium tracking-wide uppercase", s.muted)}>Raised so far</div><div className={cx("mt-2 leading-none font-bubble font-bold tabular-nums tracking-[-0.02em]", size === "xl" ? "text-[clamp(3.5rem,11vw,11rem)]" : size === "lg" ? "text-[clamp(3rem,9vw,9rem)]" : "text-[clamp(2rem,5vw,4.5rem)]")}>{money(Math.round(shown))}</div></div>;
     const Board = ({ limit = 10, size = "md" as "md" | "sm", heading = bundle ? "Top supporters" : "Leaderboard" }) => (
-        <section className={cx("flex flex-col gap-3 rounded-[28px] p-6 md:p-8", s.panel)}>
+        <section className={cx("flex flex-col gap-3 rounded-3xl p-6 md:p-8", s.panel)}>
             <h2 className={cx("text-sm font-medium tracking-wide uppercase", s.muted)}>{heading}</h2>
-            <ol className="flex flex-col gap-2"><AnimatePresence initial={false}>{top.slice(0, limit).map((o) => <Rank key={o.id} o={o} s={s} size={size} />)}</AnimatePresence>{top.length === 0 && <li className={cx("rounded-[18px] px-4 py-6 text-center", s.row, s.muted)}>The first gift puts a name here.</li>}</ol>
+            <ol className="flex flex-col gap-2"><AnimatePresence initial={false}>{top.slice(0, limit).map((o) => <Rank key={o.id} o={o} s={s} size={size} />)}</AnimatePresence>{top.length === 0 && <li className={cx("rounded-2xl px-4 py-6 text-center", s.row, s.muted)}>The first gift puts a name here.</li>}</ol>
         </section>
     );
 
     const layouts: Record<LiveLayout, ReactNode> = {
         classic: (
             <main className="grid flex-1 gap-6 lg:grid-cols-[1.1fr_1fr]">
-                <section className={cx("flex flex-col justify-center gap-6 rounded-[28px] p-8 md:p-12", s.panel)}><Total size="lg" /><Thermo pct={pct} goal={goalUsd} total={totalUsd} money={money} s={s} />{impact}<LastGift last={last} money={money} s={s} />{state.show_qr !== false && <Qr src={qr} url={giveUrl} s={s} />}</section>
+                <section className={cx("flex flex-col justify-center gap-6 rounded-3xl p-8 md:p-12", s.panel)}><Total size="lg" /><Thermo pct={pct} goal={goalUsd} total={totalUsd} money={money} s={s} />{impact}<LastGift last={last} money={money} s={s} />{state.show_qr !== false && <Qr src={qr} url={giveUrl} s={s} />}</section>
                 <Board />
             </main>
         ),
         thermo: (
-            <main className={cx("flex flex-1 flex-col items-center justify-center gap-8 rounded-[28px] p-8 text-center md:p-12", s.panel)}>
+            <main className={cx("flex flex-1 flex-col items-center justify-center gap-8 rounded-3xl p-8 text-center md:p-12", s.panel)}>
                 <Total size="xl" />
                 <div className="w-full max-w-5xl"><Thermo pct={pct} goal={goalUsd} total={totalUsd} money={money} s={s} size="lg" /></div>
                 {impact}
@@ -165,26 +165,26 @@ export const Live = ({ pageRef, layout: linkLayout, theme: linkTheme }: { pageRe
         impact: (
             <main className="grid flex-1 gap-6 lg:grid-cols-[1fr_minmax(16rem,22rem)]">
                 <section className="flex flex-col gap-6">
-                    <div className={cx("flex flex-wrap items-end justify-between gap-6 rounded-[28px] p-8", s.panel)}><Total size="md" /><div className="w-full max-w-xl flex-1"><Thermo pct={pct} goal={goalUsd} total={totalUsd} money={money} s={s} /></div></div>
+                    <div className={cx("flex flex-wrap items-end justify-between gap-6 rounded-3xl p-8", s.panel)}><Total size="md" /><div className="w-full max-w-xl flex-1"><Thermo pct={pct} goal={goalUsd} total={totalUsd} money={money} s={s} /></div></div>
                     <ul className="grid flex-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                         {items.map((it) => { const n = fundedToday[it.label] ?? 0; const hot = last?.cause === it.label; return (
-                            <motion.li key={it.label} animate={hot ? { scale: [1, 1.04, 1] } : {}} transition={{ duration: 0.6 }} className={cx("flex flex-col justify-between gap-4 rounded-[28px] p-6", hot ? s.hi : s.panel)}>
+                            <motion.li key={it.label} animate={hot ? { scale: [1, 1.04, 1] } : {}} transition={{ duration: 0.6 }} className={cx("flex flex-col justify-between gap-4 rounded-3xl p-6", hot ? s.hi : s.panel)}>
                                 <div className="flex items-start justify-between gap-4"><div className="text-[clamp(1.1rem,1.6vw,1.6rem)] leading-tight font-semibold">{it.label}</div><span className={cx("shrink-0 rounded-full px-3 py-1 text-base font-bubble font-bold tabular-nums", hot ? s.hiChip : s.hi)}>{money(it.usd)}</span></div>
                                 <div className="flex items-end justify-between gap-3"><div><div className="text-[clamp(2rem,4vw,4rem)] leading-none font-bubble font-bold tabular-nums">{n}</div><div className={cx("mt-1 text-sm font-medium", hot ? s.hiMuted : s.muted)}>funded today</div></div><div className="flex max-w-[50%] flex-wrap justify-end gap-1">{Array.from({ length: Math.min(n, 24) }, (_, i) => <span key={i} className={cx("size-2.5 rounded-full", hot ? s.inv : s.fill)} />)}</div></div>
                             </motion.li>
                         ); })}
-                        {items.length === 0 && <li className={cx("rounded-[28px] p-8 text-center text-lg sm:col-span-2 xl:col-span-3", s.panel, s.muted)}>Add impact items in the presenter console: what a gift of each size pays for.</li>}
+                        {items.length === 0 && <li className={cx("rounded-3xl p-8 text-center text-lg sm:col-span-2 xl:col-span-3", s.panel, s.muted)}>Add impact items in the presenter console: what a gift of each size pays for.</li>}
                     </ul>
                 </section>
-                <aside className="flex flex-col gap-6"><div className={cx("flex flex-col gap-5 rounded-[28px] p-6", s.panel)}><LastGift last={last} money={money} s={s} />{state.show_qr !== false && qr && <div className="flex flex-col items-center gap-3 text-center"><img src={qr} alt="QR code to give from your phone" className="w-full max-w-[16rem] rounded-2xl bg-white p-2" /><div className={cx("text-xl font-semibold", s.soft)}>Scan to fund one</div><div className={cx("text-sm", s.muted)}>{giveUrl.replace(/^https?:\/\//, "")}</div></div>}</div><Board limit={5} size="sm" /></aside>
+                <aside className="flex flex-col gap-6"><div className={cx("flex flex-col gap-5 rounded-3xl p-6", s.panel)}><LastGift last={last} money={money} s={s} />{state.show_qr !== false && qr && <div className="flex flex-col items-center gap-3 text-center"><img src={qr} alt="QR code to give from your phone" className="w-full max-w-[16rem] rounded-2xl bg-white p-2" /><div className={cx("text-xl font-semibold", s.soft)}>Scan to fund one</div><div className={cx("text-sm", s.muted)}>{giveUrl.replace(/^https?:\/\//, "")}</div></div>}</div><Board limit={5} size="sm" /></aside>
             </main>
         ),
         podium: (
             <main className="flex flex-1 flex-col gap-6">
-                <div className={cx("flex flex-wrap items-end justify-between gap-6 rounded-[28px] px-8 py-6", s.panel)}><Total size="md" /><div className="w-full max-w-xl flex-1"><Thermo pct={pct} goal={goalUsd} total={totalUsd} money={money} s={s} /></div>{state.show_qr !== false && <Qr src={qr} url={giveUrl} s={s} />}</div>
+                <div className={cx("flex flex-wrap items-end justify-between gap-6 rounded-3xl px-8 py-6", s.panel)}><Total size="md" /><div className="w-full max-w-xl flex-1"><Thermo pct={pct} goal={goalUsd} total={totalUsd} money={money} s={s} /></div>{state.show_qr !== false && <Qr src={qr} url={giveUrl} s={s} />}</div>
                 <section className="grid flex-1 items-end gap-4 md:grid-cols-3">
                     {[top[1], top[0], top[2]].map((o, i) => o ? (
-                        <motion.div key={o.id} layout className={cx("flex flex-col items-center gap-3 rounded-[28px] p-6 text-center", o.rank === 1 ? cx(s.hi, "md:min-h-[26rem]") : cx(s.panel, i === 0 ? "md:min-h-[20rem]" : "md:min-h-[16rem]"))}>
+                        <motion.div key={o.id} layout className={cx("flex flex-col items-center gap-3 rounded-3xl p-6 text-center", o.rank === 1 ? cx(s.hi, "md:min-h-[26rem]") : cx(s.panel, i === 0 ? "md:min-h-[20rem]" : "md:min-h-[16rem]"))}>
                             <span className={cx("flex items-center justify-center rounded-full text-2xl font-semibold", o.rank === 1 ? cx("size-24", s.hiChip) : cx("size-20", s.row3))}>{initials(o.name)}</span>
                             <span className={cx("text-5xl font-bubble font-bold tabular-nums", o.rank === 1 ? s.hiMuted : s.muted)}>#{o.rank}</span>
                             <span className="text-[clamp(1.2rem,2vw,2rem)] leading-tight font-semibold">{o.name}</span>
@@ -197,7 +197,7 @@ export const Live = ({ pageRef, layout: linkLayout, theme: linkTheme }: { pageRe
         ),
         wall: (
             <main className="grid flex-1 gap-6 lg:grid-cols-[minmax(18rem,24rem)_1fr]">
-                <aside className={cx("flex flex-col justify-between gap-8 rounded-[28px] p-8", s.panel)}><div className="flex flex-col gap-6"><Total size="md" /><Thermo pct={pct} goal={goalUsd} total={totalUsd} money={money} s={s} />{impact}</div>{state.show_qr !== false && qr && <div className="flex flex-col items-center gap-3 text-center"><img src={qr} alt="QR code to give from your phone" className="w-full max-w-[14rem] rounded-2xl bg-white p-2" /><div className={cx("text-lg font-semibold", s.soft)}>Scan to give</div></div>}</aside>
+                <aside className={cx("flex flex-col justify-between gap-8 rounded-3xl p-8", s.panel)}><div className="flex flex-col gap-6"><Total size="md" /><Thermo pct={pct} goal={goalUsd} total={totalUsd} money={money} s={s} />{impact}</div>{state.show_qr !== false && qr && <div className="flex flex-col items-center gap-3 text-center"><img src={qr} alt="QR code to give from your phone" className="w-full max-w-[14rem] rounded-2xl bg-white p-2" /><div className={cx("text-lg font-semibold", s.soft)}>Scan to give</div></div>}</aside>
                 <section className="grid content-start gap-3 sm:grid-cols-2 xl:grid-cols-3"><AnimatePresence initial={false}>{feed.slice(0, 12).map((g, i) => (
                     <motion.div key={g.id} layout initial={{ opacity: 0, scale: 0.9, y: -20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0 }} className={cx("flex flex-col gap-3 rounded-3xl p-5", i === 0 ? cx(s.hi, "sm:col-span-2 xl:col-span-2") : s.panel)}>
                         <div className="flex items-center gap-3"><span className={cx("flex size-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold", i === 0 ? s.hiChip : s.row3)}>{initials(g.who) || "A"}</span><span className={cx("min-w-0 flex-1 truncate font-semibold", i === 0 ? "text-2xl" : "text-lg")}>{g.who}</span><span className={cx("font-bubble font-bold tabular-nums", i === 0 ? "text-3xl" : "text-xl")}>{money(g.usd)}</span></div>
@@ -219,7 +219,7 @@ export const Live = ({ pageRef, layout: linkLayout, theme: linkTheme }: { pageRe
                 </header>
 
                 <AnimatePresence>{state.ask && <motion.div key={state.ask} initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }} className={cx("rounded-3xl px-8 py-5 text-center text-[clamp(1.3rem,2.6vw,2.6rem)] font-extrabold tracking-[-0.03em]", s.ask)}>{state.ask}{state.ask_usd ? <span className={cx("ml-3 rounded-full px-4 py-1 font-bubble font-bold tabular-nums", s.pop)}>{money(state.ask_usd)}</span> : null}</motion.div>}</AnimatePresence>
-                <AnimatePresence>{milestone && <motion.div key={milestone} initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className={cx("fixed inset-x-0 top-1/3 z-30 mx-auto w-fit rounded-[28px] px-10 py-6 text-center text-[clamp(1.6rem,4vw,4rem)] font-extrabold tracking-[-0.045em] shadow-2xl", s.hi)}>{milestone === 100 ? "Goal reached!" : `${milestone}% of the way there`}</motion.div>}</AnimatePresence>
+                <AnimatePresence>{milestone && <motion.div key={milestone} initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className={cx("fixed inset-x-0 top-1/3 z-30 mx-auto w-fit rounded-3xl px-10 py-6 text-center text-[clamp(1.6rem,4vw,4rem)] font-extrabold tracking-[-0.045em] shadow-2xl", s.hi)}>{milestone === 100 ? "Goal reached!" : `${milestone}% of the way there`}</motion.div>}</AnimatePresence>
 
                 {layouts[layout] ?? layouts.classic}
 
@@ -247,11 +247,11 @@ export const Overlay = ({ pageRef, style }: { pageRef?: PageRef; style?: "bar" |
     if (!org) return null;
     return (
         <div className="min-h-dvh bg-transparent p-4 text-white" style={{ fontFamily: `"${brand.font}", ui-sans-serif, system-ui`, textShadow: "0 1px 2px rgb(0 0 0 / .5)" }}>
-            {theme !== "alert" && <div className="w-full max-w-xl rounded-[18px] bg-[#121830]/90 p-4">
+            {theme !== "alert" && <div className="w-full max-w-xl rounded-2xl bg-[#121830]/90 p-4">
                 <div className="flex items-center gap-3"><BrandMark className="size-9 rounded-xl text-sm" /><div className="min-w-0 flex-1"><div className="truncate text-sm font-semibold">{bundle?.page.title ?? brand.name}</div>{goalUsd > 0 && <div className="mt-1 h-3 overflow-hidden rounded-full bg-[#1c2442]"><motion.div className="h-full rounded-full bg-brand-solid" animate={{ width: `${pct}%` }} transition={{ type: "spring", stiffness: 60, damping: 18 }} /></div>}</div><div className="text-right"><div className="font-bubble text-2xl leading-none font-bold tabular-nums">{money(Math.round(totalUsd))}</div>{goalUsd > 0 && <div className="text-xs text-[#929cbc]">of {money(goalUsd)}</div>}</div></div>
                 {theme === "ticker" && gifts.length > 0 && <div className="mt-3 flex flex-col gap-1 text-sm">{gifts.slice(0, 5).map((g) => <div key={g.id} className="flex justify-between gap-3"><span className="truncate">{g.donor_name}{g.cause && <span className="text-[#929cbc]"> · {g.cause}</span>}</span><span className="font-bubble font-bold tabular-nums">{money(g.usd_cents / 100)}</span></div>)}</div>}
             </div>}
-            <AnimatePresence>{show && <motion.div key={show.id} initial={{ y: 30, opacity: 0, scale: 0.95 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: -20, opacity: 0 }} className="mt-4 flex w-full max-w-xl items-center gap-4 rounded-[18px] bg-brand-solid px-5 py-4 text-white shadow-2xl"><span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-white/20 text-lg font-semibold">{initials(show.donor_name) || "A"}</span><div className="min-w-0"><div className="text-lg"><b>{show.donor_name}</b> gave <b className="font-bubble">{money(show.usd_cents / 100)}</b>{show.cause && <span className="text-white/80"> for {show.cause.toLowerCase()}</span>}</div>{show.message && <div className="truncate text-sm text-white/80">“{show.message}”</div>}</div></motion.div>}</AnimatePresence>
+            <AnimatePresence>{show && <motion.div key={show.id} initial={{ y: 30, opacity: 0, scale: 0.95 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: -20, opacity: 0 }} className="mt-4 flex w-full max-w-xl items-center gap-4 rounded-2xl bg-brand-solid px-5 py-4 text-white shadow-2xl"><span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-white/20 text-lg font-semibold">{initials(show.donor_name) || "A"}</span><div className="min-w-0"><div className="text-lg"><b>{show.donor_name}</b> gave <b className="font-bubble">{money(show.usd_cents / 100)}</b>{show.cause && <span className="text-white/80"> for {show.cause.toLowerCase()}</span>}</div>{show.message && <div className="truncate text-sm text-white/80">“{show.message}”</div>}</div></motion.div>}</AnimatePresence>
         </div>
     );
 };

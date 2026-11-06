@@ -27,7 +27,7 @@ export const Raised = ({ p, size = "lg" }: { p: PageData; size?: "lg" | "xl" }) 
     return (
         <div>
             <span className={cx("font-bubble font-bold text-ink tabular-nums", size === "xl" ? "text-display-md" : "text-display-sm")}>{money(p.raised)}</span>{" "}
-            <span className="text-ink-3">raised of <span className="font-bubble font-bold tabular-nums">{money(p.goal)}</span></span>
+            <span className="text-ink-3">raised of <span className="font-semibold tabular-nums">{money(p.goal)}</span></span>
         </div>
     );
 };
@@ -53,23 +53,23 @@ export const Donate = ({ p, cta }: { p: PageData; cta?: string }) => {
             <div className="flex items-center gap-4">
                 {p.showGoal && <Ring value={pct(p)} />}
                 <div className="min-w-0">
-                    <div className="text-xl font-semibold tracking-tight text-ink"><span className="font-bubble font-bold tabular-nums">{money(p.raised)}</span> raised{p.showGoal && <span className="font-normal text-ink-3"> of <span className="font-bubble font-bold tabular-nums">{money(p.goal)}</span></span>}</div>
-                    <div className="text-sm text-ink-3"><span className="font-bubble font-bold tabular-nums">{p.supporters}</span> donations{daysLeft(p) !== null && <> · <span className="font-bubble font-bold tabular-nums">{daysLeft(p)}</span> days left</>}</div>
+                    <div className="text-xl font-semibold tracking-tight text-ink"><span className="font-semibold tabular-nums">{money(p.raised)}</span> raised{p.showGoal && <span className="font-normal text-ink-3"> of <span className="font-semibold tabular-nums">{money(p.goal)}</span></span>}</div>
+                    <div className="text-sm text-ink-3"><span className="font-semibold tabular-nums">{p.supporters}</span> donations{daysLeft(p) !== null && <> · <span className="font-semibold tabular-nums">{daysLeft(p)}</span> days left</>}</div>
                 </div>
             </div>
             <Button size="xl" color="primary" className="w-full rounded-full" onPress={() => donate()}>{label}</Button>
             <Button size="xl" color="secondary" className="w-full rounded-full" onPress={share}>Share</Button>
-            <div className="flex items-center gap-3 rounded-[18px] bg-tint-2 p-3">
+            <div className="flex items-center gap-3 rounded-2xl bg-tint-2 p-3">
                 <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-ink font-bubble text-sm font-bold text-ink-inverse tabular-nums">#{rank.rank}</span>
                 <div className="min-w-0 flex-1 text-sm"><div className="font-semibold text-ink">{rank.listed ? `On the ${brand.name} leaderboard` : `Would rank on the ${brand.name} board`}</div><div className="text-xs text-ink-3">{rank.next ? `${money(rank.gap)} more takes #${rank.rank - 1} from ${rank.next.name}` : "This is the top rank"}</div></div>
                 {rank.next && <Button size="sm" color="secondary" className="rounded-full" onPress={() => donate(rank.gap)}>Outbid</Button>}
             </div>
             {p.donations.length > 0 && <>
-                <div className="flex items-center gap-3 text-sm font-semibold text-ink"><span className="flex size-10 items-center justify-center rounded-full bg-tint-2 text-ink-2"><TrendUp01 className="size-5" /></span><span><span className="font-bubble font-bold tabular-nums">{p.donations.length}</span> recent donations</span></div>
+                <div className="flex items-center gap-3 text-sm font-semibold text-ink"><span className="flex size-10 items-center justify-center rounded-full bg-tint-2 text-ink-2"><TrendUp01 className="size-5" /></span><span><span className="font-semibold tabular-nums">{p.donations.length}</span> recent donations</span></div>
                 <ul className="flex flex-col gap-3">{p.donations.slice(0, 5).map((d, i) => (
                     <li key={`${d.at}-${i}`} className="flex items-center gap-3">
-                        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-tint-2 text-sm font-semibold text-ink-2">{(initials(d.name) || "A")[0]}</span>
-                        <span className="min-w-0"><span className="block truncate text-sm font-medium text-ink">{d.name}</span><span className="block text-xs text-ink-3"><span className="font-bubble font-bold text-ink-2 tabular-nums">{money(d.usd)}</span> · {d.usd === topUsd && p.donations.length > 1 ? "Top donation" : ago(d.at)}{d.monthly && " · Monthly"}</span></span>
+                        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-pop-100 text-sm font-bold text-brand-700 dark:bg-brand-950 dark:text-brand-300">{(initials(d.name) || "A")[0]}</span>
+                        <span className="min-w-0"><span className="block truncate text-sm font-medium text-ink">{d.name}</span><span className="block text-xs text-ink-3"><span className="font-semibold text-ink-2 tabular-nums">{money(d.usd)}</span> · {d.usd === topUsd && p.donations.length > 1 ? "Top donation" : ago(d.at)}{d.monthly && " · Monthly"}</span></span>
                     </li>
                 ))}</ul>
                 <div className="grid grid-cols-2 gap-2"><Button size="md" color="secondary" className="rounded-full" onPress={() => donations("all")}>See all</Button><Button size="md" color="secondary" className="rounded-full" iconLeading={Star01} onPress={() => donations("top")}>See top</Button></div>
@@ -87,20 +87,20 @@ export const Board = ({ title = "Top fundraisers", items = PEOPLE, limit = 5 }: 
         return (
             <section className="flex flex-col gap-3">
                 <h2 className="text-xl font-semibold tracking-tight text-ink">{title}</h2>
-                <p className="rounded-[18px] bg-tint-1 px-4 py-5 text-sm text-ink-3">Nobody here yet. The first gift puts a name on this list.</p>
+                <p className="rounded-2xl bg-tint-1 px-4 py-5 text-sm text-ink-3">Nobody here yet. The first gift puts a name on this list.</p>
             </section>
         );
     }
     return (
         <section className="flex flex-col gap-3">
             <h2 className="text-xl font-semibold tracking-tight text-ink">{title}</h2>
-            <ol className="flex flex-col gap-0.5 rounded-[28px] bg-tint-1 p-2">
+            <ol className="flex flex-col gap-0.5 rounded-3xl bg-tint-1 p-2">
                 {rows.slice(0, limit).map(([name, amount], i) => (
-                    <li key={`${name}-${i}`} className={cx("flex items-center gap-3 rounded-[18px] px-4 py-3 transition duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]", i === 0 ? "bg-ink text-ink-inverse" : "text-ink hover:bg-tint-2")}>
+                    <li key={`${name}-${i}`} className={cx("flex items-center gap-3 rounded-2xl px-4 py-3 transition duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]", i === 0 ? "bg-ink text-ink-inverse" : "text-ink hover:bg-tint-2")}>
                         <span className={cx("w-8 font-bubble font-bold tabular-nums", i === 0 ? "text-ink-inverse/70" : "text-ink-3")}>#{i + 1}</span>
                         <Avatar size="sm" initials={initials(name)} />
                         <span className="min-w-0 flex-1 truncate font-medium">{name}</span>
-                        <span className="font-bubble font-bold tabular-nums">{money(amount)}</span>
+                        <span className="font-semibold tabular-nums">{money(amount)}</span>
                     </li>
                 ))}
             </ol>

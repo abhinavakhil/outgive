@@ -16,8 +16,8 @@ export const SignIn = ({ next, title = "Sign in", sub = "A link by email, or you
         setBusy(true); setError("");
         try { await db.signInEmail(email.trim(), redirect); setSent(true); } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
     };
-    if (isDemo) return <div className="flex flex-col gap-3 rounded-[18px] bg-raised p-5 shadow-edge"><h2 className="text-lg font-semibold tracking-tight text-ink">{title}</h2><p className="text-sm text-tertiary">This is the demo, so you are already signed in as the sample charity's organiser. On the live platform you sign in with a magic link or Google.</p><Button color="primary" className="w-fit rounded-full" onPress={() => go({ name: "home" })}>Continue</Button></div>;
-    if (sent) return <div className="flex flex-col gap-2 rounded-[18px] bg-raised p-5 shadow-edge"><h2 className="text-lg font-semibold tracking-tight text-ink">Check your email</h2><p className="text-sm text-tertiary">We sent a sign-in link to <b className="text-primary">{email}</b>. Open it on this device to continue.</p></div>;
+    if (isDemo) return <div className="flex flex-col gap-3 rounded-2xl bg-raised p-5 shadow-edge"><h2 className="text-lg font-semibold tracking-tight text-ink">{title}</h2><p className="text-sm text-tertiary">This is the demo, so you are already signed in as the sample charity's organiser. On the live platform you sign in with a magic link or Google.</p><Button color="primary" className="w-fit rounded-full" onPress={() => go({ name: "home" })}>Continue</Button></div>;
+    if (sent) return <div className="flex flex-col gap-2 rounded-2xl bg-raised p-5 shadow-edge"><h2 className="text-lg font-semibold tracking-tight text-ink">Check your email</h2><p className="text-sm text-tertiary">We sent a sign-in link to <b className="text-primary">{email}</b>. Open it on this device to continue.</p></div>;
     return (
         <form className="flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); magic(); }}>
             <div><h2 className="text-lg font-semibold tracking-tight text-ink">{title}</h2><p className="text-sm text-tertiary">{sub}</p></div>
@@ -34,6 +34,6 @@ export const Login = () => {
     const next = new URLSearchParams(window.location.search).get("next") ?? "/dashboard";
     useEffect(() => { if (user) go({ name: "dashboard" }); }, [user, go]);
     return (
-        <div className="min-h-dvh bg-primary"><Container className="flex max-w-md flex-col gap-10 py-5"><SiteHeader /><div className="rounded-[28px] bg-tint-1 p-6"><SignIn next={next} /></div></Container></div>
+        <div className="min-h-dvh bg-primary"><Container className="flex max-w-md flex-col gap-10 py-5"><SiteHeader /><div className="rounded-3xl bg-tint-1 p-6"><SignIn next={next} /></div></Container></div>
     );
 };

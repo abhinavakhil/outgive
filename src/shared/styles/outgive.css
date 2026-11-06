@@ -76,22 +76,22 @@
  * navy text, cool greys, royal-blue highlights, a pink primary action and white buttons with blue text. Inter for text, Fredoka for numbers.
  */
 :root:not(.dark-mode) {
-    --ts-page: #ffffff; --ts-raised: #ffffff; --ts-tint-1: #f5f7fc; --ts-tint-2: #ecf0f8; --ts-tint-3: #e0e5f0;
+    --ts-page: #f5f7fc; --ts-raised: #ffffff; --ts-tint-1: #ffffff; --ts-tint-2: #ecf0f8; --ts-tint-3: #e0e5f0; --ts-card-ring: #ecf0f8;
     --ts-fg: #12182c; --ts-fg-2: #3a4158; --ts-fg-3: #6e768e; --ts-fg-faint: #98a0b6; --ts-fg-inverse: #ffffff;
-    --ts-field: #ffffff; --ts-field-hover: #fbfcff; --ts-raised-hover: #fbfcff; --ts-border: rgb(18 24 44 / 0.08);
-    --ts-edge: 0 0 0 1px #ecf0f8, 0 1px 2px rgb(18 24 44 / 0.04);
+    --ts-field: #f5f7fc; --ts-field-hover: #eef1f8; --ts-raised-hover: #fbfcff; --ts-border: rgb(18 24 44 / 0.08);
+    --ts-edge: 0 0 0 1px #e0e5f0, 0 1px 2px rgb(18 24 44 / 0.04);
     --ts-lift: 0 0 0 1px #ecf0f8, 0 24px 64px -16px rgb(12 22 66 / 0.25);
     --ts-cta-text: #002ac2;
 
-    --color-bg-primary: var(--ts-page); --color-bg-secondary: var(--ts-tint-1); --color-bg-tertiary: var(--ts-tint-2);
-    --color-bg-primary_hover: var(--ts-tint-1); --color-bg-secondary_hover: var(--ts-tint-2); --color-bg-secondary_alt: var(--ts-tint-1); --color-bg-primary_alt: var(--ts-page);
+    --color-bg-primary: var(--ts-page); --color-bg-tertiary: var(--ts-tint-2);
+    --color-bg-secondary: var(--ts-page); --color-bg-primary_hover: var(--ts-tint-2); --color-bg-secondary_hover: var(--ts-tint-2); --color-bg-secondary_alt: var(--ts-page); --color-bg-primary_alt: #ffffff;
     --color-border-primary: #e0e5f0; --color-border-secondary: #ecf0f8;
     --color-text-primary: var(--ts-fg); --color-text-secondary: var(--ts-fg-2); --color-text-tertiary: var(--ts-fg-3);
     --color-text-quaternary: var(--ts-fg-faint); --color-text-placeholder: var(--ts-fg-faint);
     --color-fg-primary: var(--ts-fg); --color-fg-quaternary: var(--ts-fg-faint);
 }
 .dark-mode {
-    --ts-page: rgb(10 14 32); --ts-raised: rgb(28 36 66); --ts-tint-1: rgb(18 24 48); --ts-tint-2: rgb(28 36 66); --ts-tint-3: rgb(36 45 80);
+    --ts-page: rgb(10 14 32); --ts-raised: rgb(28 36 66); --ts-tint-1: rgb(18 24 48); --ts-tint-2: rgb(28 36 66); --ts-tint-3: rgb(36 45 80); --ts-card-ring: rgb(28 36 66);
     --ts-fg: rgb(242 245 255); --ts-fg-2: rgb(206 213 235); --ts-fg-3: rgb(146 156 188); --ts-fg-faint: rgb(110 118 142); --ts-fg-inverse: rgb(10 14 32);
     --ts-field: rgb(28 36 66); --ts-field-hover: rgb(36 45 80); --ts-raised-hover: rgb(36 45 80); --ts-border: rgb(242 245 255 / 0.1);
     --ts-edge: 0 0 #0000;
@@ -123,6 +123,8 @@
     --shadow-press: 0 3px 0 rgb(0 0 0 / 0.15);
 }
 body { letter-spacing: -0.01em; }
+/* Cards are white with the mockup's hairline outline; an explicit shadow-* or ring-* utility on the element still wins. */
+@layer base { .bg-tint-1 { box-shadow: 0 0 0 1px var(--ts-card-ring); } }
 
 /* White type on a brand-coloured band. Overrides the utility-level tokens too, which resolve at :root. Fields inside stay light. */
 .on-brand {

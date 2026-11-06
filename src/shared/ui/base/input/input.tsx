@@ -100,9 +100,9 @@ export const InputBase = ({
             ref={groupRef}
             className={({ isFocusWithin, isDisabled, isInvalid }) =>
                 cx(
-                    "group/input relative flex w-full flex-row place-content-center place-items-center rounded-[18px] bg-raised shadow-edge ring-1 ring-transparent transition duration-100 ease-linear ring-inset hover:bg-raised-hover",
+                    "group/input relative flex w-full flex-row place-content-center place-items-center rounded-2xl bg-field shadow-edge ring-1 ring-transparent transition duration-100 ease-linear ring-inset hover:bg-field-hover",
 
-                    isFocusWithin && !isDisabled && "bg-raised ring-[color-mix(in_srgb,var(--ts-fg)_24%,transparent)]",
+                    isFocusWithin && !isDisabled && "bg-field ring-[color-mix(in_srgb,var(--ts-fg)_24%,transparent)]",
 
                     // Disabled state styles
                     isDisabled && "cursor-not-allowed opacity-50",
@@ -134,7 +134,7 @@ export const InputBase = ({
                 type={type === "password" && isPasswordVisible ? "text" : type}
                 placeholder={placeholder}
                 className={cx(
-                    "m-0 w-full bg-transparent text-ink caret-ink ring-0 outline-hidden placeholder:text-ink-faint autofill:rounded-[18px] autofill:text-primary disabled:cursor-not-allowed [&::-webkit-search-cancel-button]:hidden",
+                    "m-0 w-full bg-transparent text-ink caret-ink ring-0 outline-hidden placeholder:text-ink-faint autofill:rounded-2xl autofill:text-primary disabled:cursor-not-allowed [&::-webkit-search-cancel-button]:hidden",
                     sizes[inputSize].root,
                     context?.inputClassName,
                     inputClassName,
