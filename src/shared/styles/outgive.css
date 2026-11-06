@@ -79,7 +79,7 @@
 :root:not(.dark-mode) {
     --ts-page: #ffffff; --ts-raised: #ffffff; --ts-tint-1: #f5f4f2; --ts-tint-2: #ecebe8; --ts-tint-3: #e3e1dd;
     --ts-fg: #161514; --ts-fg-2: #3a3836; --ts-fg-3: #585552; --ts-fg-faint: #89857f; --ts-fg-inverse: #ffffff;
-    --ts-field: #ffffff; --ts-field-hover: #f9f8f7; --ts-border: rgb(22 21 20 / 0.1);
+    --ts-field: #ffffff; --ts-field-hover: #f9f8f7; --ts-raised-hover: #faf9f8; --ts-border: rgb(22 21 20 / 0.1);
     --ts-edge: 0 0 0 1px rgb(22 21 20 / 0.07), 0 1px 2px rgb(22 21 20 / 0.05);
     --ts-lift: 0 0 0 1px rgb(22 21 20 / 0.06), 0 24px 64px -16px rgb(22 21 20 / 0.22);
 
@@ -93,7 +93,7 @@
 .dark-mode {
     --ts-page: #000000; --ts-raised: #24221f; --ts-tint-1: #131211; --ts-tint-2: #1b1a18; --ts-tint-3: #2b2926;
     --ts-fg: #f6f5f3; --ts-fg-2: #bab8b4; --ts-fg-3: #9e9b97; --ts-fg-faint: #72706c; --ts-fg-inverse: #0b0a09;
-    --ts-field: rgb(246 245 243 / 0.06); --ts-field-hover: rgb(246 245 243 / 0.08); --ts-border: rgb(246 245 243 / 0.1);
+    --ts-field: rgb(246 245 243 / 0.06); --ts-field-hover: rgb(246 245 243 / 0.08); --ts-raised-hover: #2b2926; --ts-border: rgb(246 245 243 / 0.1);
     --ts-edge: 0 0 #0000;
     --ts-lift: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 28px 72px -12px rgb(0 0 0 / 0.9);
 
@@ -109,7 +109,7 @@
 /* Utilities for the look: bg-ink, text-ink-inverse, bg-raised, bg-tint-2, bg-field, shadow-edge, shadow-lift. */
 @theme inline {
     --color-ink: var(--ts-fg); --color-ink-2: var(--ts-fg-2); --color-ink-3: var(--ts-fg-3); --color-ink-faint: var(--ts-fg-faint); --color-ink-inverse: var(--ts-fg-inverse);
-    --color-raised: var(--ts-raised); --color-tint-1: var(--ts-tint-1); --color-tint-2: var(--ts-tint-2); --color-tint-3: var(--ts-tint-3);
+    --color-raised: var(--ts-raised); --color-raised-hover: var(--ts-raised-hover); --color-tint-1: var(--ts-tint-1); --color-tint-2: var(--ts-tint-2); --color-tint-3: var(--ts-tint-3);
     --color-field: var(--ts-field); --color-field-hover: var(--ts-field-hover); --color-hairline: var(--ts-border);
     --shadow-edge: var(--ts-edge); --shadow-lift: var(--ts-lift);
 }

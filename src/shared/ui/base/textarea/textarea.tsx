@@ -32,15 +32,15 @@ export const TextAreaBase = ({ className, size = "md", ...props }: TextAreaBaseP
             }
             className={(state) =>
                 cx(
-                    "w-full scroll-py-3 rounded-[18px] bg-field text-primary shadow-edge ring-1 ring-transparent transition duration-100 ease-linear ring-inset placeholder:text-placeholder autofill:rounded-lg autofill:text-primary focus:outline-hidden",
+                    "w-full scroll-py-3 rounded-[18px] bg-raised px-3.5 py-3 text-sm text-ink shadow-edge ring-1 ring-transparent placeholder:!text-ink-faint hover:bg-raised-hover transition duration-100 ease-linear ring-inset placeholder:text-placeholder autofill:rounded-lg autofill:text-primary focus:outline-hidden",
 
                     size === "sm" && "p-3 text-sm",
-                    size === "md" && "px-3.5 py-3 text-md",
+                    size === "md" && "px-3.5 py-3 text-sm",
 
                     // Resize handle
                     "[&::-webkit-resizer]:bg-(image:--resize-handle-bg) [&::-webkit-resizer]:bg-contain dark:[&::-webkit-resizer]:bg-(image:--resize-handle-bg-dark)",
 
-                    state.isFocused && !state.isDisabled && "ring-2 ring-brand",
+                    state.isFocused && !state.isDisabled && "bg-raised ring-[color-mix(in_srgb,var(--ts-fg)_24%,transparent)]",
                     state.isDisabled && "cursor-not-allowed opacity-50",
                     state.isInvalid && "ring-error_subtle",
                     state.isInvalid && state.isFocused && "ring-2 ring-error",

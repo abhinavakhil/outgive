@@ -73,23 +73,24 @@ export const InputBase = ({
     const inputSize = context?.size || size;
 
     const sizes = sortCx({
+        // Heights 40 / 48 / 52: lg is Teseria's search bar.
         sm: {
-            root: cx("px-3 py-2 text-sm", hasLeadingIcon && "pl-9", hasTrailingIcon && "pr-9"),
-            iconLeading: "left-3 size-4 stroke-[2.25px]",
-            iconTrailing: "right-3",
-            shortcut: "pr-1.5",
+            root: cx("h-10 px-3.5 text-sm", hasLeadingIcon && "pl-9.5", hasTrailingIcon && "pr-9"),
+            iconLeading: "left-3.5 size-4",
+            iconTrailing: "right-3.5",
+            shortcut: "right-3",
         },
         md: {
-            root: cx("px-3 py-2 text-md", hasLeadingIcon && "pl-10", hasTrailingIcon && "pr-9"),
-            iconLeading: "left-3 size-5",
-            iconTrailing: "right-3",
-            shortcut: "pr-2",
+            root: cx("h-12 px-3.5 text-sm", hasLeadingIcon && "pl-10", hasTrailingIcon && "pr-9.5"),
+            iconLeading: "left-3.5 size-4",
+            iconTrailing: "right-3.5",
+            shortcut: "right-3",
         },
         lg: {
-            root: cx("px-3.5 py-2.5 text-md", hasLeadingIcon && "pl-10.5", hasTrailingIcon && "pr-9.5"),
-            iconLeading: "left-3.5 size-5",
+            root: cx("h-13 px-3.5 text-sm", hasLeadingIcon && "pl-10", hasTrailingIcon && "pr-10"),
+            iconLeading: "left-3.5 size-4",
             iconTrailing: "right-3.5",
-            shortcut: "pr-2.5",
+            shortcut: "right-3.5",
         },
     });
 
@@ -99,9 +100,9 @@ export const InputBase = ({
             ref={groupRef}
             className={({ isFocusWithin, isDisabled, isInvalid }) =>
                 cx(
-                    "group/input relative flex w-full flex-row place-content-center place-items-center rounded-full bg-field shadow-edge ring-1 ring-transparent transition duration-100 hover:bg-field-hover ease-linear ring-inset",
+                    "group/input relative flex w-full flex-row place-content-center place-items-center rounded-[18px] bg-raised shadow-edge ring-1 ring-transparent transition duration-100 ease-linear ring-inset hover:bg-raised-hover",
 
-                    isFocusWithin && !isDisabled && "ring-2 ring-brand",
+                    isFocusWithin && !isDisabled && "bg-raised ring-[color-mix(in_srgb,var(--ts-fg)_24%,transparent)]",
 
                     // Disabled state styles
                     isDisabled && "cursor-not-allowed opacity-50",
@@ -133,7 +134,7 @@ export const InputBase = ({
                 type={type === "password" && isPasswordVisible ? "text" : type}
                 placeholder={placeholder}
                 className={cx(
-                    "m-0 w-full bg-transparent text-primary ring-0 outline-hidden placeholder:text-placeholder autofill:rounded-full autofill:text-primary disabled:cursor-not-allowed",
+                    "m-0 w-full bg-transparent text-ink caret-ink ring-0 outline-hidden placeholder:text-ink-faint autofill:rounded-[18px] autofill:text-primary disabled:cursor-not-allowed [&::-webkit-search-cancel-button]:hidden",
                     sizes[inputSize].root,
                     context?.inputClassName,
                     inputClassName,
@@ -186,13 +187,13 @@ export const InputBase = ({
             {shortcut && (
                 <div
                     className={cx(
-                        "pointer-events-none absolute inset-y-0.5 right-0.5 z-10 hidden items-center rounded-r-[inherit] bg-linear-to-r from-transparent to-bg-primary to-40% pl-8 md:flex",
+                        "pointer-events-none absolute inset-y-0 z-10 hidden items-center md:flex",
                         sizes[inputSize].shortcut,
                     )}
                 >
                     <span
                         aria-hidden="true"
-                        className="pointer-events-none rounded px-1 py-px text-xs font-medium text-quaternary ring-1 ring-secondary select-none ring-inset"
+                        className="pointer-events-none rounded-md bg-tint-2 px-1.5 py-0.5 text-[11px] leading-none font-medium text-ink-3 select-none dark:bg-tint-3"
                     >
                         {typeof shortcut === "string" ? shortcut : "⌘K"}
                     </span>
