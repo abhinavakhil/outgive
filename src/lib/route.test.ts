@@ -3,7 +3,7 @@ import { parse, pathOf, tenantOf } from "./route";
 
 const bare = tenantOf("outgive.org"); const sub = tenantOf("clearwell.outgive.org"); const custom = tenantOf("give.clearwell.org");
 describe("tenants", () => {
-    it("platform hosts carry no tenant", () => { expect(tenantOf("localhost:5173")).toEqual({ slug: null, host: null }); expect(tenantOf("outgive-abc.vercel.app").slug).toBeNull(); expect(tenantOf("www.outgive.org").slug).toBeNull(); });
+    it("platform hosts carry no tenant", () => { expect(tenantOf("localhost:5173")).toEqual({ slug: null, host: null }); expect(tenantOf("outgive-abc.vercel.app").slug).toBeNull(); expect(tenantOf("www.outgive.org").slug).toBeNull(); expect(tenantOf("www.outgive.tech")).toEqual({ slug: null, host: null }); expect(tenantOf("outgive.tech")).toEqual({ slug: null, host: null }); expect(tenantOf("clearwell.outgive.tech").slug).toBe("clearwell"); });
     it("subdomains and custom domains do", () => { expect(sub).toEqual({ slug: "clearwell", host: null }); expect(custom).toEqual({ slug: null, host: "give.clearwell.org" }); expect(tenantOf("Give.Clearwell.org:443").host).toBe("give.clearwell.org"); });
 });
 describe("parse", () => {

@@ -2,7 +2,7 @@ import type { View } from "@/lib/route";
 import type { Brand, PageData } from "@/data";
 
 /** The one place the public address lives. Change `url` when the domain is bought; canonical links, the sitemap and share previews all read it. */
-export const SITE = { name: "Outgive", url: "https://outgive.org" };
+export const SITE = { name: "Outgive", url: "https://www.outgive.tech" };
 
 /** Umami analytics (open source, cookieless). Paste the website ID from your Umami dashboard to switch it on; point `src` at your own server if you self-host. */
 export const ANALYTICS = { src: "https://cloud.umami.is/script.js", websiteId: "" };

@@ -6,8 +6,8 @@ import { PREFIX, type PageType } from "@/data";
 
 export const DEMO_SLUG = "clearwell";
 /** Hosts that are the platform itself, not a tenant. */
-const BARE = /^(localhost|127\.0\.0\.1|\[::1\]|outgive\.org|www\.outgive\.org|.*\.vercel\.app|.*\.netlify\.app)(:\d+)?$/i;
-const SUB = /^([a-z0-9-]+)\.outgive\.org(:\d+)?$/i;
+const BARE = /^(localhost|127\.0\.0\.1|\[::1\]|(?:www\.)?outgive\.(?:org|tech)|.*\.vercel\.app|.*\.netlify\.app)(:\d+)?$/i;
+const SUB = /^([a-z0-9-]+)\.outgive\.(?:org|tech)(:\d+)?$/i;
 
 export type Tenant = { slug: string | null; host: string | null };
 /** slug from a subdomain; host for a custom domain to look up; neither on the platform's own hosts. */
