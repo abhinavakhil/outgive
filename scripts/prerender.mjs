@@ -23,6 +23,7 @@ try {
         ].join("\n    ");
         const html = shell
             .replace(/<title>[^<]*<\/title>/, `<title>${esc(p.title)}</title>`)
+            .replace(/(<meta property="og:type" content=")[^"]*"/, `$1${p.ogType}"`)
             .replace(/(<meta name="description" content=")[^"]*"/, `$1${esc(p.description)}"`)
             .replace(/(<meta property="og:title" content=")[^"]*"/, `$1${esc(p.title)}"`)
             .replace(/(<meta property="og:description" content=")[^"]*"/, `$1${esc(p.description)}"`)
@@ -44,7 +45,10 @@ try {
     // The same bare shell under a name the rewrite rules in public/_redirects and vercel.json point at.
     fs.writeFileSync(path.join(dist, "app.html"), shell);
     const today = new Date().toISOString().slice(0, 10);
-    fs.writeFileSync(path.join(dist, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${built.filter((p) => !p.noindex).map((p) => `  <url><loc>${site.url}${p.path === "/" ? "/" : p.path}</loc><lastmod>${today}</lastmod></url>`).join("\n")}\n</urlset>\n`);
+    fs.writeFileSync(path.join(dist, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${built.filter((p) => !p.noindex).map((p) => `  <url><loc>${site.url}${p.path === "/" ? "/" : p.path}</loc><lastmod>${p.lastmod ?? today}</lastmod></url>`).join("\n")}\n</urlset>\n`);
+    // A plain-text map for AI assistants and answer engines (llmstxt.org): what the site is and its pages worth reading.
+    const listed = built.filter((p) => !p.noindex);
+    fs.writeFileSync(path.join(dist, "llms.txt"), `# ${site.name}\n\n> ${listed[0].description}\n\n## Pages\n\n${listed.map((p) => `- [${p.title}](${site.url}${p.path === "/" ? "/" : p.path}): ${p.description}`).join("\n")}\n`);
     fs.writeFileSync(path.join(dist, "robots.txt"), `User-agent: *\nAllow: /\nDisallow: /dashboard\n\nSitemap: ${site.url}/sitemap.xml\n`);
 } finally {
     await vite.close();

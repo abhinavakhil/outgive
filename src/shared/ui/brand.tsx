@@ -22,14 +22,19 @@ export const BrandLogo = ({ onClick, mark }: { onClick?: () => void; mark?: stri
     );
 };
 
-export const Logo = ({ onClick }: { onClick?: () => void }) => (
-    <button type="button" onClick={onClick} className="flex cursor-pointer items-center gap-2 rounded-md text-xl font-semibold tracking-tight text-primary outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2">
-        <svg width="28" height="24" viewBox="0 0 28 24" aria-hidden="true" fill="none" strokeLinecap="round" strokeWidth="4.2">
-            <path d="M7 5h18" className="stroke-brand-600" /><path d="M7 12h12" className="stroke-fg-primary" /><path d="M7 19h6" className="stroke-fg-primary" /><path d="M3 5v14" className="stroke-fg-primary" />
-        </svg>
-        outgive
-    </button>
-);
+/** Outgive's own mark. With `href` it is a link (pages rendered without the app), otherwise a button. */
+export const Logo = ({ onClick, href }: { onClick?: () => void; href?: string }) => {
+    const cls = "flex cursor-pointer items-center gap-2 rounded-md text-xl font-semibold tracking-tight text-primary outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2";
+    const mark = (
+        <>
+            <svg width="28" height="24" viewBox="0 0 28 24" aria-hidden="true" fill="none" strokeLinecap="round" strokeWidth="4.2">
+                <path d="M7 5h18" className="stroke-brand-600" /><path d="M7 12h12" className="stroke-fg-primary" /><path d="M7 19h6" className="stroke-fg-primary" /><path d="M3 5v14" className="stroke-fg-primary" />
+            </svg>
+            outgive
+        </>
+    );
+    return href ? <a href={href} className={cls}>{mark}</a> : <button type="button" onClick={onClick} className={cls}>{mark}</button>;
+};
 
 const useTheme = () => {
     const [dark, setDark] = useState(() => typeof document !== "undefined" && document.documentElement.classList.contains("dark-mode"));

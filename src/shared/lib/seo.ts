@@ -35,8 +35,17 @@ export const metaFor = (name: View["name"], brand: Brand, page?: PageData): [str
         thanks: [`Thank you · ${brand.name}`, "Your gift has been received."],
         layouts: ["12 fundraising page layouts | Outgive", "Every layout holds the same sections: story, progress, gifts, updates and sharing."],
         embed: [`${brand.name}`, "Embedded Outgive widget."],
+        blog: ["Fundraising guides for charities, fundraisers and donors | Outgive blog", "Practical, sourced guides on crowdfunding fees, GivingTuesday, team fundraising, checking a charity and the tax rules for donations in the US and Europe."],
+        // Each post sets its own title from its article; this is only the fallback.
+        post: ["Outgive blog", "Fundraising guides for charities, fundraisers and donors."],
         notfound: missing,
         page: page ? [`${page.title || "Fundraising page"} · ${brand.name}`, `Give to ${page.title || "this page"} for ${page.org || brand.name}. Every gift counts toward its rank on the leaderboard.`] : missing,
     };
     return m[name] ?? missing;
+};
+
+/** Writes the title and description into every tag that carries them, so the tab, search results and share previews agree. */
+export const setMeta = (title: string, desc: string) => {
+    document.title = title;
+    for (const [sel, content] of [['meta[name="description"]', desc], ['meta[property="og:title"]', title], ['meta[property="og:description"]', desc], ['meta[name="twitter:title"]', title], ['meta[name="twitter:description"]', desc]]) document.querySelector(sel)?.setAttribute("content", content);
 };

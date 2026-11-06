@@ -100,6 +100,13 @@ After you claim a rank, your row is marked **You** and scrolled into view in whi
     supabase/migrations/   schema, triggers, SQL API, RLS; supabase/functions/: checkout, stripe-webhook, connect
     tests/                 db.test.ts (schema on real Postgres), seed.test.ts, browser/ (headless flows)
 
+### Adding a blog post
+
+Posts live in `src/features/blog/posts/<slug>.tsx`, one `Post` object each (title, description, the short answer,
+takeaways, body, FAQ and sources), listed in `src/features/blog/posts.ts`. The build prerenders `/blog` and every post
+with `BlogPosting`, `FAQPage` and breadcrumb JSON-LD, adds them to `sitemap.xml` with their `updated` date, and lists
+them in `llms.txt`. Bump `updated` whenever you re-check a figure. Use `A`, `Table` and `Note` from `posts/kit.tsx` in bodies.
+
 ### Adding a feature
 
 1. Create `src/features/<name>/` with `components/` and an `index.ts` that exports only what other code needs. Add

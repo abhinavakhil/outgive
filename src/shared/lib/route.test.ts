@@ -8,6 +8,7 @@ describe("tenants", () => {
 });
 describe("parse", () => {
     it("platform routes", () => { expect(parse("/", bare)).toEqual({ name: "landing" }); expect(parse("/pricing/", bare)).toEqual({ name: "pricing" }); expect(parse("/nope", bare)).toEqual({ name: "notfound" }); });
+    it("blog", () => { expect(parse("/blog/", bare)).toEqual({ name: "blog" }); expect(parse("/blog/how-to-start", bare)).toEqual({ name: "post", slug: "how-to-start" }); expect(parse("/blog/a/b", bare)).toEqual({ name: "notfound" }); expect(parse("/blog/x", sub)).toEqual({ name: "notfound" }); expect(parse("/blog", sub)).toEqual({ name: "notfound" }); expect(pathOf({ name: "post", slug: "x" }, bare)).toBe("/blog/x"); });
     it("/demo and /o/<slug> are org prefixes", () => {
         expect(parse("/demo", bare)).toEqual({ name: "board", org: "clearwell" });
         expect(parse("/o/Mangrove/f/plant-trees", bare)).toEqual({ name: "page", org: "mangrove", page: { type: "fundraiser", slug: "plant-trees" } });

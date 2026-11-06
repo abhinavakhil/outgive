@@ -25,6 +25,7 @@ export const OVERLAY_STYLES = ["bar", "alert", "ticker"] as const;
 type LiveLink = { layout?: (typeof LIVE_LINK_LAYOUTS)[number]; theme?: "dark" | "light" };
 export type View =
     | { name: "landing" } | { name: "landing-b" } | { name: "layouts" } | { name: "ui" } | { name: "ui-variants" } | { name: "pricing" } | { name: "start" } | { name: "login" } | { name: "dashboard" }
+    | { name: "blog" } | { name: "post"; slug: string }
     | { name: "about" } | { name: "rules" } | { name: "faq" } | { name: "terms" } | { name: "privacy" } | { name: "notfound" }
     | { name: "board"; org: string } | ({ name: "live"; org: string; page?: PageRef } & LiveLink) | { name: "give"; org: string; page?: PageRef }
     | { name: "overlay"; org: string; page?: PageRef; style?: (typeof OVERLAY_STYLES)[number] }
@@ -36,7 +37,7 @@ export type View =
     | { name: "embed"; org: string; page?: PageRef; theme?: "dark"; limit?: number };
 
 const TYPE_OF: Record<string, PageType> = Object.fromEntries(Object.entries(PREFIX).map(([t, p]) => [p, t as PageType]));
-const STATIC: Record<string, View> = { "/": { name: "landing" }, "/landing-b": { name: "landing-b" }, "/layouts": { name: "layouts" }, "/ui": { name: "ui" }, "/ui/variants": { name: "ui-variants" }, "/pricing": { name: "pricing" }, "/start": { name: "start" }, "/login": { name: "login" }, "/dashboard": { name: "dashboard" }, "/about": { name: "about" }, "/rules": { name: "rules" }, "/faq": { name: "faq" }, "/terms": { name: "terms" }, "/privacy": { name: "privacy" } };
+const STATIC: Record<string, View> = { "/": { name: "landing" }, "/landing-b": { name: "landing-b" }, "/layouts": { name: "layouts" }, "/ui": { name: "ui" }, "/ui/variants": { name: "ui-variants" }, "/pricing": { name: "pricing" }, "/start": { name: "start" }, "/login": { name: "login" }, "/dashboard": { name: "dashboard" }, "/about": { name: "about" }, "/rules": { name: "rules" }, "/faq": { name: "faq" }, "/terms": { name: "terms" }, "/privacy": { name: "privacy" }, "/blog": { name: "blog" } };
 const clean = (p: string) => (p.length > 1 ? p.replace(/\/+$/, "") : p) || "/";
 
 /** /live/podium/light: an optional layout and theme, in either order. */
@@ -96,12 +97,14 @@ const orgView = (org: string, rest: string, query: URLSearchParams): View => {
 export const parse = (path: string, tenant: Tenant, search = ""): View => {
     const p = clean(path); const q = new URLSearchParams(search);
     if (tenant.slug) {
-        // On a tenant host the platform's own screens still work at their usual paths, except / which is the board.
-        if (p !== "/" && STATIC[p]) return STATIC[p];
+        // On a tenant host the platform's own screens still work at their usual paths, except / which is the board and the blog, which lives only on the platform's host.
+        if (p !== "/" && p !== "/blog" && STATIC[p]) return STATIC[p];
         return orgView(tenant.slug, p, q);
     }
     if (tenant.host) return orgView(tenant.host, p, q); // slug is resolved from the host by the app; carry the host as the key meanwhile
     if (STATIC[p]) return STATIC[p];
+    const post = p.match(/^\/blog\/([a-z0-9-]+)$/);
+    if (post) return { name: "post", slug: post[1] };
     const m = p.match(/^\/(demo|o\/([a-z0-9-]+))(\/.*)?$/i);
     if (m) return orgView(m[2] ? m[2].toLowerCase() : DEMO_SLUG, m[3] ?? "/", q);
     return { name: "notfound" };
@@ -126,6 +129,7 @@ export const pathOf = (v: View, tenant: Tenant): string => {
         case "admin": return `${prefix(v.org)}/admin${opts(v.tab)}`;
         case "thanks": return `${prefix(v.org)}/thanks${opts(v.ref)}`;
         case "embed": return `${prefix(v.org)}${v.page ? `${pg(v.page)}/embed` : "/embed"}${opts(v.theme, v.limit)}`;
+        case "post": return `/blog/${v.slug}`;
         case "page": return `${prefix(v.org)}${pg(v.page)}${opts(v.sub, v.sub === "donate" ? v.amount : undefined)}`;
         default: return `/${v.name}`;
     }

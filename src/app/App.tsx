@@ -7,7 +7,7 @@ import { DEMO_SLUG, type Tenant, type View, parse, pathOf, tenantOf } from "@/sh
 import { type BoardRow, type Org, type User, toBrand, toSupporter } from "@/shared/domain/types";
 import { ComingSoon, ComingSoonGate } from "@/features/launch";
 import { screenFor } from "@/app/routes";
-import { LEGAL_DRAFT, SITE, metaFor } from "@/shared/lib/seo";
+import { LEGAL_DRAFT, SITE, metaFor, setMeta } from "@/shared/lib/seo";
 
 const load = <T,>(key: string, fallback: T): T => { try { return JSON.parse(localStorage.getItem(key) ?? "null") ?? fallback; } catch { return fallback; } };
 const save = (key: string, v: unknown) => { try { localStorage.setItem(key, JSON.stringify(v)); } catch { /* storage unavailable */ } };
@@ -15,6 +15,9 @@ const orgOf = (v: View) => ("org" in v ? v.org : null);
 
 /** Every page is open. Set VITE_LAUNCHED=false at build time to put the "Coming soon" gate back on every path except local dev. */
 const LOCAL = import.meta.env.VITE_LAUNCHED !== "false" || import.meta.env.DEV || /^(localhost|127\.0\.0\.1|\[::1\]|10\.|192\.168\.)/.test(window.location.hostname);
+
+/** What the build put in #root for this path, read before React replaces it. */
+const PRERENDERED = document.getElementById("root")?.innerHTML ?? "";
 
 const Splash =({ text }: { text: string }) => <div className="flex min-h-dvh items-center justify-center bg-primary text-sm text-tertiary">{text}</div>;
 
@@ -105,9 +108,8 @@ export const App = () => {
 
     /** Title, description and canonical follow the screen, so shared links and search results describe what is on it. */
     useEffect(() => {
-        const [title, desc] = metaFor(view.name, brand);
-        document.title = title;
-        for (const [sel, content] of [['meta[name="description"]', desc], ['meta[property="og:title"]', title], ['meta[property="og:description"]', desc], ['meta[name="twitter:title"]', title], ['meta[name="twitter:description"]', desc]]) document.querySelector(sel)?.setAttribute("content", content);
+        // A blog post sets its own title from its article, which lives in the blog's chunk.
+        if (view.name !== "post") setMeta(...metaFor(view.name, brand));
         const noindex = ["notfound", "ui", "ui-variants", "dashboard", "admin", "landing-b", "thanks", "login", "overlay", "embed"].includes(view.name) || (LEGAL_DRAFT && (view.name === "terms" || view.name === "privacy"));
         document.querySelector('meta[name="robots"]')?.setAttribute("content", noindex ? "noindex" : "index, follow");
         let canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
@@ -117,6 +119,8 @@ export const App = () => {
 
     // The coming-soon screens need no data, so they render at once instead of waiting for the database.
     if (view.name === "landing") return <ComingSoon />;
+    // The blog needs no data either. While its chunk loads, the prerendered article stays on screen instead of a blank page.
+    if (view.name === "blog" || view.name === "post") return <Suspense fallback={<div className="contents" dangerouslySetInnerHTML={{ __html: PRERENDERED }} />}>{screenFor(view)}</Suspense>;
     if (!LOCAL) return <ComingSoonGate />;
     if (dbError) return <Splash text={`Could not start: ${dbError}`} />;
     if (!ctx) return <Splash text="Loading…" />;

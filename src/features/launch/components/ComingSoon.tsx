@@ -51,6 +51,7 @@ const Nav = () => (
         <a href="/" aria-label="Outgive home" className="rounded-xl outline-white focus-visible:outline-2 focus-visible:outline-offset-4"><Mark /></a>
         <nav aria-label="Main" className="flex items-center gap-1 text-sm font-medium text-white/85 sm:gap-2">
             <a href="#features" className="hidden rounded-full px-3 py-2 transition hover:bg-white/10 hover:text-white sm:block">What's coming</a>
+            <a href="/blog" className="rounded-full px-3 py-2 transition hover:bg-white/10 hover:text-white">Blog</a>
             <a href="/#join" className="ml-1 inline-flex h-10 items-center gap-1.5 rounded-full bg-white px-4 font-semibold text-brand-700 shadow-[0_3px_0_rgb(0_0_0/0.15)] outline-white transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 whitespace-nowrap"><span className="max-sm:hidden">Get early access</span><span className="sm:hidden">Join</span><ArrowRight className="size-4" /></a>
         </nav>
     </header>

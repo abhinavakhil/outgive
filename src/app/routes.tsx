@@ -7,6 +7,7 @@ const screen = <K extends string>(load: () => Promise<Record<K, ComponentType<an
 const LandingB = screen(() => import("@/features/marketing"), "LandingB");
 const Pricing = screen(() => import("@/features/marketing"), "Pricing");
 const Info = screen(() => import("@/features/marketing"), "Info");
+const Blog = screen(() => import("@/features/blog"), "Blog");
 const Start = screen(() => import("@/features/onboarding"), "Start");
 const Login = screen(() => import("@/features/auth"), "Login");
 const Dashboard = screen(() => import("@/features/dashboard"), "Dashboard");
@@ -33,6 +34,8 @@ export const screenFor = (view: View): ReactNode => {
         case "ui": return <Gallery />;
         case "ui-variants": return <Variants />;
         case "pricing": return <Pricing />;
+        case "blog": return <Blog />;
+        case "post": return <Blog slug={view.slug} />;
         case "start": return <Start />;
         case "login": return <Login />;
         case "dashboard": return <Dashboard />;
