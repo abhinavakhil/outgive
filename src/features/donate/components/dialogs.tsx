@@ -17,7 +17,7 @@ export interface DonateTarget {
     supporter?: { name?: string; kind?: string; tagline?: string; country?: string; region?: string; link?: string; claimedRank?: number; anonymous?: boolean; lockKind?: boolean };
 }
 const ease = "transition duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]";
-const chip = (on: boolean) => cx("h-8 cursor-pointer rounded-full px-3 text-[13px] font-semibold outline-focus-ring focus-visible:outline-2", ease, on ? "bg-ink text-ink-inverse" : "bg-tint-2 text-ink-2 hover:text-ink");
+const chip = (on: boolean) => cx("h-8 cursor-pointer rounded-full px-3 text-[13px] font-semibold outline-focus-ring focus-visible:outline-2", ease, on ? "bg-ink text-ink-inverse" : "bg-raised text-ink-2 shadow-edge hover:text-ink");
 /** One option inside a segmented track (frequency, list order). */
 const seg = (on: boolean) => cx("h-full cursor-pointer rounded-full px-4 text-[13px] font-semibold outline-focus-ring focus-visible:outline-2", ease, on ? "bg-ink text-ink-inverse" : "text-ink-2 hover:text-ink");
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -106,7 +106,7 @@ export const DonateDialog = ({ target, isOpen, initial, onClose, onShare, onLoca
                 <button type="button" onClick={() => setMore((m) => !m)} className="w-fit cursor-pointer text-sm font-semibold text-brand-secondary underline-offset-4 hover:underline">{more ? "Fewer options" : "Dedicate this gift, or give as a team, company or school"}</button>
                 {more && <div className="flex flex-col gap-3">
                     <Input label="Dedicate this gift (optional)" placeholder="In honour of, or in memory of…" value={dedication} onChange={setDedication} />
-                    {!target.supporter?.lockKind && <><div role="group" aria-label="On the board as" className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">{kinds.map(([k, l]) => <button key={k} type="button" aria-pressed={kind === k} onClick={() => setKind(k)} className={cx("h-8 cursor-pointer rounded-full px-3 text-[13px] font-semibold outline-focus-ring focus-visible:outline-2", ease, kind === k ? "bg-ink text-ink-inverse" : "bg-tint-2 text-ink-2 hover:text-ink")}>{l}</button>)}</div>
+                    {!target.supporter?.lockKind && <><div role="group" aria-label="On the board as" className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">{kinds.map(([k, l]) => <button key={k} type="button" aria-pressed={kind === k} onClick={() => setKind(k)} className={cx("h-8 cursor-pointer rounded-full px-3 text-[13px] font-semibold outline-focus-ring focus-visible:outline-2", ease, kind === k ? "bg-ink text-ink-inverse" : "bg-raised text-ink-2 shadow-edge hover:text-ink")}>{l}</button>)}</div>
                     {kind !== "Individuals" && <Input label={`${kind.replace(/ies$/, "y").replace(/s$/, "")} name on the board`} value={team} onChange={setTeam} placeholder="The gift counts toward this name's rank" />}</>}
                 </div>}
                 <Checkbox size="md" isSelected={anon} onChange={setAnon} label="Give anonymously" hint="Your name is hidden on the page and the board. The gift still counts for a team, company or school." />

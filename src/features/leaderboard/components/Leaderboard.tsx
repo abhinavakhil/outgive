@@ -126,7 +126,7 @@ export const Leaderboard = () => {
         return best;
     }, [byTotal]);
 
-    const tab = (on: boolean) => cx("inline-flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-3 text-[13px] font-semibold whitespace-nowrap outline-focus-ring focus-visible:outline-2", EASE, on ? "bg-ink text-ink-inverse" : "bg-tint-2 text-ink-2 hover:text-ink");
+    const tab = (on: boolean) => cx("inline-flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-3 text-[13px] font-semibold whitespace-nowrap outline-focus-ring focus-visible:outline-2", EASE, on ? "bg-ink text-ink-inverse" : "bg-raised text-ink-2 shadow-edge hover:text-ink");
     const claimRow = (o: Row) => openClaim(o.total + 1, byTotal.findIndex((x) => x.id === o.id) + 1);
     const claimLink = (o: Row) => boardDef.money && <button type="button" onClick={() => claimRow(o)} className="cursor-pointer font-semibold text-brand-secondary underline-offset-2 hover:underline">claim for {money(o.total + 1)}</button>;
     /** Fades in over a hovered or focused row (put `group relative` on the row). Touch screens get the inline claim link instead. */
@@ -521,7 +521,7 @@ export const Leaderboard = () => {
                                 <span className="text-sm font-medium text-tertiary">{currency}</span>
                             </label>
                             <div role="group" aria-label="Pick a rank" className="flex flex-wrap gap-1.5">
-                                {quick.map((r) => { const g = giftFor(r); const on = giftUsd === g; return <button key={r} type="button" aria-pressed={on} onClick={() => setGift(g)} className={cx("h-8 cursor-pointer rounded-full px-3 text-[13px] font-semibold tabular-nums outline-focus-ring focus-visible:outline-2", EASE, on ? "bg-ink text-ink-inverse" : "bg-tint-2 text-ink-2 hover:text-ink")}>#{r} · {money(g)}</button>; })}
+                                {quick.map((r) => { const g = giftFor(r); const on = giftUsd === g; return <button key={r} type="button" aria-pressed={on} onClick={() => setGift(g)} className={cx("h-8 cursor-pointer rounded-full px-3 text-[13px] font-semibold tabular-nums outline-focus-ring focus-visible:outline-2", EASE, on ? "bg-ink text-ink-inverse" : "bg-raised text-ink-2 shadow-edge hover:text-ink")}>#{r} · {money(g)}</button>; })}
                             </div>
                             <p role="status" className={cx("text-sm", error ? "text-error-primary" : "text-tertiary")}>
                                 {error || (giftUsd > 0
@@ -534,7 +534,7 @@ export const Leaderboard = () => {
                         <Input label="Email" type="email" placeholder="For your receipt" value={form.email} onChange={(v) => { setForm({ ...form, email: v }); setError(""); }} isRequired={!isDemo} />
                         {existing ? <Badge type="pill-color" color="success" size="md">Already on the board. This gift is added to your total.</Badge> : <>
                             <div role="group" aria-label="Giving as" className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
-                                {KINDS.map((k) => <button key={k} type="button" aria-pressed={form.kind === k} onClick={() => setForm({ ...form, kind: k })} className={cx("h-10 cursor-pointer rounded-full px-2 text-sm font-semibold outline-focus-ring focus-visible:outline-2", EASE, form.kind === k ? "bg-ink text-ink-inverse" : "bg-tint-2 text-ink-2 hover:text-ink")}>{one(k)}</button>)}
+                                {KINDS.map((k) => <button key={k} type="button" aria-pressed={form.kind === k} onClick={() => setForm({ ...form, kind: k })} className={cx("h-10 cursor-pointer rounded-full px-2 text-sm font-semibold outline-focus-ring focus-visible:outline-2", EASE, form.kind === k ? "bg-ink text-ink-inverse" : "bg-raised text-ink-2 shadow-edge hover:text-ink")}>{one(k)}</button>)}
                             </div>
                             <details className="group/more rounded-2xl bg-tint-1">
                                 <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-3.5 py-2.5 text-sm font-medium text-secondary outline-focus-ring focus-visible:outline-2 [&::-webkit-details-marker]:hidden">Add a message, page or country<span className="text-xs text-tertiary">optional</span></summary>

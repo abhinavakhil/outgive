@@ -24,7 +24,7 @@ export const BrandPanel = ({ open, onClose }: { open: boolean; onClose: () => vo
                     </div>
                     <div className="flex flex-wrap gap-2" role="group" aria-label="Example charities">
                         {BRAND_PRESETS.map((p) => (
-                            <button key={p.name} type="button" onClick={() => setBrand(p)} className={cx("flex h-8 cursor-pointer items-center gap-2 rounded-full pr-3 pl-1.5 text-[13px] font-semibold outline-focus-ring transition duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-2", brand.name === p.name && brand.color === p.color ? "bg-ink text-ink-inverse" : "bg-tint-2 text-ink-2 hover:text-ink")}>
+                            <button key={p.name} type="button" onClick={() => setBrand(p)} className={cx("flex h-8 cursor-pointer items-center gap-2 rounded-full pr-3 pl-1.5 text-[13px] font-semibold outline-focus-ring transition duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-2", brand.name === p.name && brand.color === p.color ? "bg-ink text-ink-inverse" : "bg-raised text-ink-2 shadow-edge hover:text-ink")}>
                                 <span className="size-5 rounded-full shadow-edge" style={{ background: p.color }} />{p.name}
                             </button>
                         ))}

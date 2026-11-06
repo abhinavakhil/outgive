@@ -27,7 +27,7 @@ const COUNTRIES = ["India", "Kenya", "United Kingdom", "United States", "United 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
 const STEP_HINTS = ["What you are making", "Who it is for", "Amount and gifts", "Photo, video, words", "Title and link", "How it looks", "Check and publish"];
 const MAX_VIDEO = 150 * 1024 * 1024;
-const chip = (on: boolean) => cx("h-11 cursor-pointer rounded-full px-5 font-bubble text-md font-bold tabular-nums outline-focus-ring transition duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-2", on ? "bg-ink text-ink-inverse" : "bg-tint-2 text-ink-2 hover:bg-tint-3 hover:text-ink");
+const chip = (on: boolean) => cx("h-11 cursor-pointer rounded-full px-5 font-bubble text-md font-bold tabular-nums outline-focus-ring transition duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] focus-visible:outline-2", on ? "bg-ink text-ink-inverse" : "bg-raised text-ink-2 shadow-edge hover:bg-raised-hover hover:text-ink");
 
 const Tick = ({ className }: { className?: string }) => (<span className={cx("flex size-6 items-center justify-center rounded-full bg-ink text-ink-inverse", className)}><Check className="size-3.5 stroke-[3px]" /></span>);
 const StepHead = ({ title, sub }: { title: string; sub: string }) => (<div><h1 className="text-display-xs leading-[0.95] font-extrabold tracking-[-0.045em] text-ink md:text-display-md">{title}</h1><p className="mt-3 text-lg text-ink-3">{sub}</p></div>);
