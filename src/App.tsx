@@ -27,8 +27,8 @@ const load = <T,>(key: string, fallback: T): T => { try { return JSON.parse(loca
 const save = (key: string, v: unknown) => { try { localStorage.setItem(key, JSON.stringify(v)); } catch { /* storage unavailable */ } };
 const orgOf = (v: View) => ("org" in v ? v.org : null);
 
-/** Before launch the coming-soon page is the only public screen. Every other path shows "Coming soon", except when running locally. */
-const LOCAL = import.meta.env.DEV || /^(localhost|127\.0\.0\.1|\[::1\]|10\.|192\.168\.)/.test(window.location.hostname);
+/** Every page is open. Set VITE_LAUNCHED=false at build time to put the "Coming soon" gate back on every path except local dev. */
+const LOCAL = import.meta.env.VITE_LAUNCHED !== "false" || import.meta.env.DEV || /^(localhost|127\.0\.0\.1|\[::1\]|10\.|192\.168\.)/.test(window.location.hostname);
 
 const Splash =({ text }: { text: string }) => <div className="flex min-h-dvh items-center justify-center bg-primary text-sm text-tertiary">{text}</div>;
 
