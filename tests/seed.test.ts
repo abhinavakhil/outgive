@@ -1,7 +1,7 @@
 import { expect, it } from "vitest";
 import { fresh } from "./pg";
-import { seed } from "@/lib/demo";
-import { SUPPORTERS } from "@/data";
+import { seed } from "@/shared/lib/demo";
+import { SUPPORTERS } from "@/shared/domain/data";
 
 it("the demo seed puts every sample supporter on the board with the right totals", async () => {
     const db = await fresh();

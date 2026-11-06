@@ -10,7 +10,7 @@ const vite = await createServer({ server: { middlewareMode: true }, appType: "cu
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 
 try {
-    const { pages, site } = await vite.ssrLoadModule("/src/prerender.tsx");
+    const { pages, site } = await vite.ssrLoadModule("/src/app/prerender.tsx");
     const built = pages();
     for (const p of built) {
         const url = site.url + (p.path === "/" ? "/" : p.path);
