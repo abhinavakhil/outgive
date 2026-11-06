@@ -96,6 +96,19 @@ const DIRS: Dir[] = [
     },
 ];
 
+const [SOFT, , , ELEVATED] = DIRS;
+/** A + D: Soft's pill shapes and tinted fills for everyday UI, Elevated's gradient, glow and depth on the moments that matter (main action, progress, headline numbers). */
+const HYBRID: Dir = {
+    ...SOFT, id: "A+D", name: "Soft + Elevated", note: "Soft shapes and fills everywhere; Elevated gradients and depth only on the main action, progress and headline cards.",
+    primary: "bg-gradient-to-b from-brand-500 to-brand-700 text-white shadow-[0_8px_20px_-6px_var(--color-brand-600),inset_0_1px_0_0_rgb(255_255_255/0.25)] hover:brightness-110",
+    field: SOFT.field.replace("focus-within:ring-2 focus-within:ring-brand", "focus-within:ring-1 focus-within:ring-brand focus-within:shadow-[0_0_0_4px_color-mix(in_srgb,var(--color-brand-500)_18%,transparent)]"),
+    card: "rounded-[28px] bg-primary p-3 shadow-xl ring-1 ring-secondary", cover: "rounded-[20px]",
+    stat: ELEVATED.stat, statIcon: ELEVATED.statIcon,
+    fill: ELEVATED.fill, stepOn: "size-8 rounded-full bg-gradient-to-b from-brand-500 to-brand-700 text-white shadow-lg ring-4 ring-brand-primary",
+    checkOn: "size-5 rounded-md bg-gradient-to-b from-brand-500 to-brand-700 text-white shadow-sm",
+};
+const SHOWN = [SOFT, HYBRID, ELEVATED];
+
 const Section = ({ title, children }: { title: string; children: ReactNode }) => (
     <div className="flex flex-col gap-3">
         <h3 className="text-xs font-semibold tracking-wide text-quaternary uppercase">{title}</h3>
@@ -183,12 +196,12 @@ const Preview = ({ d }: { d: Dir }) => {
 
 export const Variants = () => (
     <div className="min-h-dvh bg-primary">
-        <div className="mx-auto flex max-w-[1500px] flex-col gap-6 px-4 py-10 md:px-8">
+        <div className="mx-auto flex max-w-[1300px] flex-col gap-6 px-4 py-10 md:px-8">
             <header className="flex flex-wrap items-end justify-between gap-4">
-                <div><h1 className="text-display-xs font-semibold text-primary">Pick a direction</h1><p className="mt-1 max-w-2xl text-tertiary">The same components in four styles. Choose one overall, or mix: for example A buttons with D cards. Toggle dark mode to check both themes.</p></div>
+                <div><h1 className="text-display-xs font-semibold text-primary">Pick a direction</h1><p className="mt-1 max-w-2xl text-tertiary">A, D, and a mix of the two: Soft for everyday UI, Elevated where a page needs to shine. Toggle dark mode to check both themes.</p></div>
                 <ThemeToggle />
             </header>
-            <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-4">{DIRS.map((d) => <Preview key={d.id} d={d} />)}</div>
+            <div className="grid gap-5 lg:grid-cols-3">{SHOWN.map((d) => <Preview key={d.id} d={d} />)}</div>
         </div>
     </div>
 );
