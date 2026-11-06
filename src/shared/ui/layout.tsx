@@ -6,7 +6,7 @@ import { cx } from "@/shared/utils/cx";
 type Icon = FC<{ className?: string }>;
 
 export const Container = ({ children, className }: { children: ReactNode; className?: string }) => <div className={cx("mx-auto w-full max-w-6xl px-4 md:px-8", className)}>{children}</div>;
-export const Card = ({ children, className }: { children: ReactNode; className?: string }) => <div className={cx("rounded-xl bg-primary p-5 shadow-xs ring-1 ring-secondary ring-inset md:p-6", className)}>{children}</div>;
+export const Card = ({ children, className }: { children: ReactNode; className?: string }) => <div className={cx("rounded-[28px] bg-primary p-5 shadow-xl ring-1 ring-secondary ring-inset md:p-6", className)}>{children}</div>;
 export const TwoCol = ({ main, side, className }: { main: ReactNode; side: ReactNode; className?: string }) => (
     <div className={cx("grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-10", className)}>
         <div className="flex min-w-0 flex-col gap-7">{main}</div>
@@ -32,7 +32,7 @@ export const SiteHeader = ({ right }: { right?: ReactNode }) => {
 
 /** A card with a heading row. `action` sits top-right. */
 export const Panel = ({ title, sub, action, children, className }: { title?: ReactNode; sub?: ReactNode; action?: ReactNode; children: ReactNode; className?: string }) => (
-    <section className={cx("flex min-w-0 flex-col gap-5 rounded-3xl bg-primary p-5 shadow-xs ring-1 ring-secondary ring-inset md:p-6", className)}>
+    <section className={cx("flex min-w-0 flex-col gap-5 rounded-3xl bg-primary p-5 shadow-md ring-1 ring-secondary ring-inset md:p-6", className)}>
         {(title || action) && <div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0">{title && <h2 className="text-lg font-semibold tracking-tight text-primary">{title}</h2>}{sub && <p className="mt-0.5 max-w-2xl text-sm text-tertiary">{sub}</p>}</div>{action}</div>}
         {children}
     </section>

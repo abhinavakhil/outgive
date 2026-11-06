@@ -55,7 +55,7 @@ export const NativeSelect = ({ label, hint, options, className, selectClassName,
                     // Outgive patch: only reference the label when one is rendered, so a caller-supplied aria-label is not overridden.
                     aria-labelledby={label ? selectId : undefined}
                     className={cx(
-                        "appearance-none rounded-lg bg-primary font-medium text-primary shadow-xs ring-1 ring-primary outline-hidden transition duration-100 ease-linear ring-inset placeholder:text-fg-quaternary focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-50",
+                        "appearance-none rounded-full bg-secondary font-medium text-primary ring-1 ring-transparent outline-hidden transition duration-100 ease-linear ring-inset placeholder:text-fg-quaternary focus-visible:bg-primary focus-visible:ring-brand focus-visible:shadow-[0_0_0_4px_color-mix(in_srgb,var(--color-brand-500)_18%,transparent)] disabled:cursor-not-allowed disabled:opacity-50",
 
                         styles[size].root,
 

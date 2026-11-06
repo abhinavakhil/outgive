@@ -20,8 +20,8 @@ export const Ring = ({ value, size = 64 }: { value: number; size?: number }) => 
 
 /** KPI tile. */
 export const Stat = ({ icon: I, label, value, trend, tone = "default" }: { icon: Icon; label: string; value: string; trend?: ReactNode; tone?: "default" | "brand" }) => (
-    <div className={cx("flex min-w-0 flex-col gap-3 rounded-3xl p-5 shadow-xs ring-1 ring-inset", tone === "brand" ? "bg-brand-solid text-white ring-transparent" : "bg-primary ring-secondary")}>
-        <div className="flex items-center justify-between gap-2"><span className={cx("text-[13px] font-semibold", tone === "brand" ? "text-white/80" : "text-tertiary")}>{label}</span><span className={cx("flex size-8 items-center justify-center rounded-xl", tone === "brand" ? "bg-white/20" : "bg-brand-secondary text-brand-secondary")}><I className="size-4" /></span></div>
+    <div className={cx("flex min-w-0 flex-col gap-3 p-5", tone === "brand" ? "rounded-[28px] bg-gradient-to-br from-brand-500 to-brand-800 text-white shadow-xl" : "rounded-3xl bg-brand-primary text-primary")}>
+        <div className="flex items-center justify-between gap-2"><span className={cx("text-[13px] font-semibold", tone === "brand" ? "text-white/80" : "text-tertiary")}>{label}</span><span className={cx("flex size-8 items-center justify-center", tone === "brand" ? "rounded-xl bg-white/15 backdrop-blur" : "rounded-full bg-brand-solid text-white")}><I className="size-4" /></span></div>
         <span className="truncate text-[28px] leading-none font-semibold tracking-tight tabular-nums">{value}</span>
         {trend && <span className={cx("text-xs font-medium", tone === "brand" ? "text-white/80" : "text-tertiary")}>{trend}</span>}
     </div>

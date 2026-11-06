@@ -58,7 +58,7 @@ export const Donate = ({ p, cta }: { p: PageData; cta?: string }) => {
                 </div>
             </div>
             <Button size="xl" color="primary" className="w-full rounded-full" onPress={() => donate()}>{label}</Button>
-            <button type="button" onClick={share} className="h-14 w-full cursor-pointer rounded-full bg-primary-solid text-md font-semibold text-white outline-focus-ring transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2">Share</button>
+            <Button size="xl" color="secondary" className="w-full" onPress={share}>Share</Button>
             <div className="flex items-center gap-3 rounded-2xl bg-brand-primary p-3">
                 <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-solid text-sm font-semibold text-white">#{rank.rank}</span>
                 <div className="min-w-0 flex-1 text-sm"><div className="font-semibold text-primary">{rank.listed ? `On the ${brand.name} leaderboard` : `Would rank on the ${brand.name} board`}</div><div className="text-xs text-tertiary">{rank.next ? `${money(rank.gap)} more takes #${rank.rank - 1} from ${rank.next.name}` : "This is the top rank"}</div></div>

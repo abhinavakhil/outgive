@@ -2,7 +2,7 @@ import { ChevronDown } from "@untitledui/icons";
 import { cx } from "@/shared/utils/cx";
 
 /** The one select style for toolbars and filters: pill, same font and height as the other controls, custom chevron. */
-export const FIELD = "h-11 rounded-full bg-primary px-4 text-md text-primary ring-1 ring-primary ring-inset outline-focus-ring placeholder:text-placeholder focus:outline-2";
+export const FIELD = "h-11 rounded-full bg-secondary px-4 text-md text-primary ring-1 ring-transparent ring-inset outline-none placeholder:text-placeholder transition focus:bg-primary focus:ring-brand focus:shadow-[0_0_0_4px_color-mix(in_srgb,var(--color-brand-500)_18%,transparent)]";
 export const PillSelect = ({ label, value, onChange, options, placeholder, className, size = "md" }: { label: string; value: string; onChange: (v: string) => void; options: string[]; placeholder?: string; className?: string; size?: "sm" | "md" }) => (
     <span className={cx("relative inline-flex", className)}>
         <select aria-label={label} value={value} onChange={(e) => onChange(e.target.value)} className={cx(FIELD, "w-full cursor-pointer appearance-none pr-9", size === "sm" && "h-9 text-sm", !value && placeholder && "text-placeholder")}>
