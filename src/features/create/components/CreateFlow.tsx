@@ -279,7 +279,7 @@ export const CreateFlow = ({ parent }: { parent?: string }) => {
                             <div className="flex flex-wrap gap-2"><Badge type="pill-color" color="gray" size="sm">{t.label}</Badge>{causes.map((c) => <Badge key={c} type="pill-color" color="gray" size="sm">{c}</Badge>)}</div>
                             <div className="text-display-xs leading-[0.95] font-extrabold tracking-[-0.045em] text-ink">{page.title}</div>
                             {showGoal && <><div><span className="font-bubble text-lg font-bold text-ink tabular-nums">{money(0)}</span> <span className="text-ink-3">raised of {money(goal)}</span></div><ProgressBarBase value={0} /></>}
-                            <div className="rounded-full bg-ink py-2.5 text-center font-semibold text-ink-inverse">{t.cta}</div>
+                            <div className="rounded-full bg-cta shadow-press hover:bg-cta-hover py-2.5 text-center font-semibold text-cta-ink">{t.cta}</div>
                         </div>
                     </div>
                     <div className="rounded-[18px] bg-raised px-4 py-3.5 shadow-edge"><div className="font-semibold text-ink">{TIPS[step - 1][0]}</div><div className="text-sm text-ink-3">{TIPS[step - 1][1]}</div></div>

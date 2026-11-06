@@ -23,14 +23,15 @@ export const BrandLogo = ({ onClick, mark }: { onClick?: () => void; mark?: stri
 };
 
 /** Outgive's own mark. With `href` it is a link (pages rendered without the app), otherwise a button. */
+/** The solid heart from the homepage mark. */
+const Heart = ({ className }: { className?: string }) => <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.3 3 4.5 6.7 4.5c2.2 0 3.6 1.2 5.3 3.1 1.7-1.9 3.1-3.1 5.3-3.1 3.7 0 5.8 3.8 4.3 7.2C19.5 16.4 12 21 12 21z" /></svg>;
 export const Logo = ({ onClick, href }: { onClick?: () => void; href?: string }) => {
-    const cls = "flex cursor-pointer items-center gap-2 rounded-md text-xl font-semibold tracking-tight text-primary outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2";
+    // The homepage mark: a heart on a rounded tile with a hard press shadow, and the wordmark in Fredoka.
+    const cls = "flex cursor-pointer items-center gap-2 rounded-md text-primary outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2";
     const mark = (
         <>
-            <svg width="28" height="24" viewBox="0 0 28 24" aria-hidden="true" fill="none" strokeLinecap="round" strokeWidth="4.2">
-                <path d="M7 5h18" className="stroke-brand-600" /><path d="M7 12h12" className="stroke-fg-primary" /><path d="M7 19h6" className="stroke-fg-primary" /><path d="M3 5v14" className="stroke-fg-primary" />
-            </svg>
-            outgive
+            <span className="flex size-8 items-center justify-center rounded-xl bg-brand-solid text-white shadow-[0_3px_0_rgb(0_0_0/0.15)]"><Heart aria-hidden="true" className="size-4.5" /></span>
+            <span className="font-bubble text-2xl font-bold tracking-tight">outgive</span>
         </>
     );
     return href ? <a href={href} className={cls}>{mark}</a> : <button type="button" onClick={onClick} className={cls}>{mark}</button>;

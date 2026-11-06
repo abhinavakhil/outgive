@@ -440,7 +440,7 @@ export const Leaderboard = () => {
                         <form className="flex w-full max-w-[57rem] flex-col gap-2 rounded-[28px] bg-tint-1 p-2 sm:flex-row" onSubmit={(e) => { e.preventDefault(); openClaim(heroUsd, 1, heroName, heroKind); }}>
                             <label className="relative flex-1"><User01 aria-hidden="true" className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-ink-faint" /><input aria-label="Your name or team" className={cx(FIELD, "h-12 w-full pl-10")} placeholder="Your name, team or company" value={heroName} onChange={(e) => setHeroName(e.target.value)} /></label>
                             <PillSelect label="Giving as" className="sm:w-56 [&_select]:h-12" value={heroKind} onChange={setHeroKind} options={KINDS} placeholder="Giving as" />
-                            <button type="submit" className={cx("h-12 cursor-pointer rounded-full bg-ink px-7 text-sm font-semibold text-ink-inverse outline-focus-ring hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2", EASE)}>Claim rank</button>
+                            <button type="submit" className={cx("h-12 cursor-pointer rounded-full bg-cta shadow-press hover:bg-cta-hover px-7 text-sm font-semibold text-cta-ink outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2", EASE)}>Claim rank</button>
                         </form>
                         <p className="-mt-2 text-center text-xs text-ink-3">{brand.tagline}. Every gift goes to {brand.name}; your name goes on the board.</p>
                     </section>

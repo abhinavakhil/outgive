@@ -17,7 +17,7 @@ export const Embed = ({ pageRef, theme, limit: rowCount }: { pageRef?: PageRef; 
     useEffect(() => { if (!org) return; return db.onDonations(org.id, () => { if (pageRef) db.rpc<PageBundle | null>("page_get", { org: org.id, t: pageRef.type, s: pageRef.slug }).then(setBundle); }); }, [db, org, pageRef]);
     if (!org) return null;
     const base = window.location.origin;
-    const link = (path: string) => <a href={base + path} target="_top" rel="noopener" className="inline-flex h-10 items-center justify-center rounded-full bg-ink px-5 text-sm font-semibold text-ink-inverse transition hover:opacity-90">Give</a>;
+    const link = (path: string) => <a href={base + path} target="_top" rel="noopener" className="inline-flex h-10 items-center justify-center rounded-full bg-cta shadow-press hover:bg-cta-hover px-5 text-sm font-semibold text-cta-ink transition">Give</a>;
     if (pageRef) {
         if (!bundle) return <div className="p-4 text-sm text-ink-3">Loading…</div>;
         const p = bundle.page; const rate = CURRENCIES[p.currency] ?? 1; const raised = p.raised_cents / 100 / rate; const goal = p.goal_cents / 100 / rate; const pct = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
