@@ -1,10 +1,19 @@
 @import "./globals.css";
 
+/* Junicode by Peter S. Baker, SIL Open Font License 1.1 (public/fonts/Junicode-OFL.txt). Subset to Latin; roman pinned at 600, italic at 400. */
+@font-face { font-family: "Junicode"; src: url("/fonts/Junicode-Roman.woff2") format("woff2"); font-weight: 400 700; font-display: swap; }
+@font-face { font-family: "Junicode Italic"; src: url("/fonts/Junicode-Italic.woff2") format("woff2"); font-weight: 400 700; font-display: swap; }
+
 /* Outgive look: electric royal blue, white type, bubble numbers, a pink pop and a hand-drawn note. Rubik for text, Fredoka for big numbers, Caveat for scribbles. */
 @theme {
-    --font-body: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-    --font-display: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-body: "Bricolage Grotesque", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-display: "Bricolage Grotesque", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    /* Headline serif and its italic accent, as on zen-browser.app (Junicode, SIL OFL, self-hosted in public/fonts). */
+    --font-serif: "Junicode", "Instrument Serif", Georgia, serif;
+    --font-accent: "Junicode Italic", "Instrument Serif", Georgia, serif;
     --font-bubble: "Fredoka", "Inter", ui-rounded, system-ui, sans-serif;
+    --font-jakarta: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+    --font-segoe: "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     --font-hand: "Caveat", "Segoe Print", cursive;
 
     --color-brand-25: rgb(246 248 255);
@@ -82,6 +91,8 @@
     --ts-edge: 0 0 0 1px #e0e5f0, 0 1px 2px rgb(18 24 44 / 0.04);
     --ts-lift: 0 0 0 1px #ecf0f8, 0 24px 64px -16px rgb(12 22 66 / 0.25);
     --ts-cta-text: #002ac2;
+    --ts-paper: #efefef; --ts-prose: #304f67; --ts-mark: #c3f59c;
+    --ts-soft: 0 1.67px 4.18px rgb(181 186 203 / 0.31), 0 17.57px 10.88px rgb(181 187 203 / 0.16), 0 31.8px 12.55px rgb(181 187 203 / 0.05), inset 0 7px 32px #fff;
 
     --color-bg-primary: var(--ts-page); --color-bg-tertiary: var(--ts-tint-2);
     --color-bg-secondary: var(--ts-page); --color-bg-primary_hover: var(--ts-tint-2); --color-bg-secondary_hover: var(--ts-tint-2); --color-bg-secondary_alt: var(--ts-page); --color-bg-primary_alt: #ffffff;
@@ -97,6 +108,8 @@
     --ts-edge: 0 0 #0000;
     --ts-lift: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 28px 72px -12px rgb(0 0 0 / 0.7);
     --ts-cta-text: var(--color-brand-300);
+    --ts-paper: rgb(10 14 32); --ts-prose: rgb(178 200 218); --ts-mark: rgb(132 204 22 / 0.4);
+    --ts-soft: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 12px 28px -8px rgb(0 0 0 / 0.6);
 
     --color-bg-primary: var(--ts-page); --color-bg-secondary: var(--ts-tint-1); --color-bg-tertiary: var(--ts-tint-2);
     --color-bg-primary_hover: var(--ts-tint-2); --color-bg-secondary_hover: var(--ts-tint-3); --color-bg-secondary_alt: var(--ts-tint-1); --color-bg-primary_alt: var(--ts-tint-1);
@@ -121,6 +134,13 @@
     --color-cta: var(--color-pop-300); --color-cta-hover: var(--color-pop-400); --color-cta-ink: #000d3d; --color-cta-blue: var(--ts-cta-text);
     --shadow-edge: var(--ts-edge); --shadow-lift: var(--ts-lift);
     --shadow-press: 0 3px 0 rgb(0 0 0 / 0.15);
+    --color-paper: var(--ts-paper); --color-prose: var(--ts-prose); --shadow-soft: var(--ts-soft);
+}
+/* Highlighter stroke behind a phrase (kree8.studio style). Wraps across lines. */
+.mark {
+    color: inherit; padding: 0 0.2em; margin: 0 -0.1em;
+    background: linear-gradient(100deg, transparent 0.15em, var(--ts-mark) 0.3em, var(--ts-mark) calc(100% - 0.3em), transparent calc(100% - 0.1em)) 0 80% / 100% 72% no-repeat;
+    -webkit-box-decoration-break: clone; box-decoration-break: clone;
 }
 body { letter-spacing: -0.01em; }
 /* Cards are white with the mockup's hairline outline; an explicit shadow-* or ring-* utility on the element still wins. */
@@ -186,3 +206,34 @@ body {
 .form-xl .penna { min-height: 32rem; }
 .form-xl .pn-editor { min-height: 24rem; }
 .penna.pn-readonly p { margin: 0 0 1em; }
+
+/* Create flow (design canvas "Campaign Create Flow", Round 3 talk + Round 4 A): its own palette, scoped here. */
+.focus-bg {
+    --f-ink: #0b0f19; --f-blue: #2b59ff; --f-sky: #8aa6ff; --f-ice: #eef3ff; --f-ice-line: #c9d6ff; --f-sel: #8aa4ff; --f-body: #4b5563; --f-grey: #6b7280; --f-faint: #8a93a6;
+    --f-ph: #c3c8d4; --f-line: #e3e7ef; --f-line-2: #eef1f6; --f-soft: #f7f9fd; --f-chip: #f3f6fb; --f-kbd: #f3f5f9; --f-story: #3a4150; --f-card: #fff; --f-mark: #cdf57b;
+    --f-rec-bg: #ffeaf5; --f-rec: #b0236e; --f-rec-dot: #ff4f9e; --f-cloud: #fff;
+    /* One accent per variant: --f-blue is "the accent", whichever hue it is. */
+    --f-glow: rgb(43 89 255 / 0.3); --f-sky-1: #dcebff; --f-sky-2: #f4f8ff;
+    --f-cta: #2b59ff; --f-cta-hover: #2149e0; --f-cta-ink: #fff; --f-cta-arrow: #2b59ff;
+    background: linear-gradient(180deg, var(--f-sky-1) 0%, var(--f-sky-2) 48%, #fff 100%); color: var(--f-ink);
+}
+.focus-bg.talk-bg { background: linear-gradient(180deg, var(--f-sky-1) 0%, var(--f-sky-2) 38%, #fff 100%); }
+.focus-bg[data-accent="pink"] {
+    --f-blue: #d12f7f; --f-sky: #ffa8d2; --f-ice: #fff0f7; --f-ice-line: #ffc6e2; --f-sel: #f08bbd; --f-glow: rgb(209 47 127 / 0.25);
+    --f-sky-1: #ffe3f1; --f-sky-2: #fff4fa; --f-rec-bg: #fff0f7;
+    --f-cta: #ffb0de; --f-cta-hover: #ff9dd4; --f-cta-ink: #000d3d; --f-cta-arrow: #000d3d;
+}
+.dark-mode .focus-bg {
+    --f-ink: #eef2fb; --f-blue: #6b9bff; --f-ice: rgb(43 89 255 / 0.22); --f-sky: #3a5bb8; --f-sel: #6b8cff; --f-ice-line: rgb(107 155 255 / 0.4); --f-body: #b6bfd2; --f-grey: #9aa3b8; --f-faint: #8790a6;
+    --f-ph: #4a5470; --f-line: #2a3350; --f-line-2: #222a44; --f-soft: #161d33; --f-chip: #1b2340; --f-kbd: #1b2340; --f-story: #c9d1e3; --f-card: #10172c; --f-mark: rgb(205 245 123 / 0.85);
+    --f-rec-bg: rgb(255 79 158 / 0.18); --f-rec: #ffa3cf; --f-cloud: rgb(255 255 255 / 0.05);
+    --f-glow: rgb(0 0 0 / 0.5); --f-cta: #4d74ff; --f-cta-hover: #6b8cff; --f-cta-arrow: #2b59ff;
+    background: linear-gradient(180deg, #0b1230 0%, #0e1530 48%, rgb(10 14 32) 100%);
+}
+.dark-mode .focus-bg[data-accent="pink"] {
+    --f-blue: #ff7ab8; --f-ice: rgb(255 79 158 / 0.16); --f-ice-line: rgb(255 122 184 / 0.4); --f-sel: #ff7ab8; --f-sky: #8a3a63;
+    --f-cta: #ffb0de; --f-cta-hover: #ff9dd4; --f-cta-ink: #000d3d; --f-cta-arrow: #000d3d;
+    background: linear-gradient(180deg, #1c0d22 0%, #120e24 48%, rgb(10 14 32) 100%);
+}
+.focus-bg mark { background: var(--f-mark); color: #0b0f19; font-weight: 700; padding: 1px 6px; border-radius: 6px; }
+@keyframes eq { 0%, 100% { scale: 1 0.35; } 50% { scale: 1 1; } }

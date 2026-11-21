@@ -4,7 +4,8 @@ import { ACTIVITY, SUPPORTERS } from "@/shared/lib/demo-data";
 import { DEFAULT_BRAND } from "@/shared/domain/model";
 import { type View, parse, pathOf, tenantOf } from "@/shared/lib/route";
 import { LEGAL_DRAFT, SITE, metaFor } from "@/shared/lib/seo";
-import { ComingSoon } from "@/features/launch";
+import { Ramadan } from "@/features/launch";
+import { Pricing } from "@/features/marketing";
 import { Blog, POSTS, docTitle, type Post } from "@/features/blog";
 
 /**
@@ -24,8 +25,9 @@ const postLd = (p: Post): object[] => [
     crumbs([["Blog", "/blog"], [p.title, `/blog/${p.slug}`]]),
 ];
 const SCREENS: [View, () => React.ReactNode, Extra?][] = [
-    // Before launch the coming-soon page and the blog are the only prerendered screens.
-    [{ name: "landing" }, () => <ComingSoon />, { jsonLd: [orgLd] }],
+    // The home page (the Ramadan pitch) and the blog are the prerendered screens.
+    [{ name: "landing" }, () => <Ramadan />, { jsonLd: [orgLd] }],
+    [{ name: "pricing" }, () => <Pricing />, { jsonLd: [crumbs([["Pricing", "/pricing"]])] }],
     [{ name: "blog" }, () => <Blog />, { lastmod: POSTS.map((p) => p.updated).sort().at(-1), jsonLd: [{ "@context": "https://schema.org", "@type": "Blog", name: `${SITE.name} blog`, url: `${SITE.url}/blog`, blogPost: POSTS.map((p) => ({ "@type": "BlogPosting", headline: p.title, url: `${SITE.url}/blog/${p.slug}`, datePublished: p.published })) }, crumbs([["Blog", "/blog"]])] }],
     ...POSTS.map((p): [View, () => React.ReactNode, Extra] => [{ name: "post", slug: p.slug }, () => <Blog slug={p.slug} />, { title: docTitle(p), description: p.description, jsonLd: postLd(p), lastmod: p.updated, ogType: "article" }]),
 ];

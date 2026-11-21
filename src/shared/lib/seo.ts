@@ -15,7 +15,8 @@ export const LEGAL_DRAFT = Object.values(LEGAL).some((v) => v.startsWith("["));
 export const metaFor = (name: View["name"], brand: Brand, page?: PageData): [string, string] => {
     const missing: [string, string] = ["Page not found", `This page does not exist. Go to ${SITE.name}.`];
     const m: Partial<Record<View["name"], [string, string]>> = {
-        landing: ["Outgive: crowdfunding for charities, coming soon", "Outgive is a new crowdfunding platform for charities and their fundraisers: live leaderboards, team races, matching gifts and big-screen giving moments. Join the waitlist for early access."],
+        landing: ["Make this Ramadan your biggest appeal yet | Outgive", "Launch your Ramadan donation page in minutes, let supporters fundraise for you and turn the Last 10 Nights into a live leaderboard race. Free to start, 0% platform fee, Gift Aid built in, every gift paid straight to your charity."],
+        legacy: ["Outgive: crowdfunding for charities, coming soon", "Outgive is a new crowdfunding platform for charities and their fundraisers: live leaderboards, team races, matching gifts and big-screen giving moments. Join the waitlist for early access."],
         "landing-b": ["Giving, made a race | Outgive", "A second design for the Outgive product page: charity leaderboards where every rank has a price."],
         board: [`${brand.name} leaderboard: give more to take a rank`, `${brand.tagline}. See who is giving most to ${brand.name}, what it costs to pass them, and claim your own rank.`],
         give: [`Give to ${brand.name}`, `Pick what to fund and give from your phone. Your gift shows on the live screen at once.`],
@@ -29,7 +30,7 @@ export const metaFor = (name: View["name"], brand: Brand, page?: PageData): [str
         terms: ["Terms of use | Outgive", "The terms for using Outgive: what the platform does, how gifts are paid to charities, and where responsibility sits."],
         privacy: ["Privacy policy | Outgive", "What Outgive collects, how payments are processed by Stripe, how analytics work without cookies, and how to reach us."],
         faq: ["Fundraising leaderboard FAQ | Outgive", "Answers about claiming a rank, fees, currencies, fundraising pages and running a leaderboard for your own charity."],
-        pricing: ["Pricing | Outgive", "Outgive is free for charities. Donors can add a tip; card processing is paid to Stripe. White-label on every plan."],
+        pricing: ["Pricing: free to start, 0% platform fee with donor tips | Outgive", "No setup fee and no monthly fee. Gifts go to the charity's own Stripe account, donors can add an optional tip, and fundraisers never pay. Estimate what your appeal keeps."],
         start: ["Start your organisation | Outgive", "Create your charity's board, connect Stripe and start taking gifts."],
         login: ["Sign in | Outgive", "Sign in with a magic link or Google."],
         thanks: [`Thank you · ${brand.name}`, "Your gift has been received."],
