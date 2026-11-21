@@ -3,18 +3,17 @@ import { Announcement01, BankNote01, CoinsStacked01, CreditCard01, Download01, G
 import QRCode from "qrcode";
 import { Badge, Button, Input, NativeSelect, TextArea, Toggle, BrandMark, ConsoleShell, Container, Fieldset, Panel, CopyRow, Empty, Stat, Who } from "@/shared/ui";
 import { LiveConsole } from "@/features/live";
-import { ago } from "@/shared/lib/format";
+import { ago, csv, download } from "@/shared/lib/format";
 import { useApp } from "@/shared/lib/app-context";
 import { CURRENCIES, FONTS, PREFIX } from "@/shared/domain/model";
 import { fmt } from "@/shared/lib/money";
+import { METHOD_ROWS, PAYPAL_ID, type PaySettings, usePaySettings } from "@/shared/lib/pay-settings";
 import type { DonationRow, LiveState, MatchPledge, Member, Org, OrgStats, PageRow } from "@/shared/domain/types";
 import { ALL_VARIANTS } from "@/features/leaderboard";
 import { SignIn } from "@/features/auth";
 import { cx } from "@/shared/utils/cx";
 
 const TABS: [string, string, typeof Heart][] = [["overview", "Overview", PresentationChart01], ["donations", "Donations", Heart], ["pages", "Pages", Announcement01], ["live", "Live screen", Tv01], ["pledges", "Matching", Repeat01], ["branding", "Branding", Palette], ["payments", "Payments", CreditCard01], ["domain", "Domain & embeds", Globe01], ["members", "Team", Users01]];
-const csv = (rows: Record<string, unknown>[]) => { if (!rows.length) return ""; const keys = Object.keys(rows[0]); const q = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`; return [keys.join(","), ...rows.map((r) => keys.map((k) => q(r[k])).join(","))].join("\n"); };
-const download = (name: string, text: string) => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: "text/csv" })); a.download = name; a.click(); URL.revokeObjectURL(a.href); };
 const status = (s: string) => (s === "succeeded" ? "success" : s === "pending" ? "warning" : s === "live" ? "success" : s === "draft" ? "warning" : s === "refunded" || s === "disputed" || s === "failed" ? "error" : "gray") as "success" | "warning" | "error" | "gray";
 
 /** The organiser's dashboard: money, gifts, pages, the live console, matching, brand, Stripe, domain and the team. */
@@ -199,20 +198,9 @@ const Branding = () => {
 };
 
 const Payments = () => {
-    const { db, org, setOrg, toast, isDemo, href } = useApp();
-    const [country, setCountry] = useState("GB");
-    const [busy, setBusy] = useState(false);
-    const [st, setSt] = useState<{ connected: boolean; charges_enabled?: boolean; payouts_enabled?: boolean; details_submitted?: boolean; requirements?: string[] } | null>(null);
-    const call = async (action: "onboard" | "status" | "dashboard") => {
-        setBusy(true);
-        try {
-            const r = await db.fn<{ url?: string; connected?: boolean; charges_enabled?: boolean; payouts_enabled?: boolean; details_submitted?: boolean; requirements?: string[]; demo?: boolean }>("connect", { org_id: org!.id, action, country, return_to: href({ name: "admin", tab: "payments" }), origin: window.location.origin });
-            if (r.url) { window.location.assign(r.url); return; }
-            if (action === "status") { setSt(r as typeof st); const o = (await db.rpc<Org[]>("org_by_slug", { s: org!.slug }))[0]; if (o) setOrg(o); }
-            if (r.demo) { const o = (await db.rpc<Org[]>("org_by_slug", { s: org!.slug }))[0]; if (o) setOrg(o); toast("Demo: Stripe marked as connected"); }
-        } catch (e) { toast((e as Error).message); } finally { setBusy(false); }
-    };
-    useEffect(() => { if (org?.stripe_account_id && !isDemo) call("status"); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    const { db, org, setOrg, isDemo, href } = useApp();
+    const pay = usePaySettings(org!, setOrg, href({ name: "admin", tab: "payments" }));
+    const { country, setCountry, busy, st, stripe: call } = pay;
     const on = org!.stripe_charges_enabled;
     return (
         <>
@@ -227,9 +215,47 @@ const Payments = () => {
                 {st?.requirements && st.requirements.length > 0 && <p className="text-sm text-warning-primary">Stripe still needs: {st.requirements.join(", ")}</p>}
                 <p className="text-xs text-tertiary">Refunds and disputes are handled in your Stripe dashboard; the board updates by itself. Receipts are emailed by Outgive when a gift clears.</p>
             </Panel>
+            <CheckoutMethods pay={pay} />
             <Panel title="Fees" sub="How Outgive is paid for.">
                 <label className="flex items-center justify-between gap-4 rounded-2xl bg-raised shadow-edge px-4 py-3"><span className="flex items-center gap-3"><span className="flex size-10 items-center justify-center rounded-xl bg-tint-2 text-ink-2"><BankNote01 className="size-5" /></span><span><span className="block text-sm font-semibold text-primary">Let donors add a tip to Outgive</span><span className="block text-[13px] text-tertiary">On: 0% platform fee; donors see an optional tip at checkout. Off: a {org!.platform_fee_bps / 100 || 3}% platform fee is taken from each gift.</span></span></span><Toggle aria-label="Tips" isSelected={org!.tips_enabled} onChange={async (v) => { const o = await db.rpc<Org>("org_update", { org: org!.id, p: { tips_enabled: v } }); setOrg(o); }} /></label>
                 <p className="text-xs text-tertiary">Platform fee when tips are off: {org!.platform_fee_bps / 100}% (set by Outgive). Stripe's card processing fee is paid from your Stripe balance, unless the donor covers it.</p>
+            </Panel>
+        </>
+    );
+};
+
+/** PayPal, and which ways to pay the checkout offers. A method shows only when its provider is connected and it is switched on. */
+const CheckoutMethods = ({ pay: { busy, save, connected, live, pm, offered } }: { pay: PaySettings }) => {
+    const { org, href } = useApp();
+    const [paypal, setPaypal] = useState(org!.paypal_merchant_id ?? "");
+    return (
+        <>
+            <Panel title="PayPal" sub="Gifts made with PayPal go straight to your PayPal account.">
+                <div className="flex flex-wrap items-center gap-4">
+                    <span className={cx("flex size-14 shrink-0 items-center justify-center rounded-2xl bg-tint-2", connected.paypal ? "text-success-primary" : "text-ink-3")}><BankNote01 className="size-6" /></span>
+                    <div className="min-w-0 flex-1"><div className="text-lg font-semibold text-primary">{connected.paypal ? "PayPal connected" : "PayPal is not connected"}</div><p className="text-sm text-tertiary">{connected.paypal ? `Paying to ${org!.paypal_merchant_id}` : "Add your PayPal merchant ID (Account settings → Business information) or the email on your PayPal business account."}</p></div>
+                    <Badge type="pill-color" color={connected.paypal ? "success" : "gray"} size="md">{connected.paypal ? "Connected" : "Off"}</Badge>
+                </div>
+                {connected.paypal
+                    ? <div><Button size="md" color="secondary" className="rounded-full" isDisabled={busy} onPress={() => { setPaypal(""); save({ paypal_merchant_id: "" }, "PayPal disconnected"); }}>Disconnect PayPal</Button></div>
+                    : <div className="grid gap-3 rounded-2xl bg-raised p-4 shadow-edge sm:grid-cols-[1fr_auto] sm:items-end">
+                        <Input label="PayPal merchant ID or email" value={paypal} onChange={setPaypal} placeholder="e.g. 7Q2XJ4M9ABCDE or giving@charity.org" hint={paypal && !PAYPAL_ID.test(paypal.trim()) ? "That isn't a merchant ID (13 letters and digits) or an email address." : undefined} />
+                        <Button size="lg" color="primary" className="rounded-full sm:mb-6" isDisabled={busy || !PAYPAL_ID.test(paypal.trim())} onPress={() => save({ paypal_merchant_id: paypal.trim() }, "PayPal connected")}>Connect PayPal</Button>
+                    </div>}
+            </Panel>
+            <Panel title="Ways to pay at checkout" sub={offered ? `Donors see ${offered} way${offered === 1 ? "" : "s"} to pay.` : "Donors can't pay yet: connect Stripe or PayPal above."}>
+                <div className="flex flex-col gap-2">
+                    {METHOD_ROWS.map(([k, name, desc, via]) => {
+                        const ready = connected[via];
+                        return (
+                            <label key={k} className={cx("flex items-center justify-between gap-4 rounded-2xl bg-raised px-4 py-3 shadow-edge", !ready && "opacity-60")}>
+                                <span className="min-w-0"><span className="block text-sm font-semibold text-primary">{name}{live[k] && <Badge type="pill-color" color="success" size="sm" className="ml-2">Live</Badge>}</span><span className="block text-[13px] text-tertiary">{ready ? desc : `Connect ${via === "stripe" ? "Stripe" : "PayPal"} to offer this.`}</span></span>
+                                <Toggle aria-label={name} isDisabled={!ready || busy} isSelected={ready && pm[k]} onChange={(v) => save({ pay_methods: { [k]: v } })} />
+                            </label>
+                        );
+                    })}
+                </div>
+                <div><Button size="md" color="secondary" className="rounded-full" iconLeading={LinkExternal01} href={href({ name: "checkout", org: org!.slug })}>Preview checkout</Button></div>
             </Panel>
         </>
     );
