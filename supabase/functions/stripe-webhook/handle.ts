@@ -1,7 +1,7 @@
 // What each Stripe event does to the donations table, written against a small Store interface so it can be tested without Stripe or Postgres.
 
-export interface DonationPatch { status?: string; stripe_payment_intent_id?: string | null; stripe_subscription_id?: string | null; stripe_invoice_id?: string | null; donor_email?: string | null; donor_id?: string | null; receipt_sent_at?: string | null }
-export interface StoredDonation { id: string; org_id: string; page_id: string | null; supporter_id: string | null; donor_id: string | null; donor_name: string; donor_email: string | null; anonymous: boolean; amount_cents: number; currency: string; tip_cents: number; cover_cents: number; platform_fee_cents: number; message: string; dedication: string; recurring: boolean; status: string; stripe_payment_intent_id: string | null; stripe_subscription_id: string | null; stripe_invoice_id: string | null; ticket_type_id: string | null; ticket_qty: number; claimed_rank: number | null; receipt_sent_at: string | null; created_at: string }
+export interface DonationPatch { status?: string; stripe_payment_intent_id?: string | null; stripe_subscription_id?: string | null; stripe_invoice_id?: string | null; donor_email?: string | null; donor_id?: string | null; receipt_sent_at?: string | null; pay_error?: string | null }
+export interface StoredDonation { id: string; org_id: string; page_id: string | null; supporter_id: string | null; donor_id: string | null; donor_name: string; donor_email: string | null; anonymous: boolean; amount_cents: number; currency: string; tip_cents: number; cover_cents: number; platform_fee_cents: number; message: string; dedication: string; recurring: boolean; status: string; stripe_payment_intent_id: string | null; stripe_subscription_id: string | null; stripe_invoice_id: string | null; ticket_type_id: string | null; ticket_qty: number; claimed_rank: number | null; receipt_sent_at: string | null; created_at: string; attempt_key?: string | null }
 export interface Store {
     seen: (eventId: string, type: string) => Promise<boolean>;
     byId: (id: string) => Promise<StoredDonation | null>;
@@ -51,7 +51,8 @@ export const handle = async (s: Store, ev: Event): Promise<string> => {
             return "ignored";
         }
         case "invoice.paid": {
-            const sub = str(o.subscription); const inv = String(o.id);
+            // Newer API versions moved the subscription under parent.subscription_details.
+            const sub = str(o.subscription) ?? str(((o.parent as Obj | undefined)?.subscription_details as Obj | undefined)?.subscription); const inv = String(o.id);
             if (!sub) return "no subscription";
             if (await s.byInvoice(inv)) return "invoice already recorded";
             const prev = await s.latestForSubscription(sub);
@@ -63,6 +64,22 @@ export const handle = async (s: Store, ev: Event): Promise<string> => {
             const d = await s.insertRenewal(prev, inv, gift);
             if (d.donor_email && (await s.receipt(d))) await s.update(d.id, { receipt_sent_at: new Date().toISOString() });
             return "renewal";
+        }
+        // The in-page checkout (the pay function) confirms a PaymentIntent directly; its rows carry an attempt_key. Checkout Session gifts keep to the cases above.
+        case "payment_intent.succeeded":
+        case "payment_intent.payment_failed": {
+            const id = (o.metadata as Obj | undefined)?.donation_id as string | undefined;
+            const d = (id && (await s.byId(id))) || (await s.byIntent(String(o.id)));
+            if (!d?.attempt_key) return "ignored";
+            if (ev.type === "payment_intent.payment_failed") {
+                // Not final: the donor can try another card on the same intent, and a later success wins.
+                const e = o.last_payment_error as Obj | undefined;
+                if (d.status === "pending") { await s.update(d.id, { status: "failed", pay_error: String(e?.decline_code ?? e?.code ?? "failed") }); return "failed"; }
+                return "ignored";
+            }
+            // Open gifts become succeeded; one the pay function already marked succeeded still needs its receipt. Refunded and disputed stay as they are.
+            if (d.status === "pending" || d.status === "failed" || (d.status === "succeeded" && !d.receipt_sent_at)) return succeed(s, d, { stripe_payment_intent_id: String(o.id), pay_error: null });
+            return "ignored";
         }
         case "charge.refunded": {
             const pi = str(o.payment_intent); if (!pi) return "no intent";
