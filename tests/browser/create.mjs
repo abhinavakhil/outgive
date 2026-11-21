@@ -1,5 +1,7 @@
-// The create flow, step by step: per-step validation, team nesting choices, goal and money split, causes, draft survives reload, review, publish, sidebar guard.
+// The create flow: talk (typed here; headless Chrome has no mic) → pre-filled title + type → team name → goal (with charity) → photo → story
+// → donation buttons → publish. Also: what's missing is said, Enter submits, the draft survives a reload, types without a detail question skip it.
 import puppeteer from "puppeteer-core";
+import { fileURLToPath } from "node:url";
 const [chrome, out] = process.argv.slice(2);
 const b = await puppeteer.launch({ executablePath: chrome, headless: true });
 const p = await b.newPage(); await p.setViewport({ width: 1440, height: 1000 });
@@ -7,63 +9,133 @@ const errs = []; p.on("pageerror", (e) => errs.push(String(e))); p.on("console",
 const results = []; const check = (ok, what) => results.push(`${ok ? "ok  " : "FAIL"} ${what}`);
 const wait = (ms = 400) => new Promise((r) => setTimeout(r, ms));
 const click = async (t) => { const ok = await p.evaluate((t) => { const el = [...document.querySelectorAll("button")].find((x) => x.innerText.trim() === t && !x.disabled); if (el) el.click(); return !!el; }, t); await wait(); return ok; };
+const pick = (re) => p.evaluate((s) => [...document.querySelectorAll("button[aria-pressed]")].find((x) => new RegExp(s).test(x.innerText))?.click(), re);
 const text = () => p.evaluate(() => document.body.innerText);
-const fillLabel = async (label, v) => { const id = await p.evaluate((label) => { const l = [...document.querySelectorAll("label")].find((x) => x.textContent.trim().replace(/\*$/, "").trim() === label); return l?.getAttribute("for") || l?.querySelector("input")?.id || null; }, label); const el = id ? await p.$(`#${CSS.escape ? id : id}`) : null; if (!el) return false; await el.click({ clickCount: 3 }); await el.type(v); await wait(200); return true; };
-const shot = (n) => p.screenshot({ path: `${out}/create-${n}.png`, fullPage: true });
+const type = async (sel, v) => { const el = await p.$(sel); await el.click({ clickCount: 3 }); await p.keyboard.press("Backspace"); await el.type(v); await wait(200); };
+const val = (sel) => p.$eval(sel, (i) => i.value);
+const shot = (n) => p.screenshot({ path: `${out}/create-${n}.png` });
+const ready = () => p.waitForFunction(() => !document.body.innerText.includes("Loading…"), { timeout: 90000 }).then(() => wait());
+const open = async () => { await p.goto("http://127.0.0.1:5173/create", { waitUntil: "networkidle0" }); await ready(); };
+const bar = () => p.$eval('[role="progressbar"]', (e) => `${e.getAttribute("aria-valuenow")}/${e.getAttribute("aria-valuemax")}`);
+const cta = () => p.$eval('button[type="submit"]', (e) => getComputedStyle(e).backgroundColor);
 
 await p.goto("http://127.0.0.1:5173/demo", { waitUntil: "networkidle0" });
 await p.evaluate(() => { localStorage.removeItem("outgive.draft"); localStorage.setItem("theme", "light"); });
-await p.goto("http://127.0.0.1:5173/demo/create", { waitUntil: "networkidle0" });
-await p.waitForFunction(() => !document.body.innerText.includes("Loading…"), { timeout: 90000 });
-
-// Step 1
-await click("Team\nA group sharing one total") || await p.evaluate(() => [...document.querySelectorAll("button[aria-pressed]")].find((x) => /^Team/.test(x.innerText))?.click());
-await wait(); await shot("step1"); await click("Continue");
-// Step 2: blocked without team name
-await click("Continue"); check(/Add the team name\./.test(await text()), "step 2 blocks Continue until the team name is set");
-const joinOpts = await p.evaluate(() => [...document.querySelectorAll("select")].find((s) => s.closest("div")?.parentElement?.textContent.includes("Campaign or challenge to join"))?.options.length ?? 0);
-check(joinOpts > 1, `step 2 lists the charity's live campaigns and challenges to join (${joinOpts - 1} found)`);
-await p.evaluate(() => { const s = [...document.querySelectorAll("select")].find((s) => s.closest("div")?.parentElement?.textContent.includes("Campaign or challenge to join")); if (s && s.options.length > 1) { const set = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value").set; set.call(s, s.options[1].value); s.dispatchEvent(new Event("change", { bubbles: true })); } });
-const nameInput = await p.$('input[placeholder="e.g. Harbour Runners"]'); await nameInput.type("Harbour Runners"); await wait();
-check(!/Add the team name\./.test(await text()), "the message clears once the field is filled");
-await shot("step2"); await click("Continue");
-// Step 3
-check(/What are you aiming to raise/.test(await text()), "step 2 continues to step 3 once complete");
-const goalIn = await p.$('input[aria-label^="Goal in"]'); await goalIn.click({ clickCount: 3 }); await p.keyboard.press("Backspace"); await wait();
-await click("Continue"); check(/Set a goal above zero\./.test(await text()), "step 3 blocks a zero goal");
-await goalIn.type("12500"); await wait();
-check(await p.$eval('input[aria-label^="Goal in"]', (i) => i.value) === "12,500", "goal shows grouped digits (12,500)");
-const before = await p.$$eval('input[aria-label^="Use "]', (x) => x.length); await click("Add a line"); const after = await p.$$eval('input[aria-label^="Use "]', (x) => x.length);
-check(after === before + 1, "money split: a line can be added"); await p.click(`button[aria-label="Remove use ${after}"]`); await wait();
-check((await p.$$eval('input[aria-label^="Use "]', (x) => x.length)) === before, "money split: a line can be removed");
-check(!/Raise the goal automatically/.test(await text()), "unsaved auto-goal option removed");
-await shot("step3"); await click("Continue");
-// Step 4
-await shot("step4"); await click("Skip for now");
-// Step 5
-await click("Continue"); check(/Add a title for the page\./.test(await text()), "step 5 blocks Continue without a title");
-check((await p.$$eval('[aria-label="Causes"] button', (x) => x.length)) === 16, "all 16 causes offered as chips");
-await p.evaluate(() => { for (const t of ["Clean Water", "Children", "Health", "Hunger"]) [...document.querySelectorAll('[aria-label="Causes"] button')].find((b) => b.innerText === t)?.click(); }); await wait();
-check((await p.$$eval('[aria-label="Causes"] button[aria-pressed="true"]', (x) => x.length)) === 3, "at most three causes can be chosen");
-await (await p.$('input[placeholder^="e.g. Clean water"]')).type("Harbour Runners for water"); await wait();
-await shot("step5");
-// Reload keeps the draft
-await p.reload({ waitUntil: "networkidle0" }); await p.waitForFunction(() => !document.body.innerText.includes("Loading…"), { timeout: 90000 }); await wait(800);
-const t5 = await text();
-check(/What should we call it/.test(t5) && (await p.$eval('input[placeholder^="e.g. Clean water"]', (i) => i.value)) === "Harbour Runners for water" && (await p.$$eval('[aria-label="Causes"] button[aria-pressed="true"]', (x) => x.length)) === 3, "reload keeps the step, title and causes");
+await open();
+// A real campaign the team below will join, plus two rival teams for its podium.
+await p.evaluate(async () => {
+    const { campaigns } = await import("/src/shared/lib/campaign-store.ts");
+    for (const x of await campaigns.list()) await campaigns.remove(x.id);
+    await campaigns.create({ type: "campaign", slug: "clean-water-appeal", title: "Clean water appeal", charity: "Clearwell Trust", goal: 50000, lead: "", body: "", gifts: [10, 25, 50], details: {}, photos: [] });
+    for (const [slug, title, usd] of [["tide-turners", "Tide Turners", 900], ["night-owls", "Night Owls", 300]]) { const t = await campaigns.create({ type: "team", slug, title, charity: "Clearwell Trust", goal: 2000, lead: "", body: "", gifts: [10], details: {}, photos: [], parentId: "c/clean-water-appeal" }); await campaigns.donate(t.id, { name: "Ana", usd, message: "", at: Date.now() }); }
+    await campaigns.create({ type: "fundraiser", slug: "anas-swim", title: "Ana's sea swim", charity: "Clearwell Trust", goal: 500, lead: "", body: "", gifts: [10], details: {}, photos: [], parentId: "c/clean-water-appeal" });
+});
+await open();
+check(/Tell Penny what happened/.test(await text()), "the flow opens on talking to Penny");
+check(/Talk\s*Draft\s*Photo\s*Buttons\s*Launch/.test(await text()), "the talk card shows the steps");
+check(await p.evaluate(() => location.pathname) === "/create", "the address is plain /create");
+check(await cta() === "rgb(255, 176, 222)", `the main button is the homepage pink (${await cta()})`);
+await type('textarea[aria-label="What happened"]', "Our team Harbour Runners is doing a charity walk. We want to raise £12,500 by 20th of June.");
+check(/Goal/.test(await text()) && /20th of June/.test(await text()), "Penny shows the goal and date she heard");
+await shot("1-talk");
+await click("I'm done talking");
+check(await val('input[aria-label="Title"]') === "Help Harbour Runners", "the title is pre-filled from what was said");
+check((await bar()) === "1/6", `a challenge was picked from 'walk': six steps (${await bar()})`);
+check(await p.$eval('[role="progressbar"]', (e) => e.getBoundingClientRect().height) >= 10, "the progress bar is the bigger one");
+await pick("^Team\\s"); await wait();
+await type('input[aria-label="Title"]', ""); await click("Continue");
+check(/Almost! Give your page a title\./.test(await text()), "what is missing is said when Continue is blocked");
+await type('input[aria-label="Title"]', "Harbour Runners for water"); await shot("2-title");
+await p.keyboard.press("Enter"); await wait();
+check(/What's the team called\?/.test(await text()), "Enter submits the answer");
+const joinOpts = await p.$eval('select[aria-label="Join a campaign"]', (s) => s.options.length).catch(() => 0);
+check(joinOpts === 2, `a team can join a real campaign (${joinOpts - 1} found)`);
+await p.select('select[aria-label="Join a campaign"]', "c/clean-water-appeal");
+await type('input[aria-label="Team name"]', "Harbour Runners"); await shot("3-detail"); await click("Continue");
+check(await val('input[aria-label^="Goal in"]') === "12,500", "the goal heard while talking is carried over (12,500)");
+check((await val('input[aria-label="Charity"]')).length > 0, "the charity is filled in for you");
+await shot("4-goal");
+await p.reload({ waitUntil: "networkidle0" }); await ready(); await wait(400);
+check(/How much do you need\?/.test(await text()), "reload keeps the current question");
 await click("Continue");
-// Step 6, 7
-await shot("step6"); await click("Continue");
-const t7 = await text();
-check(/Country/.test(t7) && /Gift buttons/.test(t7) && /Causes/.test(t7) && /Joins/.test(t7) && /12,500/.test(t7), "review lists country, joined campaign, goal, gift buttons and causes");
-await p.evaluate(() => { const c = [...document.querySelectorAll("input[type=checkbox]")].find((i) => /agree/i.test(i.closest("label")?.textContent ?? "")); c?.click(); }); await wait();
-await shot("step7"); await click("Publish"); await wait(2500);
-const tl = await text(); check(/page is live/.test(tl), "publishing reaches the live screen"); await shot("live");
-// Sidebar can't jump past an incomplete step
-await p.evaluate(() => localStorage.removeItem("outgive.draft"));
-await p.goto("http://127.0.0.1:5173/demo/create", { waitUntil: "networkidle0" }); await p.waitForFunction(() => !document.body.innerText.includes("Loading…"), { timeout: 90000 });
-await p.evaluate(() => [...document.querySelectorAll("button[aria-pressed]")].find((x) => /^In memory/.test(x.innerText))?.click()); await wait();
-await p.evaluate(() => [...document.querySelectorAll('nav[aria-label="Steps"] button')].find((x) => /Review/.test(x.innerText))?.click()); await wait();
-check(/Add the name of the person this page remembers\./.test(await text()), "sidebar jump stops at the first incomplete step and says why");
+check(/Skip for now/.test(await text()), "the photo screen can be skipped");
+const og = fileURLToPath(new URL("../../public/og.png", import.meta.url));
+await (await p.$('input[aria-label="Cover photo"]')).uploadFile(og, og, og); await wait(1500);
+check(/3 of 3 added/.test(await text()) && (await p.$$('input[type="file"]')).length === 0, "three photos fill every slot; the first is the cover");
+await type('input[aria-label="YouTube link"]', "https://example.com/not-a-video"); await click("Continue");
+check(/isn't a YouTube video/.test(await text()), "a link that isn't YouTube is refused with a reason");
+await type('input[aria-label="YouTube link"]', "https://youtube.com/shorts/aqz-KE-bpKQ");
+check(/Video added/.test(await text()), "a YouTube Shorts link is accepted"); await shot("5-photo");
+await click("Continue");
+check((await val('input[aria-label="First line"]')).startsWith("Our team Harbour Runners") && /£12,500/.test(await val("#f-story")), "the story is drafted from what was said (first line + body)"); await shot("6-story");
+await click("Continue");
+check(await p.$$eval('[aria-label="Donation buttons"] button[aria-pressed="true"]', (x) => x.length) === 4, "four donation buttons are on by default");
+await pick("^.250\\s"); await wait(); await shot("7-gifts");
+check(/5 on/.test(await text()), "a donation button toggles on");
+await click("Launch campaign"); await wait(2500);
+check(/it's live/.test(await text()), "publishing reaches the live screen"); await shot("8-live");
+await click("View page"); await wait(2500); await shot("8b-page");
+check(await p.evaluate(() => location.pathname) === "/t/harbour-runners-for-water", `the page lives at /t/<slug>, no /demo (${await p.evaluate(() => location.pathname)})`);
+check(await p.$$eval('[aria-label^="Show photo"], [aria-label="Play video"]', (x) => x.length) === 4, "the gallery has the three photos and the video, thumbnails across the full width");
+const first = await p.$eval('[aria-pressed="true"][aria-label^="Show photo"]', (b) => b.getAttribute("aria-label")); await p.mouse.move(5, 5); await wait(5200);
+check(await p.$eval('[aria-pressed="true"][aria-label^="Show photo"]', (b) => b.getAttribute("aria-label")) !== first, "the gallery plays on its own");
+await p.click('[aria-label="Play video"]'); await wait(800);
+check(await p.$eval("iframe", (f) => f.src.includes("youtube-nocookie.com/embed/aqz-KE-bpKQ")).catch(() => false), "the Shorts video plays in the gallery");
+const pageText = await text();
+check(/Harbour Runners for water/.test(pageText) && /\$12,500/.test(pageText) && /Our team Harbour Runners is doing a charity walk/.test(pageText) && /Team\s*Harbour Runners/.test(pageText), "the page shows the title, goal, story and team name that were entered");
+check(await p.$eval('[aria-label="Gift amount"]', (g) => [...g.querySelectorAll("button")].map((b) => b.innerText).join(",")) === "$10,$25,$50,$100,$250", "the page offers exactly the donation buttons that were chosen");
+check(await p.evaluate(() => document.cookie.includes("og_cs=")), "the campaign is saved in cookies");
+// The donate deck (desktop copy is the second one in the DOM): tabs switch cards, a drag swipes to the next.
+const deckTab = () => p.evaluate(() => [...document.querySelectorAll('[aria-label="Donate card"]')].pop().querySelector('[aria-selected="true"]').innerText);
+await p.evaluate(() => [...[...document.querySelectorAll('[aria-label="Donate card"]')].pop().querySelectorAll("button")].find((b) => b.innerText === "Supporters").click()); await wait(400);
+check(await deckTab() === "Supporters", "a tab brings that card to the top of the deck");
+const topCard = await p.evaluateHandle(() => [...document.querySelectorAll('[role="tabpanel"][aria-label="Supporters"]')].pop());
+const box = await topCard.boundingBox(); await p.mouse.move(box.x + 30, box.y + 20); await p.mouse.down(); await p.mouse.move(box.x - 120, box.y + 20, { steps: 8 }); await p.mouse.up(); await wait(500);
+check(await deckTab() === "Progress", `dragging the top card swipes to the next one (${await deckTab()})`); await shot("8d-deck");
+await pick("^.50$"); await click("Donate $50"); await wait(600);
+const nameIn = await p.$('input[placeholder="Shown on the page"]'); await nameIn.click({ clickCount: 3 }); await nameIn.type("Sam Lee"); await p.type("textarea", "Go team!");
+await p.evaluate(() => [...document.querySelectorAll('button[type="submit"]')].find((b) => /^Give /.test(b.innerText))?.click()); await wait(1200);
+await p.keyboard.press("Escape"); await wait(400);
+await p.reload({ waitUntil: "networkidle0" }); await p.waitForFunction(() => document.body.innerText.includes("Raised so far"), { timeout: 90000 }); await wait(400); await shot("8c-page-after-gift");
+const after = await text();
+check(/Raised so far\s*\$50\s*of \$12,500/.test(after) && /Sam Lee/.test(after) && /Go team!/.test(after), "a gift is saved and still shows after a reload (total, recent gifts, words of support)");
+// The campaign it joined: teams on a podium (2nd, 1st, 3rd), fundraisers in a ranked list.
+await p.goto("http://127.0.0.1:5173/c/clean-water-appeal", { waitUntil: "networkidle0" }); await p.waitForFunction(() => document.body.innerText.includes("Leaderboard"), { timeout: 90000 }); await wait(500);
+const podium = await p.evaluate(() => [...[...document.querySelectorAll("h2")].find((h) => h.innerText.startsWith("Leaderboard")).closest("section").querySelectorAll("ol > li")].map((li) => li.innerText.replace(/\s+/g, " ").trim()));
+check(/Night Owls/.test(podium[0]) && /Tide Turners/.test(podium[1]) && /Harbour Runners for water/.test(podium[2]), `teams stand on a podium: 2nd, 1st, 3rd (${podium.map((x) => x.split(" $")[0]).join(" | ")})`);
+await p.evaluate(() => [...document.querySelectorAll('[aria-label="Leaderboard"] button')].find((b) => /Fundraisers/.test(b.innerText)).click()); await wait(400);
+check(/Ana's sea swim/.test(await text()), "the Fundraisers tab ranks the individual pages raising for it"); await shot("8e-leaderboard");
+await p.evaluate(() => [...document.querySelectorAll('[aria-label="Leaderboard"] button')].find((b) => /Teams/.test(b.innerText)).click()); await wait(300);
+await p.evaluate(() => [...document.querySelectorAll("h2")].find((h) => h.innerText.startsWith("Leaderboard")).scrollIntoView({ block: "start" })); await wait(300); await shot("8f-podium");
+await p.goto("http://127.0.0.1:5173/demo/create", { waitUntil: "networkidle0" }); await ready();
+check(await p.evaluate(() => location.pathname) === "/create", "/demo/create settles on /create");
+// Typing instead of talking; a fundraiser has no detail question
+await p.evaluate(() => localStorage.removeItem("outgive.draft")); await open();
+await click("I'd rather type");
+check((await bar()) === "1/5", "'I'd rather type' goes straight to the title; a fundraiser has five steps");
+await p.setViewport({ width: 390, height: 844 }); await shot("9-mobile-title");
+// Voice: headless Chrome has no speech service, so a stand-in recogniser either "hears" a sentence or fails like Brave does.
+const voice = async (mode) => {
+    const v = await b.newPage(); await v.setViewport({ width: 1440, height: 1000 });
+    await v.evaluateOnNewDocument((mode) => {
+        window.SpeechRecognition = class { start() { setTimeout(() => mode === "hear" ? this.onresult?.({ results: [[{ transcript: "My son Sam needs $3,000 for school" }]] }) : mode === "silent" ? this.onend?.() : (this.onerror?.({ error: "network" }), this.onend?.()), 50); } stop() { this.onend?.(); } };
+        localStorage.removeItem("outgive.draft");
+    }, mode);
+    await v.goto("http://127.0.0.1:5173/create", { waitUntil: "networkidle0" }); await v.waitForFunction(() => document.body.innerText.includes("Tell Penny"), { timeout: 90000 });
+    await v.evaluate(() => [...document.querySelectorAll("button")].find((x) => /Start talking/.test(x.innerText))?.click()); await wait(500);
+    const out = { said: await v.$eval('textarea[aria-label="What happened"]', (t) => t.value), text: await v.evaluate(() => document.body.innerText) };
+    await v.close(); return out;
+};
+const heardIt = await voice("hear");
+check(heardIt.said === "My son Sam needs $3,000 for school" && /Goal \$3,000/.test(heardIt.text), "speaking fills the transcript and Penny picks out the goal");
+const failed = await voice("fail");
+check(/can't reach its speech service/.test(failed.text), "when the browser's speech service fails, the page says why instead of doing nothing");
+const silent = await voice("silent");
+check(/didn't catch any words/.test(silent.text), "a session that hears no words (wrong or muted mic) says so instead of just stopping");
+await p.goto("http://127.0.0.1:5173/f/no-such-campaign", { waitUntil: "networkidle0" }); await wait(1500);
+check(!/Clean water|Amara/.test(await text()) && await p.evaluate(() => !document.querySelector('[aria-label="Gift amount"]')), "an unknown /f/<slug> is not found, never a demo sample page");
+await p.evaluate(async () => { const { campaigns } = await import("/src/shared/lib/campaign-store.ts"); await campaigns.create({ type: "fundraiser", slug: "lowercase-test", title: "clean water for all", charity: "Clearwell Trust", goal: 1000, lead: "", body: "", gifts: [10], details: {}, photos: [] }); });
+await p.goto("http://127.0.0.1:5173/f/lowercase-test", { waitUntil: "networkidle0" }); await p.waitForFunction(() => document.querySelector("h1"), { timeout: 90000 });
+check(await p.$eval("h1", (h) => h.innerText) === "Clean water for all", "the campaign page title starts with a capital letter");
 console.log(results.join("\n")); console.log(errs.length ? errs.slice(0, 5) : "create: every step checked, no console errors"); await b.close();
 process.exit(results.some((r) => r.startsWith("FAIL")) || errs.length ? 1 : 0);

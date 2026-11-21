@@ -59,6 +59,13 @@ export const styles = sortCx({
                 "*:data-icon:text-current",
             ].join(" "),
         },
+        // White pill with a soft layered shadow (kree8.studio).
+        soft: {
+            root: [
+                "bg-raised text-ink shadow-soft hover:bg-raised-hover active:translate-y-px data-loading:bg-raised-hover",
+                "*:data-icon:text-current",
+            ].join(" "),
+        },
         tertiary: {
             root: [
                 "text-ink-2 hover:bg-tint-2 hover:text-ink data-loading:bg-tint-2",

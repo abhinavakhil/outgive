@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { CampaignPage } from "@/features/campaign/components/CampaignPage";
 import { PageManage } from "@/features/campaign/components/PageManage";
+import { CampaignView } from "@/features/campaign/components/CampaignView";
+import { type Campaign, campaigns } from "@/shared/lib/campaign-store";
 import { NotFound } from "@/shared/ui";
 import { useApp } from "@/shared/lib/app-context";
 import { CURRENCIES, type Donation, type PageData, type PageUpdate, pageKey } from "@/shared/domain/model";
@@ -24,10 +26,16 @@ export const usePage = (ref: PageRef) => {
     return { bundle, setBundle, reload: load };
 };
 
-export const PageScreen = ({ pageRef, manage, donate }: { pageRef: PageRef; manage: boolean; donate?: number | true }) => {
+export const PageScreen = ({ pageRef, manage, donate, real }: { pageRef: PageRef; manage: boolean; donate?: number | true; real?: true }) => {
     const { db, org } = useApp();
     const { bundle, setBundle, reload } = usePage(pageRef);
+    // Campaigns made in the create flow live in the campaign service; anything else is a page in the database.
+    const [local, setLocal] = useState<Campaign | null | undefined>(undefined);
+    useEffect(() => { campaigns.get(pageRef.type, pageRef.slug).then(setLocal).catch(() => setLocal(null)); }, [pageRef.type, pageRef.slug]);
     useEffect(() => { if (bundle?.page.id) db.rpc("visit", { page: bundle.page.id }).catch(() => {}); }, [db, bundle?.page.id]);
+    if (local) return <CampaignView campaign={local} onChange={setLocal} />;
+    if (local === undefined) return null;
+    if (real) return <NotFound />; // /f/<slug> shows only real campaigns, never the demo's sample pages
     if (!org) return null;
     if (bundle === undefined) return <div className="flex min-h-dvh items-center justify-center bg-primary text-sm text-tertiary">Loading…</div>;
     if (bundle === null) return <NotFound />;

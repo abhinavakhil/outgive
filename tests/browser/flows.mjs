@@ -78,15 +78,11 @@ check(/funded today/i.test(t), "live screen switched to the Impact layout chosen
 check(/Cheque From Room|Smoke Tester/.test(t), "live ticker includes a gift recorded in this run");
 
 // D. Publish a fundraiser page through the create flow.
-await goto("/demo/create", /Step 1 of 7|What you are making/, "create flow");
-for (let step = 1; step <= 7; step++) {
-    if (step === 5) { await fill(/^Title/, "Smoke Test Fundraiser"); }
-    if (step === 7) { await page.evaluate(() => { const c = [...document.querySelectorAll("input[type=checkbox]")].find((i) => /agree/i.test(i.closest("label")?.textContent ?? "")); if (c && !c.checked) c.click(); }); }
-    await shot(`create-step-${step}`);
-    const ok = await click(step === 7 ? /^Publish$/ : /^(Next|Continue)/, `step ${step} forward`);
-    if (!ok) break;
-    await sleep(step === 7 ? 3000 : 400);
-}
+await page.evaluate(() => localStorage.removeItem("outgive.draft")); // a saved draft would resume mid-flow
+await goto("/create", /Tell Penny what happened/, "create flow");
+await click(/^I'd rather type$/); await sleep(400); await shot("create-step-1");
+await fill(/^Title/, "Smoke Test Fundraiser"); await shot("create-step-2");
+if (await click(/Continue$/, "title forward")) { await sleep(400); for (const step of ["goal", "photo", "story"]) { await click(/^Continue/, `${step} forward`); await sleep(400); } await shot("create-step-3"); await click(/Launch campaign$/, "launch"); await sleep(3000); }
 await shot("published");
 t = await text();
 check(/Published|is live|Share/.test(t), "create flow reaches the published screen");
