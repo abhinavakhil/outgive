@@ -1,0 +1,52 @@
+import type { View } from "@/shared/lib/route";
+import type { Brand, PageData } from "@/shared/domain/model";
+
+/** The one place the public address lives. Change `url` when the domain is bought; canonical links, the sitemap and share previews all read it. */
+export const SITE = { name: "Outgive", url: "https://www.outgive.tech" };
+
+/** Umami analytics (open source, cookieless). Paste the website ID from your Umami dashboard to switch it on; point `src` at your own server if you self-host. */
+export const ANALYTICS = { src: "https://cloud.umami.is/script.js", websiteId: "" };
+
+/** Who stands behind the terms and privacy pages. While any value is still in [brackets] those two pages are marked as drafts and kept out of search. */
+export const LEGAL = { company: "[Company legal name]", address: "[Registered address]", email: "[contact email]", law: "[country or state whose law applies]", updated: "23 October 2026" };
+export const LEGAL_DRAFT = Object.values(LEGAL).some((v) => v.startsWith("["));
+
+/** Title and description for a screen, so search results and shared links describe what is on it. */
+export const metaFor = (name: View["name"], brand: Brand, page?: PageData): [string, string] => {
+    const missing: [string, string] = ["Page not found", `This page does not exist. Go to ${SITE.name}.`];
+    const m: Partial<Record<View["name"], [string, string]>> = {
+        landing: ["Make this Ramadan your biggest appeal yet | Outgive", "Launch your Ramadan donation page in minutes, let supporters fundraise for you and turn the Last 10 Nights into a live leaderboard race. Free to start, 0% platform fee, Gift Aid built in, every gift paid straight to your charity."],
+        legacy: ["Outgive: crowdfunding for charities, coming soon", "Outgive is a new crowdfunding platform for charities and their fundraisers: live leaderboards, team races, matching gifts and big-screen giving moments. Join the waitlist for early access."],
+        "landing-b": ["Giving, made a race | Outgive", "A second design for the Outgive product page: charity leaderboards where every rank has a price."],
+        board: [`${brand.name} leaderboard: give more to take a rank`, `${brand.tagline}. See who is giving most to ${brand.name}, what it costs to pass them, and claim your own rank.`],
+        give: [`Give to ${brand.name}`, `Pick what to fund and give from your phone. Your gift shows on the live screen at once.`],
+        live: [`${brand.name} live`, `Live fundraising screen for ${brand.name}: the total, the board and every gift as it lands.`],
+        overlay: [`${brand.name} overlay`, "Stream overlay."],
+        create: [`Start fundraising for ${brand.name}`, `Set up a fundraising page for ${brand.name} in minutes. Every gift to it counts toward your rank on the leaderboard.`],
+        about: [`About the ${brand.name} leaderboard`, `How the ${brand.name} leaderboard works: your rank is set by what you give and what you raise.`],
+        rules: ["Leaderboard rules: how ranks are claimed, held and reset | Outgive", "The rules of an Outgive fundraising leaderboard: give more than the holder to take a rank, weekly resets, anonymous giving and what happens on refunds."],
+        dashboard: [`Your dashboard · ${SITE.name}`, "Your gifts, receipts, fundraising pages and organisations."],
+        admin: [`${brand.name} · organiser dashboard`, "Donations, pages, branding, payouts and the live screen."],
+        terms: ["Terms of use | Outgive", "The terms for using Outgive: what the platform does, how gifts are paid to charities, and where responsibility sits."],
+        privacy: ["Privacy policy | Outgive", "What Outgive collects, how payments are processed by Stripe, how analytics work without cookies, and how to reach us."],
+        faq: ["Fundraising leaderboard FAQ | Outgive", "Answers about claiming a rank, fees, currencies, fundraising pages and running a leaderboard for your own charity."],
+        pricing: ["Pricing: free to start, 0% platform fee with donor tips | Outgive", "No setup fee and no monthly fee. Gifts go to the charity's own Stripe account, donors can add an optional tip, and fundraisers never pay. Estimate what your appeal keeps."],
+        start: ["Start your organisation | Outgive", "Create your charity's board, connect Stripe and start taking gifts."],
+        login: ["Sign in | Outgive", "Sign in with a magic link or Google."],
+        thanks: [`Thank you · ${brand.name}`, "Your gift has been received."],
+        layouts: ["12 fundraising page layouts | Outgive", "Every layout holds the same sections: story, progress, gifts, updates and sharing."],
+        embed: [`${brand.name}`, "Embedded Outgive widget."],
+        blog: ["Fundraising guides for charities, fundraisers and donors | Outgive blog", "Practical, sourced guides on crowdfunding fees, GivingTuesday, team fundraising, checking a charity and the tax rules for donations in the US and Europe."],
+        // Each post sets its own title from its article; this is only the fallback.
+        post: ["Outgive blog", "Fundraising guides for charities, fundraisers and donors."],
+        notfound: missing,
+        page: page ? [`${page.title || "Fundraising page"} · ${brand.name}`, `Give to ${page.title || "this page"} for ${page.org || brand.name}. Every gift counts toward its rank on the leaderboard.`] : missing,
+    };
+    return m[name] ?? missing;
+};
+
+/** Writes the title and description into every tag that carries them, so the tab, search results and share previews agree. */
+export const setMeta = (title: string, desc: string) => {
+    document.title = title;
+    for (const [sel, content] of [['meta[name="description"]', desc], ['meta[property="og:title"]', title], ['meta[property="og:description"]', desc], ['meta[name="twitter:title"]', title], ['meta[name="twitter:description"]', desc]]) document.querySelector(sel)?.setAttribute("content", content);
+};

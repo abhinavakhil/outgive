@@ -1,0 +1,239 @@
+@import "./globals.css";
+
+/* Junicode by Peter S. Baker, SIL Open Font License 1.1 (public/fonts/Junicode-OFL.txt). Subset to Latin; roman pinned at 600, italic at 400. */
+@font-face { font-family: "Junicode"; src: url("/fonts/Junicode-Roman.woff2") format("woff2"); font-weight: 400 700; font-display: swap; }
+@font-face { font-family: "Junicode Italic"; src: url("/fonts/Junicode-Italic.woff2") format("woff2"); font-weight: 400 700; font-display: swap; }
+
+/* Outgive look: electric royal blue, white type, bubble numbers, a pink pop and a hand-drawn note. Rubik for text, Fredoka for big numbers, Caveat for scribbles. */
+@theme {
+    --font-body: "Bricolage Grotesque", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-display: "Bricolage Grotesque", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    /* Headline serif and its italic accent, as on zen-browser.app (Junicode, SIL OFL, self-hosted in public/fonts). */
+    --font-serif: "Junicode", "Instrument Serif", Georgia, serif;
+    --font-accent: "Junicode Italic", "Instrument Serif", Georgia, serif;
+    --font-bubble: "Fredoka", "Inter", ui-rounded, system-ui, sans-serif;
+    --font-jakarta: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+    --font-segoe: "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --font-hand: "Caveat", "Segoe Print", cursive;
+
+    --color-brand-25: rgb(246 248 255);
+    --color-brand-50: rgb(236 241 255);
+    --color-brand-100: rgb(219 228 255);
+    --color-brand-200: rgb(190 206 255);
+    --color-brand-300: rgb(150 176 255);
+    --color-brand-400: rgb(104 139 255);
+    --color-brand-500: rgb(66 108 255);
+    --color-brand-600: rgb(43 89 255);
+    --color-brand-700: rgb(28 66 214);
+    --color-brand-800: rgb(24 52 168);
+    --color-brand-900: rgb(22 40 120);
+    --color-brand-950: rgb(12 22 66);
+
+    /* Pink balloon and red heart from the moodboard. */
+    --color-pop-100: rgb(255 226 243);
+    --color-pop-300: rgb(255 176 222);
+    --color-pop-400: rgb(255 145 207);
+    --color-heart: rgb(255 59 79);
+
+    --color-neutral-25: rgb(251 252 255);
+    --color-neutral-50: rgb(245 247 252);
+    --color-neutral-100: rgb(236 240 248);
+    --color-neutral-200: rgb(224 229 240);
+    --color-neutral-300: rgb(200 207 222);
+    --color-neutral-400: rgb(152 160 182);
+    --color-neutral-500: rgb(110 118 142);
+    --color-neutral-600: rgb(84 92 116);
+    --color-neutral-700: rgb(58 65 88);
+    --color-neutral-800: rgb(34 40 60);
+    --color-neutral-900: rgb(18 24 44);
+    --color-neutral-950: rgb(8 12 28);
+}
+
+:root:not(.dark-mode) {
+    --color-bg-primary: rgb(255 255 255);
+    --color-bg-secondary: rgb(244 246 252);
+    /* Brand tints follow the scale so a white-label colour (set on <html> by brand.ts) recolours everything. */
+    --color-bg-brand-primary: var(--color-brand-50);
+    --color-bg-brand-secondary: var(--color-brand-100);
+    --color-text-brand-secondary: var(--color-brand-600);
+    --color-border-secondary: rgb(228 232 243);
+    color-scheme: light;
+}
+
+.dark-mode {
+    color-scheme: dark;
+    --color-bg-primary: rgb(10 14 32);
+    --color-bg-secondary: rgb(18 24 48);
+    --color-bg-tertiary: rgb(28 36 66);
+    --color-bg-primary_hover: rgb(18 24 48);
+    --color-bg-brand-primary: color-mix(in srgb, var(--color-brand-950) 70%, rgb(10 14 32));
+    --color-bg-brand-secondary: var(--color-brand-950);
+    --color-bg-brand-solid: var(--color-brand-600);
+    --color-text-primary: rgb(242 245 255);
+    --color-text-secondary: rgb(206 213 235);
+    --color-text-tertiary: rgb(146 156 188);
+    --color-text-brand-secondary: var(--color-brand-300);
+    --color-text-brand-primary: rgb(242 245 255);
+    --color-border-secondary: rgb(36 45 80);
+    --color-border-primary: rgb(52 63 104);
+    --color-fg-brand-primary: var(--color-brand-400);
+    --color-fg-brand-secondary: var(--color-brand-400);
+}
+
+/*
+ * Shapes from teseria.dev (flat surfaces, large radii, pill controls, hairline edges); colours and type from the Outgive homepage:
+ * navy text, cool greys, royal-blue highlights, a pink primary action and white buttons with blue text. Inter for text, Fredoka for numbers.
+ */
+:root:not(.dark-mode) {
+    --ts-page: #f5f7fc; --ts-raised: #ffffff; --ts-tint-1: #ffffff; --ts-tint-2: #ecf0f8; --ts-tint-3: #e0e5f0; --ts-card-ring: #ecf0f8;
+    --ts-fg: #12182c; --ts-fg-2: #3a4158; --ts-fg-3: #6e768e; --ts-fg-faint: #98a0b6; --ts-fg-inverse: #ffffff;
+    --ts-field: #f5f7fc; --ts-field-hover: #eef1f8; --ts-raised-hover: #fbfcff; --ts-border: rgb(18 24 44 / 0.08);
+    --ts-edge: 0 0 0 1px #e0e5f0, 0 1px 2px rgb(18 24 44 / 0.04);
+    --ts-lift: 0 0 0 1px #ecf0f8, 0 24px 64px -16px rgb(12 22 66 / 0.25);
+    --ts-cta-text: #002ac2;
+    --ts-paper: #efefef; --ts-prose: #304f67; --ts-mark: #c3f59c;
+    --ts-soft: 0 1.67px 4.18px rgb(181 186 203 / 0.31), 0 17.57px 10.88px rgb(181 187 203 / 0.16), 0 31.8px 12.55px rgb(181 187 203 / 0.05), inset 0 7px 32px #fff;
+
+    --color-bg-primary: var(--ts-page); --color-bg-tertiary: var(--ts-tint-2);
+    --color-bg-secondary: var(--ts-page); --color-bg-primary_hover: var(--ts-tint-2); --color-bg-secondary_hover: var(--ts-tint-2); --color-bg-secondary_alt: var(--ts-page); --color-bg-primary_alt: #ffffff;
+    --color-border-primary: #e0e5f0; --color-border-secondary: #ecf0f8;
+    --color-text-primary: var(--ts-fg); --color-text-secondary: var(--ts-fg-2); --color-text-tertiary: var(--ts-fg-3);
+    --color-text-quaternary: var(--ts-fg-faint); --color-text-placeholder: var(--ts-fg-faint);
+    --color-fg-primary: var(--ts-fg); --color-fg-quaternary: var(--ts-fg-faint);
+}
+.dark-mode {
+    --ts-page: rgb(10 14 32); --ts-raised: rgb(28 36 66); --ts-tint-1: rgb(18 24 48); --ts-tint-2: rgb(28 36 66); --ts-tint-3: rgb(36 45 80); --ts-card-ring: rgb(28 36 66);
+    --ts-fg: rgb(242 245 255); --ts-fg-2: rgb(206 213 235); --ts-fg-3: rgb(146 156 188); --ts-fg-faint: rgb(110 118 142); --ts-fg-inverse: rgb(10 14 32);
+    --ts-field: rgb(28 36 66); --ts-field-hover: rgb(36 45 80); --ts-raised-hover: rgb(36 45 80); --ts-border: rgb(242 245 255 / 0.1);
+    --ts-edge: 0 0 #0000;
+    --ts-lift: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 28px 72px -12px rgb(0 0 0 / 0.7);
+    --ts-cta-text: var(--color-brand-300);
+    --ts-paper: rgb(10 14 32); --ts-prose: rgb(178 200 218); --ts-mark: rgb(132 204 22 / 0.4);
+    --ts-soft: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 12px 28px -8px rgb(0 0 0 / 0.6);
+
+    --color-bg-primary: var(--ts-page); --color-bg-secondary: var(--ts-tint-1); --color-bg-tertiary: var(--ts-tint-2);
+    --color-bg-primary_hover: var(--ts-tint-2); --color-bg-secondary_hover: var(--ts-tint-3); --color-bg-secondary_alt: var(--ts-tint-1); --color-bg-primary_alt: var(--ts-tint-1);
+    --color-bg-brand-primary: color-mix(in srgb, var(--color-brand-500) 16%, rgb(10 14 32));
+    --color-bg-brand-secondary: color-mix(in srgb, var(--color-brand-500) 28%, rgb(10 14 32));
+    --color-border-primary: rgb(52 63 104); --color-border-secondary: rgb(36 45 80);
+    --color-text-primary: var(--ts-fg); --color-text-secondary: var(--ts-fg-2); --color-text-tertiary: var(--ts-fg-3);
+    --color-text-quaternary: var(--ts-fg-faint); --color-text-placeholder: var(--ts-fg-faint);
+    --color-fg-primary: var(--ts-fg); --color-fg-quaternary: var(--ts-fg-faint);
+}
+/*
+ * Utilities: text-ink / text-ink-2 / text-ink-3 / text-ink-faint for type; bg-tint-1..3, bg-raised, bg-field for surfaces; shadow-edge, shadow-lift.
+ * A filled "ink" surface (bg-ink: selected chip, #1 row, current step, highlight stat, ticked box) is the homepage's royal blue with white text
+ * (text-ink-inverse); the background and text namespaces are separate so text-ink stays navy.
+ * bg-cta / text-cta-ink is the homepage pink action; text-cta is the blue text of its white buttons.
+ */
+@theme inline {
+    --color-ink: var(--ts-fg); --color-ink-2: var(--ts-fg-2); --color-ink-3: var(--ts-fg-3); --color-ink-faint: var(--ts-fg-faint); --color-ink-inverse: var(--ts-fg-inverse);
+    --background-color-ink: var(--color-brand-600); --text-color-ink-inverse: #ffffff; --background-color-ink-inverse: #ffffff; --ring-color-ink: var(--color-brand-600); --border-color-ink: var(--color-brand-600);
+    --color-raised: var(--ts-raised); --color-raised-hover: var(--ts-raised-hover); --color-tint-1: var(--ts-tint-1); --color-tint-2: var(--ts-tint-2); --color-tint-3: var(--ts-tint-3);
+    --color-field: var(--ts-field); --color-field-hover: var(--ts-field-hover); --color-hairline: var(--ts-border);
+    --color-cta: var(--color-pop-300); --color-cta-hover: var(--color-pop-400); --color-cta-ink: #000d3d; --color-cta-blue: var(--ts-cta-text);
+    --shadow-edge: var(--ts-edge); --shadow-lift: var(--ts-lift);
+    --shadow-press: 0 3px 0 rgb(0 0 0 / 0.15);
+    --color-paper: var(--ts-paper); --color-prose: var(--ts-prose); --shadow-soft: var(--ts-soft);
+}
+/* Highlighter stroke behind a phrase (kree8.studio style). Wraps across lines. */
+.mark {
+    color: inherit; padding: 0 0.2em; margin: 0 -0.1em;
+    background: linear-gradient(100deg, transparent 0.15em, var(--ts-mark) 0.3em, var(--ts-mark) calc(100% - 0.3em), transparent calc(100% - 0.1em)) 0 80% / 100% 72% no-repeat;
+    -webkit-box-decoration-break: clone; box-decoration-break: clone;
+}
+body { letter-spacing: -0.01em; }
+/* Cards are white with the mockup's hairline outline; an explicit shadow-* or ring-* utility on the element still wins. */
+@layer base { .bg-tint-1 { box-shadow: 0 0 0 1px var(--ts-card-ring); } }
+
+/* White type on a brand-coloured band. Overrides the utility-level tokens too, which resolve at :root. Fields inside stay light. */
+.on-brand {
+    --color-text-primary: #fff; --text-color-primary: #fff;
+    --color-text-secondary: rgb(255 255 255 / 0.92); --text-color-secondary: rgb(255 255 255 / 0.92);
+    --color-text-tertiary: rgb(255 255 255 / 0.78); --text-color-tertiary: rgb(255 255 255 / 0.78);
+    --color-text-quaternary: rgb(255 255 255 / 0.62); --text-color-quaternary: rgb(255 255 255 / 0.62);
+    --color-text-brand-secondary: #fff; --text-color-brand-secondary: #fff;
+    --color-bg-secondary: rgb(255 255 255 / 0.14); --background-color-secondary: rgb(255 255 255 / 0.14);
+    --color-bg-tertiary: rgb(255 255 255 / 0.14); --background-color-tertiary: rgb(255 255 255 / 0.14);
+    --color-border-secondary: rgb(255 255 255 / 0.28); --border-color-secondary: rgb(255 255 255 / 0.28); --ring-color-secondary: rgb(255 255 255 / 0.28);
+    color: #fff;
+}
+.on-brand :is(input, select), .on-brand span:has(> select) {
+    --text-color-primary: var(--color-neutral-900); --text-color-placeholder: var(--color-neutral-500); --text-color-quaternary: var(--color-neutral-400);
+    --background-color-primary: #fff; --ring-color-primary: transparent;
+}
+
+/* Puffy sticker numbers: a fat white outline painted under the fill, with a hard drop. */
+.bubble {
+    font-family: var(--font-bubble);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    -webkit-text-stroke: 0.14em #fff;
+    paint-order: stroke fill;
+    text-shadow: 0 0.06em 0 rgb(0 0 0 / 0.18);
+}
+.hand { font-family: var(--font-hand); font-weight: 600; }
+@keyframes bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -10px; } }
+@keyframes marquee-half { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+/* Film grain over flat colour, so big blue fields don't look like a plain fill. */
+.grain {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+    opacity: 0.12;
+}
+
+html { font-family: var(--font-body); -webkit-font-smoothing: antialiased; }
+body {
+    margin: 0;
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    font-family: var(--font-body);
+}
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Saved descriptions sit on the page itself, not in an editor box. */
+.penna.pn-readonly { background: transparent; }
+.penna.pn-readonly .pn-editor { padding: 0; }
+
+/* Create flow: every field is at least 56px tall. The Penna editor keeps its own controls. */
+.form-xl label { font-size: 0.9375rem; font-weight: 600; }
+.form-xl .group\/input { min-height: 56px; border-radius: 1rem; }
+.form-xl .group\/input input { min-height: 56px; padding: 0 1rem; font-size: 1rem; }
+.form-xl select:not(.penna *) { min-height: 56px; border-radius: 1rem; padding-left: 1rem; padding-right: 2.75rem; font-size: 1rem; }
+.form-xl textarea:not(.penna *) { padding: 1rem; border-radius: 1rem; font-size: 1rem; }
+.form-xl .pn-editor { padding: 20px 24px; }
+.form-xl .penna { min-height: 32rem; }
+.form-xl .pn-editor { min-height: 24rem; }
+.penna.pn-readonly p { margin: 0 0 1em; }
+
+/* Create flow (design canvas "Campaign Create Flow", Round 3 talk + Round 4 A): its own palette, scoped here. */
+.focus-bg {
+    --f-ink: #0b0f19; --f-blue: #2b59ff; --f-sky: #8aa6ff; --f-ice: #eef3ff; --f-ice-line: #c9d6ff; --f-sel: #8aa4ff; --f-body: #4b5563; --f-grey: #6b7280; --f-faint: #8a93a6;
+    --f-ph: #c3c8d4; --f-line: #e3e7ef; --f-line-2: #eef1f6; --f-soft: #f7f9fd; --f-chip: #f3f6fb; --f-kbd: #f3f5f9; --f-story: #3a4150; --f-card: #fff; --f-mark: #cdf57b;
+    --f-rec-bg: #ffeaf5; --f-rec: #b0236e; --f-rec-dot: #ff4f9e; --f-cloud: #fff;
+    /* One accent per variant: --f-blue is "the accent", whichever hue it is. */
+    --f-glow: rgb(43 89 255 / 0.3); --f-sky-1: #dcebff; --f-sky-2: #f4f8ff;
+    --f-cta: #2b59ff; --f-cta-hover: #2149e0; --f-cta-ink: #fff; --f-cta-arrow: #2b59ff;
+    background: linear-gradient(180deg, var(--f-sky-1) 0%, var(--f-sky-2) 48%, #fff 100%); color: var(--f-ink);
+}
+.focus-bg.talk-bg { background: linear-gradient(180deg, var(--f-sky-1) 0%, var(--f-sky-2) 38%, #fff 100%); }
+.focus-bg[data-accent="pink"] {
+    --f-blue: #d12f7f; --f-sky: #ffa8d2; --f-ice: #fff0f7; --f-ice-line: #ffc6e2; --f-sel: #f08bbd; --f-glow: rgb(209 47 127 / 0.25);
+    --f-sky-1: #ffe3f1; --f-sky-2: #fff4fa; --f-rec-bg: #fff0f7;
+    --f-cta: #ffb0de; --f-cta-hover: #ff9dd4; --f-cta-ink: #000d3d; --f-cta-arrow: #000d3d;
+}
+.dark-mode .focus-bg {
+    --f-ink: #eef2fb; --f-blue: #6b9bff; --f-ice: rgb(43 89 255 / 0.22); --f-sky: #3a5bb8; --f-sel: #6b8cff; --f-ice-line: rgb(107 155 255 / 0.4); --f-body: #b6bfd2; --f-grey: #9aa3b8; --f-faint: #8790a6;
+    --f-ph: #4a5470; --f-line: #2a3350; --f-line-2: #222a44; --f-soft: #161d33; --f-chip: #1b2340; --f-kbd: #1b2340; --f-story: #c9d1e3; --f-card: #10172c; --f-mark: rgb(205 245 123 / 0.85);
+    --f-rec-bg: rgb(255 79 158 / 0.18); --f-rec: #ffa3cf; --f-cloud: rgb(255 255 255 / 0.05);
+    --f-glow: rgb(0 0 0 / 0.5); --f-cta: #4d74ff; --f-cta-hover: #6b8cff; --f-cta-arrow: #2b59ff;
+    background: linear-gradient(180deg, #0b1230 0%, #0e1530 48%, rgb(10 14 32) 100%);
+}
+.dark-mode .focus-bg[data-accent="pink"] {
+    --f-blue: #ff7ab8; --f-ice: rgb(255 79 158 / 0.16); --f-ice-line: rgb(255 122 184 / 0.4); --f-sel: #ff7ab8; --f-sky: #8a3a63;
+    --f-cta: #ffb0de; --f-cta-hover: #ff9dd4; --f-cta-ink: #000d3d; --f-cta-arrow: #000d3d;
+    background: linear-gradient(180deg, #1c0d22 0%, #120e24 48%, rgb(10 14 32) 100%);
+}
+.focus-bg mark { background: var(--f-mark); color: #0b0f19; font-weight: 700; padding: 1px 6px; border-radius: 6px; }
+@keyframes eq { 0%, 100% { scale: 1 0.35; } 50% { scale: 1 1; } }

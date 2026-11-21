@@ -1,0 +1,116 @@
+/* The Ramadan landing page (V8 "orchid pink"): a purple chalkboard desk around a light lilac paper sheet. Everything is scoped to .rd.
+   The pricing page shares these classes, so the names stay stable. */
+@layer components {
+    .rd {
+        --rd-board: #4a1d6b; --rd-board-2: #3a1556; --rd-orchid: #b45fd6;
+        --rd-paper: #f7f3fa; --rd-paper-2: #ece5f2; --rd-rule: #dcd3ec; --rd-ink: #1a1c1a; --rd-ink-2: #555852;
+        /* named for the first (green) design; now the purple accent */
+        --rd-green: #7a2fa6; --rd-mono: #7a2fa6; --rd-gold: #f2dc3b;
+        font-family: "Schibsted Grotesk", "Inter", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+        font-weight: 400;
+        color: var(--rd-ink);
+        background: var(--rd-board-2);
+        -webkit-font-smoothing: antialiased;
+    }
+    /* The home page sits on a lilac desk with a 14px margin, so the board's rounded corners show. */
+    .rd-home { background: var(--rd-paper-2); padding: 8px; }
+    @media (min-width: 640px) { .rd-home { padding: 14px; } }
+    .rd h1, .rd h2 { font-weight: 700; letter-spacing: -0.03em; text-wrap: balance; }
+    .rd h3 { font-weight: 700; letter-spacing: -0.015em; text-wrap: balance; }
+    .rd-mono { font-family: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-weight: 500; letter-spacing: 0.06em; }
+    .rd-hand { font-family: Caveat, cursive; }
+
+    /* Board: flat purple, lit from the top and shaded in the far corner. */
+    .rd-board {
+        background-color: var(--rd-board);
+        background-image: radial-gradient(ellipse 70% 55% at 50% 28%, rgb(255 255 255 / 0.09), transparent 70%), radial-gradient(ellipse 50% 40% at 85% 90%, rgb(0 0 0 / 0.18), transparent 70%);
+    }
+    /* Cutting-mat grid. */
+    .rd-grid { background-image: linear-gradient(rgb(255 255 255 / 0.075) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255 / 0.075) 1px, transparent 1px); background-size: 26px 26px; }
+    /* The hero's mat: gridded side columns fading to a clear centre. */
+    .rd-mat { mask-image: linear-gradient(90deg, #000 0 14%, transparent 22% 78%, #000 86%); }
+    .rd-ticks { background: repeating-linear-gradient(90deg, rgb(255 255 255 / 0.22) 0 1px, transparent 1px 25%) bottom / 100% 60% no-repeat; }
+    .rd-check { background-image: linear-gradient(45deg, rgb(255 255 255 / 0.035) 25%, transparent 25% 75%, rgb(255 255 255 / 0.035) 75%), linear-gradient(45deg, rgb(255 255 255 / 0.035) 25%, transparent 25% 75%, rgb(255 255 255 / 0.035) 75%); background-size: 64px 64px; background-position: 0 0, 32px 32px; }
+    /* The paper sheet's lip, lit from above: a white rim, a few pixels of paper thickness, a shadow thrown up onto the board,
+       then just inside the edge a highlight and a slightly darker band that fades into the paper. */
+    .rd-sheet {
+        --rd-lip: 0 -1px 0 #fff, 0 -4px 0 #e6dcef, 0 -5px 0 rgb(255 255 255 / 0.55), 0 -14px 22px -4px rgb(20 4 34 / 0.38), 0 -34px 60px -10px rgb(20 4 34 / 0.3), inset 0 2px 0 #fff, inset 0 3px 3px rgb(255 255 255 / 0.7);
+        background-image: linear-gradient(180deg, #e9dff1 0, #f1eaf6 22px, var(--rd-paper) 86px);
+        background-repeat: no-repeat;
+        box-shadow: var(--rd-lip);
+    }
+    /* On the home page the sheet also ends in a rounded bottom edge that shades the board under it. */
+    .rd-home .rd-sheet { box-shadow: var(--rd-lip), 0 2px 0 rgb(255 255 255 / 0.8), 0 18px 26px -18px rgb(0 0 0 / 0.35); }
+    /* The appeal bar: a glossy pill of white cells with a lit top edge and a soft drop. */
+    .rd-gloss { box-shadow: 0 0 0 1px #d3c8e2, inset 0 2px 0 #fff, 0 1px 2px rgb(40 10 60 / 0.08), 0 22px 36px -18px rgb(74 29 107 / 0.28); }
+    .rd-cell { background: linear-gradient(180deg, #fff 0%, #fcfaff 48%, #efe8f6 100%); box-shadow: inset 0 1px 0 #fff, inset 0 -8px 12px -10px rgb(74 29 107 / 0.16); }
+    /* Paper patterns. */
+    .rd-hatch { background-image: repeating-linear-gradient(-45deg, #dcdad4 0 1px, transparent 1px 8px); }
+    .rd-cross { background-image: repeating-linear-gradient(45deg, #dedcd6 0 1px, transparent 1px 14px), repeating-linear-gradient(-45deg, #dedcd6 0 1px, transparent 1px 14px); }
+    .rd-pat1 { background-image: radial-gradient(circle at 50% 50%, transparent 17px, #e3e1db 17px, #e3e1db 18px, transparent 18px); background-size: 46px 40px; }
+    .rd-pat2 { background-image: repeating-linear-gradient(60deg, #e3e1db 0 1px, transparent 1px 16px), repeating-linear-gradient(-60deg, #e3e1db 0 1px, transparent 1px 16px); }
+    .rd-pat3 { background-image: linear-gradient(#e3e1db 1px, transparent 1px), linear-gradient(90deg, #e3e1db 1px, transparent 1px); background-size: 34px 34px; }
+    .rd-rings { background: radial-gradient(circle at 50% 62%, transparent 120px, #e6e4de 121px, transparent 122px, transparent 180px, #e9e7e1 181px, transparent 182px); }
+    .rd-dial { background: repeating-conic-gradient(#e2e0da 0 2deg, transparent 2deg 8deg); }
+    .rd-scallop { background: radial-gradient(circle at 18px 36px, var(--rd-paper) 17px, transparent 18px) 0 0 / 72px 36px repeat-x; }
+    .rd-fold { position: absolute; right: 0; bottom: 0; width: 64px; height: 64px; background: linear-gradient(135deg, #fff 50%, transparent 50%); box-shadow: -6px -6px 12px rgb(0 0 0 / 0.05); border-top-left-radius: 10px; }
+
+    /* Buttons. The names date from the first design: -yellow is the main action, -dark the second one, -grey the quiet one.
+       On the board the main action is a pale glossy pill; on paper it is the purple pill. A board card on the paper goes back to the board look. */
+    .rd-btn-yellow, .rd-btn-light, .rd-sheet .rd-board .rd-btn-yellow { background: linear-gradient(180deg, #f7f6f2, #d8d7d1); color: #17201b; box-shadow: inset 0 1px 0 #fff, 0 6px 14px rgb(0 0 0 / 0.22); }
+    .rd-btn-yellow:hover, .rd-btn-light:hover, .rd-sheet .rd-board .rd-btn-yellow:hover { background: linear-gradient(180deg, #fff, #e2e1db); }
+    .rd-sheet .rd-btn-yellow, .rd-btn-green { background: linear-gradient(180deg, #b45fd6, #7a2fa6); color: #fff; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 6px 14px rgb(122 47 166 / 0.28); }
+    .rd-sheet .rd-btn-yellow:hover, .rd-btn-green:hover { background: linear-gradient(180deg, #c077e0, #6a2792); }
+    .rd-btn-dark, .rd-sheet .rd-board .rd-btn-dark { background: rgb(0 0 0 / 0.22); color: #fff; box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.16); }
+    .rd-btn-dark:hover, .rd-sheet .rd-board .rd-btn-dark:hover { background: rgb(0 0 0 / 0.34); }
+    .rd-sheet .rd-btn-dark { background: linear-gradient(180deg, #5a2580, #3f185c); color: #fff; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 6px 14px rgb(74 29 107 / 0.25); }
+    .rd-sheet .rd-btn-dark:hover { background: linear-gradient(180deg, #672c91, #4a1d6b); }
+    .rd-btn-grey { background: #e4e2dc; color: #1a1c1a; box-shadow: inset 0 0 0 1px #d2cfc8; }
+    .rd-btn-grey:hover { background: #dcd3ec; }
+    .rd-btn-yellow, .rd-btn-light, .rd-btn-dark, .rd-btn-green, .rd-btn-grey { transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), background 0.2s ease; }
+    .rd-btn-yellow:hover, .rd-btn-light:hover, .rd-btn-dark:hover, .rd-btn-green:hover, .rd-btn-grey:hover { transform: translateY(-1px); }
+    .rd-btn-yellow:active, .rd-btn-light:active, .rd-btn-dark:active, .rd-btn-green:active, .rd-btn-grey:active { transform: translateY(1px); }
+    .rd-chip { background: rgb(255 255 255 / 0.1); color: rgb(255 255 255 / 0.92); transition: background-color 0.2s ease, color 0.2s ease; }
+    .rd-chip:hover { background: rgb(255 255 255 / 0.17); }
+    .rd-chip[aria-pressed="true"] { background: #fff; color: #17201b; }
+    .rd a:focus-visible, .rd button:focus-visible, .rd input:focus-visible { outline: 3px solid var(--rd-gold); outline-offset: 3px; }
+    .rd-sheet a:focus-visible, .rd-sheet button:focus-visible, .rd-sheet input:focus-visible { outline-color: var(--rd-green); }
+    .rd-sheet .rd-board a:focus-visible, .rd-sheet .rd-board button:focus-visible { outline-color: var(--rd-gold); }
+
+    /* Medals: a white embossed disc hanging on two purple and white ribbons. */
+    .rd-ribbon { width: 74px; height: 140px; background: repeating-linear-gradient(90deg, #b45fd6 0 16px, #fff 16px 26px, #b45fd6 26px 34px, #fff 34px 42px, #b45fd6 42px 74px); box-shadow: inset 0 -20px 20px rgb(0 0 0 / 0.15); }
+    .rd-medal { background: radial-gradient(circle at 40% 30%, #fbfbfa, #e3e2df 70%, #d2d1cd); box-shadow: 0 26px 40px rgb(0 0 0 / 0.16), inset 0 -8px 16px rgb(0 0 0 / 0.06), inset 0 6px 10px #fff; }
+
+    @keyframes rd-float { 0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); } 50% { transform: translateY(-6px) rotate(var(--r, 0deg)); } }
+    .rd-float { animation: rd-float 6s ease-in-out infinite; }
+    @keyframes rd-glow { 0%, 100% { opacity: 0.55; } 50% { opacity: 0.9; } }
+    .rd-glow { animation: rd-glow 3.2s ease-in-out infinite; }
+
+    /* Entrance and scroll reveals. Hidden only once JavaScript is running (.rd-js), so the prerendered page stays readable without it. */
+    .rd-js .rd-in { opacity: 0; transform: translateY(18px); filter: blur(6px); animation: rd-up 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards; animation-delay: calc(var(--d, 0) * 90ms + 80ms); }
+    @keyframes rd-up { to { opacity: 1; transform: none; filter: none; } }
+    .rd-js .rd-reveal { opacity: 0; transform: translateY(28px) scale(0.985); transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1); transition-delay: calc(var(--d, 0) * 110ms); }
+    .rd-js .rd-reveal.is-in { opacity: 1; transform: none; }
+    .rd-lift { transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease, background-color 0.35s ease; }
+    .rd-lift:hover { transform: translateY(-4px); }
+    .rd-card-art { transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+    article:hover > .rd-card-art { transform: translateY(-6px); }
+    /* Desk props drift with the pointer (set from JS as --mx/--my, -1..1). */
+    .rd-par { translate: calc(var(--mx, 0) * var(--k, 10px)) calc(var(--my, 0) * var(--k, 10px)); transition: translate 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+    .rd-ask { transition: border-color 0.3s ease, box-shadow 0.4s ease, background-color 0.3s ease; }
+    .rd-ask:focus-within { border-color: rgb(242 220 59 / 0.6); background-color: rgb(0 0 0 / 0.2); box-shadow: 0 0 0 4px rgb(242 220 59 / 0.1), inset 0 1px 0 rgb(255 255 255 / 0.06); }
+
+    /* The phone on the donate-page stage: a dark metal band, a soft halo behind it, a faint glare across the glass, and the page fading in when the layout changes. */
+    .rd-phone { box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / 0.2), inset 0 0 0 5px #23261f, 0 50px 80px -24px rgb(0 0 0 / 0.65), 0 20px 32px -14px rgb(0 0 0 / 0.4); }
+    .rd-halo { background: radial-gradient(closest-side, rgb(239 198 250 / 0.28), rgb(242 220 59 / 0.06) 55%, transparent); }
+    .rd-glare { background: linear-gradient(118deg, rgb(255 255 255 / 0.16) 0%, rgb(255 255 255 / 0.03) 24%, transparent 38%); box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.35); }
+    @keyframes rd-screen { from { opacity: 0; } }
+    .rd-screen { animation: rd-screen 0.6s 0.2s ease both; }
+
+    @media (prefers-reduced-motion: reduce) {
+        .rd-float, .rd-glow { animation: none; transform: rotate(var(--r, 0deg)); }
+        .rd-js .rd-in, .rd-js .rd-reveal { opacity: 1; transform: none; filter: none; animation: none; transition: none; }
+        .rd-par, .rd-lift, .rd-card-art, .rd-btn-yellow, .rd-btn-light, .rd-btn-dark, .rd-btn-green, .rd-btn-grey { transition: none; translate: none; }
+        .rd-screen { animation: none; }
+    }
+}

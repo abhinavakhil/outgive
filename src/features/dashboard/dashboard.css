@@ -1,0 +1,94 @@
+/* Dashboard tokens, scoped to .od. Light by default; .od.dark is the dashboard's own dark palette, chosen only by its own toggle (never the site's or the OS's theme). */
+/* In the components layer so Tailwind utilities in the markup win over these defaults. */
+@layer components {
+.od {
+    --od-bg: #f2f0ec; --od-card: #fff; --od-cs: #fff; --od-edge: #e4dfd7; --od-soft: #e9e5de; --od-sel: #f6ecfb;
+    --od-ink: #1b1a1f; --od-ink2: #3d3b45; --od-muted: #66636f; --od-line: #e2ddd5; --od-link: #6a35b8; --od-field: #fff; --od-tip: #fff;
+    --od-lime: #7db928; --od-lime-a: #b6e84a; --od-lime-b: #7db928; --od-accent: #b45fd6; --od-cta: #d9a0f0; --od-cta-ink: #1a1440;
+    --od-ok-fg: #3e6b0b; --od-ok-bg: #e6f4cc; --od-warn-fg: #6b5408; --od-warn-bg: #fdf1c4; --od-bad-fg: #b3261e; --od-bad-bg: #fde9e7;
+    --od-bar-dim: linear-gradient(180deg, rgb(180 95 214 / 0.72), rgb(180 95 214 / 0.14)); --od-bar-on: linear-gradient(180deg, #c77be6, #9a45c2); --od-glow: 0 8px 22px rgb(180 95 214 / 0.4);
+    --od-m1: #8cc92a; --od-m2: #b45fd6; --od-m3: #d9d4ca; --od-m4: #f0c98a; --od-donut-glow: drop-shadow(0 10px 18px rgb(125 185 40 / 0.22));
+    --od-c1: #b45fd6; --od-c2: #7db928; --od-heat: 180 95 214;
+    --od-shadow: 0 6px 18px rgb(40 30 20 / 0.06); --od-tip-shadow: 0 14px 30px rgb(0 0 0 / 0.22);
+    color-scheme: light;
+    min-height: 100dvh; background: var(--od-bg); color: var(--od-ink);
+    font-family: var(--font-body); -webkit-font-smoothing: antialiased;
+}
+.od.dark {
+    --od-bg: #18181b; --od-card: linear-gradient(160deg, rgb(255 255 255 / 0.055), rgb(255 255 255 / 0.018) 70%); --od-cs: #202024; --od-edge: rgb(255 255 255 / 0.1); --od-soft: #2b2b31; --od-sel: #33283b;
+    --od-ink: #f4f2f7; --od-ink2: #d2ceda; --od-muted: #a6a3b0; --od-line: #34343b; --od-link: #d9a0f0; --od-field: #18181b; --od-tip: #2b2b31;
+    --od-lime: #b6e84a; --od-lime-a: #d2f56e; --od-lime-b: #8cc92a; --od-accent: #d9a0f0;
+    --od-ok-fg: #b6e84a; --od-ok-bg: rgb(182 232 74 / 0.13); --od-warn-fg: #f0d27a; --od-warn-bg: #3a3320; --od-bad-fg: #ff9d94; --od-bad-bg: #44201e;
+    --od-bar-dim: linear-gradient(180deg, rgb(199 123 230 / 0.78), rgb(199 123 230 / 0.1)); --od-bar-on: linear-gradient(180deg, #f0cdfb, #c77be6); --od-glow: 0 0 28px rgb(217 160 240 / 0.55);
+    --od-m1: #b6e84a; --od-m2: #d08bea; --od-m3: #3a3a42; --od-m4: #8a6a34; --od-donut-glow: drop-shadow(0 0 26px rgb(182 232 74 / 0.22));
+    --od-c1: #d9a0f0; --od-c2: #b6e84a; --od-heat: 217 160 240;
+    --od-shadow: none;
+    color-scheme: dark;
+}
+.od button { font-family: inherit; cursor: pointer; }
+.od button:disabled { cursor: not-allowed; opacity: 0.55; }
+.od button:focus-visible, .od input:focus-visible, .od textarea:focus-visible, .od select:focus-visible, .od a:focus-visible { outline: 3px solid #b45fd6; outline-offset: 2px; }
+.od h1, .od h2, .od h3 { font-family: inherit; color: inherit; }
+
+/* Surfaces */
+.od-card { position: relative; min-width: 0; background: var(--od-card); border: 1px solid var(--od-edge); border-radius: 32px; box-shadow: var(--od-shadow); }
+.od-h2 { margin: 0; font-size: clamp(24px, 6vw, 32px); line-height: 1.1; font-weight: 400; letter-spacing: -0.8px; }
+.od-h2.sm { font-size: clamp(22px, 5.5vw, 28px); letter-spacing: -0.7px; }
+.od-tip { background: var(--od-tip); border: 1px solid var(--od-edge); border-radius: 16px; box-shadow: var(--od-tip-shadow); }
+.od-tag { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 500; line-height: 1.3; border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
+.od-tag.ok { color: var(--od-ok-fg); background: var(--od-ok-bg); }
+.od-tag.bad { color: var(--od-bad-fg); background: var(--od-bad-bg); }
+.od-tag.warn { color: var(--od-warn-fg); background: var(--od-warn-bg); }
+.od-tag.flat { color: var(--od-ink2); background: var(--od-soft); }
+
+/* Controls */
+.od-in { font: inherit; font-size: 16px; font-weight: 500; color: var(--od-ink); background: var(--od-field); border: 1px solid var(--od-line); border-radius: 12px; padding: 0 12px; height: 44px; width: 100%; min-width: 0; box-sizing: border-box; }
+.od-in::placeholder { color: var(--od-muted); font-weight: 500; opacity: 1; }
+.od .od-in:focus { border-color: #b45fd6; outline: none; box-shadow: 0 0 0 4px rgb(180 95 214 / 0.16); }
+textarea.od-in { height: 84px; padding: 10px 12px; line-height: 1.45; resize: none; }
+.od-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--od-edge); background: var(--od-cs); color: var(--od-ink); font-size: 14px; font-weight: 500; white-space: nowrap; text-decoration: none; transition: background-color 0.15s ease; }
+.od-btn:hover:not(:disabled) { background: var(--od-soft); }
+.od-btn.ghost { background: transparent; min-height: 46px; padding: 0 18px; font-size: 15px; font-weight: 400; }
+.od-btn.cta { border: 0; background: var(--od-cta); color: var(--od-cta-ink); font-weight: 600; min-height: 46px; padding: 0 22px; font-size: 15px; }
+.od-btn.cta:hover:not(:disabled) { background: #cf8fec; }
+.od-btn.danger { border: 0; background: var(--od-bad-fg); color: var(--od-cs); font-weight: 600; }
+.od-btn.danger:hover:not(:disabled) { background: var(--od-bad-fg); filter: brightness(0.92); }
+.od-chip { min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--od-line); background: var(--od-cs); color: var(--od-ink); font-size: 14px; font-weight: 500; }
+.od-chip[aria-pressed="true"] { border-color: var(--od-accent); background: var(--od-sel); }
+.od-seg { display: flex; gap: 2px; border: 1px solid var(--od-line); border-radius: 999px; padding: 4px; }
+.od-seg button { min-width: 48px; min-height: 38px; padding: 0 12px; border: 0; border-radius: 999px; font-size: 15px; font-weight: 500; background: transparent; color: var(--od-muted); position: relative; }
+/* 38px tall as drawn, 44px to the finger. */
+.od-seg button::after { content: ""; position: absolute; inset: -4px 0; }
+.od-seg button[aria-pressed="true"] { background: var(--od-soft); color: var(--od-ink); }
+
+/* Navigation */
+.od-nav { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; min-height: 50px; padding: 0 12px; border: 0; border-radius: 14px; text-align: left; font-size: 17px; font-weight: 400; background: transparent; color: var(--od-muted); text-decoration: none; }
+.od-nav:hover { background: var(--od-soft); }
+.od-nav[aria-current="page"] { color: var(--od-ink); }
+/* The marker sits on the nav's left edge: back across its side padding (--od-pad, set on the <nav>). */
+.od-nav[aria-current="page"]::after { content: ""; position: absolute; left: calc(-1 * var(--od-pad, 16px)); top: 12px; width: 5px; height: 26px; border-radius: 0 6px 6px 0; background: var(--od-lime); }
+.od-sub { padding-left: 28px; }
+.od-sub[aria-current="page"]::after { left: calc(-1 * var(--od-pad, 16px) - 23px); }
+/* The theme toggle's buttons are 40px as drawn, 44px to the finger. */
+.od-ic { position: relative; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 0; border-radius: 50%; background: transparent; color: var(--od-muted); }
+.od-ic::after { content: ""; position: absolute; inset: -2px; }
+.od-ic[aria-pressed="true"] { background: var(--od-soft); color: var(--od-ink); }
+/* The elbow joining a sub-item to the Giving group. */
+.od-sub::before { content: ""; position: absolute; left: 0; top: -50%; bottom: 50%; width: 18px; border-left: 1.5px solid var(--od-line); border-bottom: 1.5px solid var(--od-line); border-bottom-left-radius: 10px; }
+.od-sub.first::before { top: -2px; }
+.od-sub[aria-current="page"]::before { border-color: var(--od-link); z-index: 1; }
+
+/* Tables: rows are grids so the columns line up without a <table>'s width fights. */
+.od-row { display: grid; align-items: center; gap: 12px; min-height: 58px; padding: 0 6px; border-bottom: 1px solid var(--od-line); font-size: 16px; }
+.od-row:hover { background: color-mix(in srgb, var(--od-soft) 45%, transparent); }
+.od-rows > :last-child .od-row, .od-rows > .od-row:last-child { border-bottom-color: transparent; }
+.od-head { display: grid; gap: 12px; padding: 0 6px 12px; font-size: 14px; color: var(--od-muted); }
+
+/* Charts */
+.od-bar { transition: height 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), width 0.2s ease, box-shadow 0.15s ease; }
+.od-dash { background: repeating-linear-gradient(90deg, var(--od-line) 0 3px, transparent 3px 10px) 0 0 / 100% 1px no-repeat; }
+.od-dash3 { background: repeating-linear-gradient(90deg, var(--od-line) 0 3px, transparent 3px 10px) 0 0 / 100% 1px no-repeat, repeating-linear-gradient(90deg, var(--od-line) 0 3px, transparent 3px 10px) 0 33.3% / 100% 1px no-repeat, repeating-linear-gradient(90deg, var(--od-line) 0 3px, transparent 3px 10px) 0 66.6% / 100% 1px no-repeat; border-bottom: 1px solid var(--od-line); }
+.od .od-col:focus-visible { outline-offset: -3px; border-radius: 14px; }
+
+@media (prefers-reduced-motion: reduce) { .od *, .od *::before, .od *::after { transition: none !important; animation: none !important; } }
+}

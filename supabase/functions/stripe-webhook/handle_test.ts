@@ -65,3 +65,27 @@ Deno.test("account.updated syncs the charity's Stripe status; unknown events are
     assertEquals(f.log, ["org acct_1 true false"]);
     assertEquals(await handle(f.s, { id: "e2", type: "payment_intent.created", data: { object: {} } }), "ignored");
 });
+
+Deno.test("in-page checkout: a PaymentIntent settles its attempt's row, a decline can still become a success, old Checkout rows are left alone", async () => {
+    const f = fake([base({ attempt_key: "k1", stripe_payment_intent_id: "pi_1" }), base({ id: "d2", stripe_payment_intent_id: "pi_2" })]);
+    assertEquals(await handle(f.s, { id: "e1", type: "payment_intent.payment_failed", data: { object: { id: "pi_1", last_payment_error: { code: "card_declined", decline_code: "insufficient_funds" } } } }), "failed");
+    assertEquals((f.rows[0] as unknown as { pay_error: string }).pay_error, "insufficient_funds");
+    assertEquals(await handle(f.s, { id: "e2", type: "payment_intent.succeeded", data: { object: { id: "pi_1", metadata: { donation_id: "d1" } } } }), "succeeded");
+    assertEquals(f.rows[0].status, "succeeded");
+    assertEquals(f.receipts, ["d1"]);
+    assertEquals(await handle(f.s, { id: "e3", type: "payment_intent.succeeded", data: { object: { id: "pi_2" } } }), "ignored");
+    assertEquals(f.rows[1].status, "pending");
+});
+
+Deno.test("in-page checkout: a row the pay function already marked succeeded still gets one receipt; a refund is never undone", async () => {
+    const f = fake([base({ attempt_key: "k1", stripe_payment_intent_id: "pi_1", status: "succeeded" }), base({ id: "d2", attempt_key: "k2", stripe_payment_intent_id: "pi_2", status: "refunded" })]);
+    assertEquals(await handle(f.s, { id: "e1", type: "payment_intent.succeeded", data: { object: { id: "pi_1" } } }), "succeeded");
+    assertEquals(f.receipts, ["d1"]);
+    assertEquals(await handle(f.s, { id: "e2", type: "payment_intent.succeeded", data: { object: { id: "pi_2" } } }), "ignored");
+    assertEquals(f.rows[1].status, "refunded");
+});
+
+Deno.test("renewals find the subscription where newer API versions put it", async () => {
+    const f = fake([base({ recurring: true, stripe_subscription_id: "sub_1", stripe_invoice_id: "in_1", status: "succeeded", receipt_sent_at: "x" })]);
+    assertEquals(await handle(f.s, { id: "e1", type: "invoice.paid", data: { object: { id: "in_2", parent: { subscription_details: { subscription: "sub_1" } }, amount_paid: 5500 } } }), "renewal");
+});

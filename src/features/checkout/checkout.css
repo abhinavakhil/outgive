@@ -1,0 +1,82 @@
+/* Checkout tokens. Override any of them on .ck (or a parent) to rebrand the whole flow. */
+/* In the components layer so Tailwind utilities in the markup win over these defaults. */
+/* ?preview=1 (the checkout inside the home page's phone): everything still scrolls, but no scrollbar is drawn, on the page or inside it. */
+html.ck-preview, html.ck-preview * { scrollbar-width: none; }
+html.ck-preview::-webkit-scrollbar, html.ck-preview *::-webkit-scrollbar { display: none; }
+@layer components {
+.ck {
+    --ck-font: "Bricolage Grotesque", Urbanist, "Avenir Next", "Segoe UI", system-ui, sans-serif;
+    --ck-ink: #1a1440; --ck-ink-2: #3b3658; --ck-muted: #63607a; --ck-faint: #8b88a0;
+    --ck-line: #e1daf0; --ck-line-2: #e7e2f3; --ck-sep: #efeaf8; --ck-field: #fbfafe; --ck-track: #cfc6e2;
+    --ck-accent: #d9a0f0; --ck-accent-strong: #b45fd6; --ck-accent-soft: #faf1fe; --ck-link: #4f2fc0;
+    --ck-tint: #f4f0fc; --ck-seg: #f2eefb;
+    --ck-green: #14704a; --ck-green-ink: #14573b; --ck-green-soft: #ddf4e8; --ck-mint: #c9ebd8;
+    --ck-gold-soft: #fdf6dd; --ck-gold-ink: #6b5408; --ck-coral-soft: #fde7e1; --ck-coral-ink: #5c2318;
+    --ck-err: #b3261e;
+    color-scheme: light;
+    font-family: var(--ck-font);
+    color: var(--ck-ink);
+    -webkit-font-smoothing: antialiased;
+}
+.ck button { font-family: inherit; font-size: inherit; cursor: pointer; }
+.ck button:disabled { cursor: not-allowed; }
+.ck button:focus-visible, .ck input:focus-visible { outline: 3px solid var(--ck-accent-strong); outline-offset: 2px; }
+
+.ck-in {
+    font: inherit; font-size: 16px; font-weight: 600; color: var(--ck-ink); background: #fff;
+    border: 1.5px solid #e6e0f2; border-radius: 14px; padding: 0 16px; height: 54px; width: 100%; box-sizing: border-box;
+    font-variant-numeric: tabular-nums; letter-spacing: 0.1px;
+    box-shadow: 0 1px 2px rgb(26 20 64 / 0.04), inset 0 1px 0 rgb(255 255 255 / 0.8);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.ck-in::placeholder { color: #a6a2b8; font-weight: 500; opacity: 1; }
+.ck-in:hover { border-color: #d3c8ea; }
+.ck-in:focus { border-color: var(--ck-accent-strong); outline: none; box-shadow: 0 0 0 4px rgb(180 95 214 / 0.14); }
+.ck-in[aria-invalid="true"] { border-color: var(--ck-err); box-shadow: 0 0 0 4px rgb(179 38 30 / 0.08); }
+.ck-in:-webkit-autofill { -webkit-box-shadow: 0 0 0 40px #fff inset; -webkit-text-fill-color: var(--ck-ink); }
+.ck-check { width: 22px; height: 22px; flex: none; margin: 0; accent-color: var(--ck-accent-strong); cursor: pointer; }
+.ck-label { font-size: 13.5px; font-weight: 700; color: var(--ck-ink-2); }
+.ck-hint { font-size: 12.5px; font-weight: 600; color: var(--ck-muted); }
+/* A group of fields that reads as one control: shared border, hairline dividers. */
+.ck-group { border: 1.5px solid #e6e0f2; border-radius: 16px; background: #fff; overflow: hidden; box-shadow: 0 1px 2px rgb(26 20 64 / 0.04); transition: border-color 0.15s ease, box-shadow 0.15s ease; }
+.ck-group:focus-within { border-color: var(--ck-accent-strong); box-shadow: 0 0 0 4px rgb(180 95 214 / 0.14); }
+.ck-group .ck-in { border: 0; border-radius: 0; box-shadow: none; height: 54px; }
+.ck .ck-group input.ck-in:focus-visible, .ck-group .ck-in:focus { outline: none; box-shadow: none; background: #fcfaff; }
+.ck-group .ck-in[aria-invalid="true"] { background: #fff6f5; box-shadow: none; }
+/* The live card flips to its back for the security code. */
+.ck-card3d { perspective: 1200px; }
+.ck-card3d > div { transition: transform 0.6s cubic-bezier(0.3, 0.7, 0.2, 1); transform-style: preserve-3d; }
+.ck-card3d.is-flipped > div { transform: rotateY(180deg); }
+.ck-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.ck-face-back { transform: rotateY(180deg); }
+
+.ck-cta { transition: transform 0.12s ease, box-shadow 0.12s ease; }
+.ck-cta:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 16px 30px rgb(150 70 190 / 0.36) !important; }
+.ck-soft:hover { background: #f7f3fd !important; }
+.ck-row:hover { background: #fbf9fe !important; }
+.ck-pill { display: inline-flex; align-items: center; gap: 0.14em; vertical-align: baseline; border-radius: 0.3em; padding: 0 0.3em 0.06em; margin: 0 0.04em; line-height: 1.22; letter-spacing: inherit; transition: transform 0.12s ease; }
+.ck-pill:hover { transform: translateY(-2px); }
+
+/* The amount dial */
+.ck-dial { touch-action: none; user-select: none; cursor: grab; }
+.ck-dial:active { cursor: grabbing; }
+.ck-ring { mask-image: radial-gradient(circle closest-side, transparent 0 79%, #000 80% 100%); }
+.ck-ticks { mask-image: radial-gradient(circle closest-side, transparent 0 68%, #000 69% 74%, transparent 75%); background: repeating-conic-gradient(#bdb0da 0deg 0.9deg, transparent 0.9deg 6deg); }
+
+.ck-float { transition: transform 0.25s ease; }
+.ck-fade { animation: ck-fade 0.28s ease both; }
+@keyframes ck-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .ck *, .ck *::before { transition: none !important; animation: none !important; } }
+
+/* Payment in flight: a coin, a lantern and a gift fly across with speed lines while the bank confirms. */
+@keyframes ck-fly { 0% { transform: translateX(-130vw) skewX(-16deg) scale(0.86); } 38% { transform: translateX(-3vw) skewX(0) scale(1); } 62% { transform: translateX(3vw) skewX(0) scale(1); } 100% { transform: translateX(130vw) skewX(-16deg) scale(0.86); } }
+@keyframes ck-line { from { transform: translateX(-70vw); } to { transform: translateX(170vw); } }
+@keyframes ck-pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+.ck-fly { position: absolute; left: 50%; top: 44%; width: min(280px, 60vw); aspect-ratio: 1; transform: translateX(-130vw); translate: -50% -50%; animation: ck-fly 0.95s cubic-bezier(0.5, 0, 0.5, 1) both; }
+.ck-fly2 { animation-delay: 0.9s; }
+.ck-fly3 { animation-delay: 1.8s; }
+.ck-trail { position: absolute; right: 62%; top: 28%; width: 460px; height: 44%; border-radius: 999px; filter: blur(10px); }
+.ck-line { position: absolute; left: 0; height: 6px; border-radius: 999px; animation: ck-line 0.55s linear infinite; }
+.ck-dot { animation: ck-pulse 0.9s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .ck .ck-fly { animation: none !important; transform: none; } .ck .ck-fly2, .ck .ck-fly3, .ck .ck-line, .ck .ck-trail { display: none; } }
+}
