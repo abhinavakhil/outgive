@@ -29,9 +29,17 @@ export { Card, ConsoleShell, Container, Fieldset, Panel, SiteHeader, TwoCol } fr
 export { CopyRow, Empty, Ring, Stat, Who } from "./display";
 export { BrandLogo, BrandMark, Logo, ThemeToggle } from "./brand";
 export { Confetti } from "./confetti";
+export { Buddy, type BuddyMood } from "./buddy";
 export { NotFound } from "./not-found";
+
+// Motion pieces ported from Magic UI (MIT), each credited in its file
+export { AnimatedList, AnimatedListItem } from "./magic/animated-list";
+export { BlurFade } from "./magic/blur-fade";
+export { BorderBeam } from "./magic/border-beam";
+export { NumberTicker } from "./magic/number-ticker";
 
 // Media and icons
 export { CoverMedia, DescriptionEditor, DescriptionView, readImage, youtubeId } from "./media";
 export { FeaturedIcon } from "./foundations/featured-icon/featured-icon";
-export { Facebook, Google, LinkedIn, Reddit, Telegram, X } from "./foundations/social-icons";
+export { Facebook, Google, Instagram, LinkedIn, Reddit, Telegram, X } from "./foundations/social-icons";
+export { ACCENT, ARROW, BACK, Bubble, Check, Kbd, Mic, Svg, TICK, Tick, UP, field, fieldInput, focus, linkCls, next, pill, soft, tile } from "./flow";

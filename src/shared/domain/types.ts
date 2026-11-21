@@ -6,8 +6,21 @@ export interface Org {
     impact_usd: number | null; impact_unit: string; currency: string; country: string; registration_number: string; website: string;
     custom_domain: string | null; remove_branding: boolean; verified: boolean;
     stripe_account_id: string | null; stripe_charges_enabled: boolean; stripe_payouts_enabled: boolean; platform_fee_bps: number; tips_enabled: boolean;
+    /** PayPal Checkout pays this merchant directly; null until connected. */
+    paypal_merchant_id: string | null;
+    /** Which methods the checkout offers, each also needing its provider connected. */
+    pay_methods: { card: boolean; wallets: boolean; bank: boolean; dd: boolean; paypal: boolean };
     live: LiveState; owner_id: string | null; created_at: string;
 }
+/**
+ * The ways to pay an organisation's checkout offers. Card, Apple Pay / Google Pay, pay by bank and Direct Debit run through its
+ * Stripe Connect account, so they need charges enabled there; PayPal needs a PayPal merchant id. Each can also be switched off.
+ */
+const ALL_METHODS = { card: true, wallets: true, bank: true, dd: true, paypal: true };
+export const payConfigOf = (o: Pick<Org, "stripe_charges_enabled" | "paypal_merchant_id" | "pay_methods">) => {
+    const on = { ...ALL_METHODS, ...(o.pay_methods as Partial<Org["pay_methods"]> | undefined) }, stripe = !!o.stripe_charges_enabled;
+    return { card: stripe && on.card, wallets: stripe && on.wallets, bank: stripe && on.bank, dd: stripe && on.dd, paypal: !!o.paypal_merchant_id && on.paypal };
+};
 /** Layouts of the live screen (wall display). Each is a different composition of total, thermometer, board, impact items and gift feed. */
 export const LIVE_LAYOUTS = [
     ["classic", "Classic", "Big total and thermometer beside the leaderboard"],

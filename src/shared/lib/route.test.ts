@@ -7,7 +7,7 @@ describe("tenants", () => {
     it("subdomains and custom domains do", () => { expect(sub).toEqual({ slug: "clearwell", host: null }); expect(custom).toEqual({ slug: null, host: "give.clearwell.org" }); expect(tenantOf("Give.Clearwell.org:443").host).toBe("give.clearwell.org"); });
 });
 describe("parse", () => {
-    it("platform routes", () => { expect(parse("/", bare)).toEqual({ name: "landing" }); expect(parse("/pricing/", bare)).toEqual({ name: "pricing" }); expect(parse("/nope", bare)).toEqual({ name: "notfound" }); });
+    it("platform routes", () => { expect(parse("/", bare)).toEqual({ name: "landing" }); expect(parse("/ramadan", bare)).toEqual({ name: "landing" }); expect(parse("/legacy", bare)).toEqual({ name: "legacy" }); expect(parse("/pricing/", bare)).toEqual({ name: "pricing" }); expect(parse("/nope", bare)).toEqual({ name: "notfound" }); });
     it("blog", () => { expect(parse("/blog/", bare)).toEqual({ name: "blog" }); expect(parse("/blog/how-to-start", bare)).toEqual({ name: "post", slug: "how-to-start" }); expect(parse("/blog/a/b", bare)).toEqual({ name: "notfound" }); expect(parse("/blog/x", sub)).toEqual({ name: "notfound" }); expect(parse("/blog", sub)).toEqual({ name: "notfound" }); expect(pathOf({ name: "post", slug: "x" }, bare)).toBe("/blog/x"); });
     it("/demo and /o/<slug> are org prefixes", () => {
         expect(parse("/demo", bare)).toEqual({ name: "board", org: "clearwell" });
@@ -16,6 +16,14 @@ describe("parse", () => {
         expect(parse("/demo/c/water/live", bare)).toEqual({ name: "live", org: "clearwell", page: { type: "campaign", slug: "water" } });
         expect(parse("/demo/admin/payments", bare)).toEqual({ name: "admin", org: "clearwell", tab: "payments" });
         expect(parse("/demo/create", bare, "?for=abc")).toEqual({ name: "create", org: "clearwell", parent: "abc" });
+        expect(parse("/create", bare)).toEqual({ name: "create", org: "clearwell" });
+        expect(pathOf({ name: "create", org: "clearwell" }, bare)).toBe("/create");
+        expect(pathOf({ name: "create", org: "mangrove" }, bare)).toBe("/o/mangrove/create");
+        expect(parse("/f/help-priya", bare)).toEqual({ name: "page", org: "clearwell", page: { type: "fundraiser", slug: "help-priya" }, real: true });
+        expect(parse("/t/harbour-runners", bare)).toMatchObject({ page: { type: "team", slug: "harbour-runners" }, real: true });
+        expect(pathOf({ name: "page", org: "clearwell", page: { type: "campaign", slug: "water" }, real: true }, bare)).toBe("/c/water");
+        expect(parse("/x/nope", bare)).toEqual({ name: "notfound" });
+        expect(pathOf({ name: "create", org: "clearwell", parent: "c/water" }, bare)).toBe("/create?for=c%2Fwater");
         expect(parse("/demo/embed/f/x", bare)).toEqual({ name: "embed", org: "clearwell", page: { type: "fundraiser", slug: "x" } });
         expect(parse("/demo/x/y", bare)).toEqual({ name: "notfound" });
     });
@@ -24,6 +32,28 @@ describe("parse", () => {
         expect(parse("/live", sub)).toEqual({ name: "live", org: "clearwell" });
         expect(parse("/f/amara", custom)).toEqual({ name: "page", org: "give.clearwell.org", page: { type: "fundraiser", slug: "amara" } });
         expect(parse("/login", sub)).toEqual({ name: "login" });
+    });
+});
+describe("donor dashboard", () => {
+    const gift = "0b0e6f0a-1c2d-4e3f-8a9b-0123456789ab";
+    it("tabs and receipts are paths", () => {
+        expect(parse("/dashboard", bare)).toEqual({ name: "dashboard" });
+        expect(parse("/dashboard/giving", bare)).toEqual({ name: "dashboard", tab: "giving" });
+        for (const tab of ["donations", "subscriptions", "analytics", "gateways", "profile", "account"] as const) {
+            expect(parse(`/dashboard/${tab}`, bare)).toEqual({ name: "dashboard", tab });
+            expect(pathOf({ name: "dashboard", tab }, bare)).toBe(`/dashboard/${tab}`);
+        }
+        // The donor dashboard's old tabs still land somewhere sensible.
+        expect(parse("/dashboard/pages", bare)).toEqual({ name: "dashboard", tab: "giving" });
+        expect(parse("/dashboard/orgs", bare)).toEqual({ name: "dashboard" });
+        expect(parse("/dashboard/receipt", bare)).toEqual({ name: "notfound" });
+        expect(parse("/dashboard/giving", sub)).toEqual({ name: "dashboard", tab: "giving" });
+        expect(parse(`/dashboard/receipt/${gift}`, bare)).toEqual({ name: "dashboard", gift });
+        expect(parse("/dashboard/receipt/nope", bare)).toEqual({ name: "notfound" });
+        expect(parse("/dashboard/nope", bare)).toEqual({ name: "notfound" });
+        expect(pathOf({ name: "dashboard" }, bare)).toBe("/dashboard");
+        expect(pathOf({ name: "dashboard", tab: "giving" }, bare)).toBe("/dashboard/giving");
+        expect(pathOf({ name: "dashboard", gift }, sub)).toBe(`/dashboard/receipt/${gift}`);
     });
 });
 describe("action links are paths", () => {
@@ -66,7 +96,7 @@ describe("action links are paths", () => {
     });
 });
 describe("pathOf round-trips", () => {
-    const views = [parse("/demo", bare), parse("/o/mangrove/f/plant-trees", bare), parse("/demo/e/gala/manage", bare), parse("/demo/admin/payments", bare), parse("/demo/overlay", bare), parse("/demo/c/water/live", bare), parse("/pricing", bare), parse("/demo/create", bare, "?for=abc"), parse("/demo/c/water/donate/50", bare), parse("/demo/live/wall/light", bare), parse("/demo/overlay/ticker", bare), parse("/demo/c/water/fundraise", bare), parse("/demo/thanks/cs_1", bare), parse("/demo/embed/dark/10", bare), parse("/demo/donate", bare)];
+    const views = [parse("/demo", bare), parse("/o/mangrove/f/plant-trees", bare), parse("/demo/e/gala/manage", bare), parse("/demo/admin/payments", bare), parse("/demo/overlay", bare), parse("/demo/c/water/live", bare), parse("/pricing", bare), parse("/checkout", bare), parse("/legacy", bare), parse("/demo/create", bare, "?for=abc"), parse("/demo/c/water/donate/50", bare), parse("/demo/live/wall/light", bare), parse("/demo/overlay/ticker", bare), parse("/demo/c/water/fundraise", bare), parse("/demo/thanks/cs_1", bare), parse("/demo/embed/dark/10", bare), parse("/demo/donate", bare)];
     for (const v of views) it(JSON.stringify(v), () => { const p = pathOf(v, bare); const [path, q] = p.split("?"); expect(parse(path, bare, q ? `?${q}` : "")).toEqual(v); });
     it("drops the prefix on a tenant host", () => { expect(pathOf({ name: "board", org: "clearwell" }, sub)).toBe("/"); expect(pathOf({ name: "live", org: "clearwell" }, sub)).toBe("/live"); expect(pathOf({ name: "page", org: "x", page: { type: "team", slug: "a b" } }, custom)).toBe("/t/a%20b"); });
 });

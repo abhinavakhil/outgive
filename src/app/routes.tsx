@@ -11,6 +11,7 @@ const Blog = screen(() => import("@/features/blog"), "Blog");
 const Start = screen(() => import("@/features/onboarding"), "Start");
 const Login = screen(() => import("@/features/auth"), "Login");
 const Dashboard = screen(() => import("@/features/dashboard"), "Dashboard");
+const Receipt = screen(() => import("@/features/dashboard"), "Receipt");
 const Leaderboard = screen(() => import("@/features/leaderboard"), "Leaderboard");
 const Live = screen(() => import("@/features/live"), "Live");
 const Overlay = screen(() => import("@/features/live"), "Overlay");
@@ -20,6 +21,8 @@ const Thanks = screen(() => import("@/features/donate"), "Thanks");
 const CreateFlow = screen(() => import("@/features/create"), "CreateFlow");
 const Admin = screen(() => import("@/features/admin"), "Admin");
 const PageScreen = screen(() => import("@/features/campaign"), "PageScreen");
+const CheckoutScreen = screen(() => import("@/features/checkout"), "CheckoutScreen");
+const OrgCheckout = screen(() => import("@/features/checkout"), "OrgCheckout");
 const NotFound = screen(() => import("@/shared/ui"), "NotFound");
 /** Design-system gallery; only built into dev. */
 const Gallery = import.meta.env.DEV ? screen(() => import("@/shared/ui/gallery"), "Gallery") : NotFound;
@@ -29,6 +32,7 @@ const SamplePage = screen(() => import("@/features/campaign"), "SamplePage");
 /** The screen for a view. The landing page is handled before this, so it renders without waiting for any chunk. */
 export const screenFor = (view: View): ReactNode => {
     switch (view.name) {
+        case "checkout": return view.org ? <OrgCheckout /> : <CheckoutScreen />;
         case "landing-b": return <LandingB />;
         case "layouts": return <SamplePage />;
         case "ui": return <Gallery />;
@@ -38,7 +42,7 @@ export const screenFor = (view: View): ReactNode => {
         case "post": return <Blog slug={view.slug} />;
         case "start": return <Start />;
         case "login": return <Login />;
-        case "dashboard": return <Dashboard />;
+        case "dashboard": return view.gift ? <Receipt gift={view.gift} /> : <Dashboard tab={view.tab} />;
         case "about": case "rules": case "faq": case "terms": case "privacy": return <Info kind={view.name} />;
         case "board": return <Leaderboard />;
         case "live": return <Live pageRef={view.page} layout={view.layout} theme={view.theme} />;
@@ -47,7 +51,7 @@ export const screenFor = (view: View): ReactNode => {
         case "create": return <CreateFlow parent={view.parent} />;
         case "admin": return <Admin tab={view.tab} />;
         case "thanks": return <Thanks gref={view.ref} />;
-        case "page": return <PageScreen key={`${view.page.type}/${view.page.slug}`} pageRef={view.page} manage={view.sub === "manage"} donate={view.sub === "donate" ? view.amount ?? true : undefined} />;
+        case "page": return <PageScreen key={`${view.page.type}/${view.page.slug}`} real={view.real} pageRef={view.page} manage={view.sub === "manage"} donate={view.sub === "donate" ? view.amount ?? true : undefined} />;
         case "embed": return <Embed pageRef={view.page} theme={view.theme} limit={view.limit} />;
         default: return <NotFound />;
     }

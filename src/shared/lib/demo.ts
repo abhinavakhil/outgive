@@ -4,6 +4,8 @@
  */
 import init from "../../../supabase/migrations/20261023000000_init.sql?raw";
 import storage from "../../../supabase/migrations/20261023000001_storage.sql?raw";
+import checkoutPayments from "../../../supabase/migrations/20261121000000_checkout_payments.sql?raw";
+import donorSelfService from "../../../supabase/migrations/20261121000200_donor_self_service.sql?raw";
 import type { PGlite } from "@electric-sql/pglite";
 import type { DB } from "@/shared/lib/db";
 import type { DonationRow, Org, User } from "@/shared/domain/types";
@@ -12,7 +14,7 @@ import { SAMPLE_PAGE, SUPPORTERS } from "@/shared/lib/demo-data";
 
 export const DEMO_USER: User = { id: "00000000-0000-4000-8000-000000000001", email: "demo@outgive.org", name: "Demo organiser" };
 export const DEMO_SLUG = "clearwell";
-export const DATA_DIR = "idb://outgive-demo-v3";
+export const DATA_DIR = "idb://outgive-demo-v4";
 
 const STUB = `
 create schema if not exists auth;
@@ -79,7 +81,35 @@ export const seed = async (pg: Pick<PGlite, "query" | "exec">) => {
 export const prepare = async (pg: PGlite) => {
     const ready = (await pg.query<{ ok: boolean }>("select exists (select 1 from pg_tables where tablename = 'orgs') as ok")).rows[0].ok;
     if (!ready) await pg.transaction(async (tx) => { await tx.exec(STUB); await tx.exec(init); await tx.exec(storage); await seed(tx as unknown as PGlite); });
+    await pg.exec(checkoutPayments); // idempotent, so databases saved before it existed pick it up too
+    await pg.exec(donorSelfService); // idempotent too: gift history, receipts, regular gifts, checkout recovery
+    if (!ready) await pg.exec(DRESS);
 };
+
+/**
+ * Demo data only, once, after the columns exist: seeded gifts get a spread of payment methods and Gift Aid on some, and a
+ * handful of fictional monthly givers (one paused, one cancelled, one whose last payment failed), so the organiser
+ * dashboard has every state to show. The monthly gifts sit on no page or supporter, so the board and campaign totals do not move.
+ */
+const DRESS = `
+update donations set pay_method = (array['card','card','card','wallet','dd','bank','card','paypal'])[1 + abs(hashtext(id::text)) % 8],
+    gift_aid_cents = case when abs(hashtext(id::text)) % 3 > 0 then amount_cents / 4 else 0 end;
+-- Seeded gifts all carry the hour the demo was opened; older ones move back a few hours so they fall across the day. Weeks and months stay as they were.
+update donations set created_at = date_trunc('day', created_at) + make_interval(hours => 7 + abs(hashtext(id::text)) % 16) where created_at < now() - interval '8 days' and extract(day from created_at) between 2 and 27;
+insert into donations (org_id, donor_name, amount_cents, currency, status, source, recurring, stripe_subscription_id, pay_method, gift_aid_cents, created_at)
+select o.id, g.name, g.usd * 100, 'USD', case when g.fails and m = 0 then 'failed' else 'succeeded' end, 'demo', true, 'sub_demo_' || g.n, g.method, case when g.aid then g.usd * 25 else 0 end,
+    now() - make_interval(months => m, days => g.n, hours => g.n * 3)
+from orgs o, (values (1, 'Hannah Reid', 15, 'dd', true, 8, true), (2, 'Marek Nowak', 20, 'card', true, 10, false), (3, 'Olu Adeyemi', 10, 'dd', false, 9, false), (4, 'Sophie Turner', 25, 'dd', true, 14, false),
+    (5, 'James Carter', 5, 'card', false, 12, false), (6, 'Leila Haddad', 30, 'dd', true, 3, false), (7, 'Daniel Wu', 12, 'paypal', false, 5, false)) as g (n, name, usd, method, aid, months, fails),
+    generate_series(0, 14) m
+where o.slug = '${DEMO_SLUG}' and m <= g.months and not (g.n in (4, 5) and m < 2)
+order by m desc;
+-- Inserted as the demo user, so the claim trigger made them that user's own; they belong to the fictional donors.
+update donations set donor_id = null where stripe_subscription_id like 'sub_demo_%';
+update recurring_gifts set donor_id = null where stripe_subscription_id like 'sub_demo_%';
+update recurring_gifts set status = 'paused' where stripe_subscription_id = 'sub_demo_4';
+update recurring_gifts set status = 'cancelled', cancelled_at = now() - interval '50 days' where stripe_subscription_id = 'sub_demo_5';
+`;
 
 export const demoDb = async (): Promise<DB> => {
     // One Postgres shared by every tab (see demo-worker.ts). Each query is a message; the worker answers by id.
@@ -140,4 +170,4 @@ export const demoDb = async (): Promise<DB> => {
 };
 
 /** Wipes the browser copy of the demo so the next load reseeds it. */
-export const resetDemo = async () => { for (const v of ["v1", "v2", "v3"]) { indexedDB.deleteDatabase(`/pglite/outgive-demo-${v}`); indexedDB.deleteDatabase(`outgive-demo-${v}`); } };
+export const resetDemo = async () => { for (const v of ["v1", "v2", "v3", "v4"]) { indexedDB.deleteDatabase(`/pglite/outgive-demo-${v}`); indexedDB.deleteDatabase(`outgive-demo-${v}`); } };
