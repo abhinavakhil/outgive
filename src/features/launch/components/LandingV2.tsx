@@ -34,7 +34,7 @@ const STEPS = [
 ] as const;
 const NAV: [string, string][] = [["Features", "#pages"], ["Live nights", "#nights"], ["Pricing", "/pricing"], ["Leaderboard", "/leaderboard"]];
 const FOOT: [string, [string, string][]][] = [
-    ["Product", [["Donate page", donateHref("hero")], ["Fundraising pages", "/create"], ["Live screens", "/demo/live"], ["Leaderboards", "/leaderboard"], ["Checkout", "/checkout"]]],
+    ["Product", [["Ramadan giving page", "/ramadhan"], ["Fundraising pages", "/create"], ["Live screens", "/demo/live"], ["Leaderboards", "/leaderboard"], ["Checkout", "/checkout"]]],
     ["Resources", [["Pricing", "/pricing"], ["Blog", "/blog"], ["FAQ", "/faq"], ["Fundraising rules", "/rules"]]],
     ["Company", [["About", "/about"], ["Contact", "mailto:hello@outgive.tech"], ["Book a demo", "#demo"]]],
     ["Legal", [["Privacy policy", "/privacy"], ["Terms of service", "/terms"]]],
@@ -116,9 +116,9 @@ export const LandingV2 = () => {
 
             <main>
                 <section id="top" className="v2-wrap" style={{ paddingTop: 64, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 26 }}>
-                    <h1 className="v2-rise" style={{ fontSize: "clamp(48px, 7.2vw, 100px)", lineHeight: 0.98, letterSpacing: "-0.055em", fontWeight: 500, maxWidth: "10.5em" }}>Make this <span className="v2-sc">Ramadan</span> your biggest appeal yet.</h1>
+                    <h1 className="v2-rise" style={{ fontSize: "clamp(48px, 7.2vw, 100px)", lineHeight: 0.98, letterSpacing: "-0.055em", fontWeight: 500, maxWidth: "10.5em" }}>Make this <span className="v2-sc v2-mark">Ramadan</span> your biggest appeal yet.</h1>
                     <p className="v2-sub v2-rise" style={{ maxWidth: "30em", fontSize: 18, ...d(0.1) }}>Launch your donation page in minutes, let supporters fundraise for you, and turn the Last 10 Nights into a live race.</p>
-                    <div className="v2-rise" style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center", gap: "10px 12px", ...d(0.2) }}><a href="#demo" className="v2-btn v2-sage-btn">Book a demo</a><a href={donateHref("hero")} className="v2-btn v2-soft-btn">Try the donate page</a></div>
+                    <div className="v2-rise" style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center", gap: "10px 12px", ...d(0.2) }}><a href="#demo" className="v2-btn v2-sage-btn">Book a demo</a><a href="/ramadhan" className="v2-btn v2-soft-btn">See a live Ramadan page</a></div>
                 </section>
 
                 <section className="v2-wrap v2-rise" style={{ paddingTop: 64, ...d(0.35) }}>
@@ -376,7 +376,7 @@ export const LandingV2 = () => {
                         <p style={{ position: "relative", fontSize: 17, lineHeight: 1.55, maxWidth: "27em" }}>Gifts are paid into the charity's own Stripe account. They never pass through a fundraiser's hands, or ours.</p>
                         <div style={{ position: "relative", display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 10 }}>
                             <a href="#demo" className="v2-btn" style={{ background: "#D2DBA0", color: "#191919" }}>Book a demo</a>
-                            <a href={donateHref("hero")} className="v2-btn" style={{ background: "rgba(255,255,255,.1)", color: "#fff" }}>Try the donate page</a>
+                            <a href="/ramadhan" className="v2-btn" style={{ background: "rgba(255,255,255,.1)", color: "#fff" }}>See a live Ramadan page</a>
                             <a href="/pricing" className="v2-btn" style={{ background: "rgba(255,255,255,.1)", color: "#fff" }}>See pricing</a>
                         </div>
                         <dl style={{ position: "relative", width: "100%", maxWidth: 720, display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", marginTop: 40, borderTop: "1px solid rgba(255,255,255,.14)" }}>
