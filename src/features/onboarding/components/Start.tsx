@@ -6,15 +6,16 @@ import { initials } from "@/shared/lib/format";
 import { ALL_VARIANTS } from "@/features/leaderboard";
 import { SignIn } from "@/features/auth";
 import { Coin, GiftBox } from "@/features/launch";
+import { OgLogo } from "@/shared/ui";
 import "../start.css";
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
 /** What the address box keeps while typing: dashes at the ends stay (so "clear-well" can be typed) and the live check flags them. */
 const tidy = (s: string) => s.toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/-{2,}/g, "-").slice(0, 40);
 const SLUG = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;
-const SWATCHES: [string, string][] = [["#2b59ff", "Blue"], ["#7A2FA6", "Orchid"], ["#E0457B", "Pink"], ["#E0603F", "Coral"], ["#D9920B", "Amber"], ["#0E8F62", "Green"], ["#1A1C1A", "Ink"]];
+const SWATCHES: [string, string][] = [["#2b59ff", "Blue"], ["#191919", "Orchid"], ["#E0457B", "Pink"], ["#E0603F", "Coral"], ["#D9920B", "Amber"], ["#0E8F62", "Green"], ["#191919", "Ink"]];
 /** Black or white, whichever reads on the colour. */
-const onColor = (hex: string) => { const n = parseInt(hex.slice(1), 16); return 0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255) > 160 ? "#14121A" : "#fff"; };
+const onColor = (hex: string) => { const n = parseInt(hex.slice(1), 16); return 0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255) > 160 ? "#191919" : "#fff"; };
 /** Sample supporters for the preview, in USD. */
 const SAMPLE: [string, number][] = [["Amara Okafor", 2400], ["Harbour Runners", 1850], ["Yusuf Ali", 920]];
 const STEPS = ["Organisation", "Your page", "Details"];
@@ -79,7 +80,7 @@ export const Start = () => {
                 <GiftBox className="st-prop" style={{ width: 112, right: -22, bottom: -6, transform: "rotate(10deg)" }} />
                 <div className="st-top">
                     <a className="st-logo" href={href({ name: "landing" })} aria-label="Outgive home">
-                        <svg width="34" height="24" viewBox="0 0 34 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="#F2DC3B" strokeWidth="3.5" /><circle cx="22" cy="12" r="10" fill="none" stroke="#fff" strokeWidth="3.5" /></svg>Outgive
+                        <OgLogo size={24} tone="dark" />
                     </a>
                     <span className="st-free st-mono">Free to start</span>
                 </div>

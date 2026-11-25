@@ -17,8 +17,6 @@ try {
         const head = [
             `<link rel="canonical" href="${url}" />`,
             `<meta property="og:url" content="${url}" />`,
-            `<meta property="og:image" content="${site.url}/og.png" />`,
-            `<meta name="twitter:image" content="${site.url}/og.png" />`,
             ...p.jsonLd.map((ld) => `<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, "\\u003c")}</script>`),
         ].join("\n    ");
         const html = shell
@@ -29,6 +27,11 @@ try {
             .replace(/(<meta property="og:description" content=")[^"]*"/, `$1${esc(p.description)}"`)
             .replace(/(<meta name="twitter:title" content=")[^"]*"/, `$1${esc(p.title)}"`)
             .replace(/(<meta name="twitter:description" content=")[^"]*"/, `$1${esc(p.description)}"`)
+            // Each page carries its own share card.
+            .replace(/(<meta property="og:image" content=")[^"]*"/, `$1${site.url}${p.image}"`)
+            .replace(/(<meta name="twitter:image" content=")[^"]*"/, `$1${site.url}${p.image}"`)
+            .replace(/(<meta property="og:image:alt" content=")[^"]*"/, `$1${esc(p.imageAlt)}"`)
+            .replace(/(<meta name="twitter:image:alt" content=")[^"]*"/, `$1${esc(p.imageAlt)}"`)
             .replace('<meta name="robots" content="index, follow" />', `<meta name="robots" content="${p.noindex ? "noindex" : "index, follow"}" />`)
             .replace("</head>", `    ${head}\n  </head>`)
             .replace('<div id="root"></div>', () => `<div id="root">${p.html}</div>`)
@@ -49,7 +52,7 @@ try {
     // A plain-text map for AI assistants and answer engines (llmstxt.org): what the site is and its pages worth reading.
     const listed = built.filter((p) => !p.noindex);
     fs.writeFileSync(path.join(dist, "llms.txt"), `# ${site.name}\n\n> ${listed[0].description}\n\n## Pages\n\n${listed.map((p) => `- [${p.title}](${site.url}${p.path === "/" ? "/" : p.path}): ${p.description}`).join("\n")}\n`);
-    fs.writeFileSync(path.join(dist, "robots.txt"), `User-agent: *\nAllow: /\nDisallow: /dashboard\n\nSitemap: ${site.url}/sitemap.xml\n`);
+    fs.writeFileSync(path.join(dist, "robots.txt"), `User-agent: *\nAllow: /\n# Signed-in screens, checkout steps and design studies that duplicate the home page.\nDisallow: /dashboard\nDisallow: /login\nDisallow: /checkout\nDisallow: /demo/admin\nDisallow: /v2\nDisallow: /ramadan\nDisallow: /landing-b\nDisallow: /legacy\nDisallow: /leaderboard/v2\nDisallow: /ui\n\nSitemap: ${site.url}/sitemap.xml\n`);
 } finally {
     await vite.close();
 }

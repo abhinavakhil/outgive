@@ -1,0 +1,93 @@
+/*
+ * The Outgive landing page, built from the Outgive design system (claude.ai artifact "Outgive" design system):
+ * white ground, ink text, lilac / sage / peach page surfaces, orange for giving, forest for the close, one night section.
+ * Outfit 500 headings set tight; one Playwrite US Trad word per headline.
+ */
+.v2 {
+    --ground: #FFFFFF; --surface: #F4F3F0; --ink: #191919; --muted: #666666; --line: #EEEEEE; --brand: #7B3FD6;
+    --lilac: #C6AEE8; --lilac-soft: #DCCBF3; --lilac-ink: #4A3A66; --sage: #D2DBA0; --sage-soft: #EEF2D6; --sage-ink: #4B5530;
+    --peach: #FAD8C4; --peach-soft: #FDEBDF; --orange: #F0783C; --orange-ink: #C24A14; --forest: #2F3A22; --forest-soft: #C5CF9A;
+    --night: #191919; --night-card: #242424; --night-line: #3A3A3A; --night-muted: #A8A8A8; --on-dark: #F2F2F2; --live: #3E9A55;
+    --shadow-card: 0 0 0 1px rgba(25,25,25,.06), 0 2px 4px rgba(25,25,25,.04), 0 28px 56px -20px rgba(25,25,25,.22);
+    --shadow-row: 0 0 0 1px rgba(25,25,25,.06), 0 6px 14px -8px rgba(25,25,25,.2);
+    --shadow-night: inset 0 1px 0 rgba(255,255,255,.08), 0 0 0 1px rgba(255,255,255,.06), 0 30px 60px -24px #000;
+    overflow: hidden; font-family: "Outfit", system-ui, sans-serif; color: var(--ink);
+    /* The leaderboard's light: a lilac glow at the top and a faint orange warmth under the hero, on white. Sized to the first screen so it stays behind the hero. */
+    background: radial-gradient(70% 900px at 50% 0%, #efe6f6 0%, rgb(239 230 246 / 0.5) 45%, transparent 80%), radial-gradient(45% 520px at 50% 760px, rgb(240 123 69 / 0.08), transparent 70%), var(--ground); background-repeat: no-repeat; -webkit-font-smoothing: antialiased;
+}
+.v2 a { color: inherit; text-decoration: none; }
+:where(.v2) button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; padding: 0; text-align: inherit; }
+.v2 :is(button, a, input):focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
+.v2 :is(h1, h2, h3, p, ul, ol, dl, dd) { margin: 0; padding: 0; }
+.v2 :is(ul, ol) { list-style: none; }
+.v2 ::selection { background: var(--sage); color: var(--ink); }
+.v2-wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+.v2-h2 { font-size: clamp(38px, 4.8vw, 64px); line-height: 1; letter-spacing: -0.05em; font-weight: 500; }
+.v2-sc { font-family: "Playwrite US Trad", "Snell Roundhand", cursive; font-weight: 300; letter-spacing: 0; font-size: .72em; white-space: nowrap; }
+.v2-sub { font-size: 17px; line-height: 1.55; color: var(--muted); }
+.v2-lbl { font-size: 13px; color: #6E6E6E; }
+.v2-t3 { font-size: 25px; letter-spacing: -0.04em; font-weight: 500; }
+.v2-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.v2-card { background: #fff; border-radius: 24px; box-shadow: var(--shadow-card); }
+.v2-dcard { background: var(--night-card); border-radius: 24px; box-shadow: var(--shadow-night); }
+.v2-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 24px; border-radius: 999px; font-weight: 500; font-size: 16px; transition: transform .2s ease, box-shadow .2s ease; }
+.v2-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -10px rgba(25,25,25,.5); }
+.v2-ink { background: var(--ink); color: #fff !important; }
+.v2-link { font-weight: 500; padding: 14px 4px; border-bottom: 1.5px solid var(--ink); line-height: 1; }
+.v2-chip { display: inline-flex; align-items: center; justify-content: center; min-height: 34px; padding: 0 14px; border-radius: 999px; font-size: 14px; background: #fff; box-shadow: 0 0 0 1px rgba(25,25,25,.08); }
+.v2-chip-on { background: var(--ink); color: #fff; }
+.v2-seg { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 4px; border-radius: 999px; }
+.v2-seg button { min-height: 44px; padding: 0 18px; border-radius: 999px; font-size: 15px; transition: background .25s ease, color .25s ease; }
+.v2-seg button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+.v2-seg-dark button[aria-pressed="true"] { background: #fff; color: var(--ink); }
+.v2-seg-dark button[aria-pressed="false"] { color: var(--on-dark); }
+.v2-navl { padding: 12px 4px; color: var(--muted); transition: color .2s; }
+.v2-navl:hover { color: var(--ink); }
+.v2-tilt { transition: transform .45s cubic-bezier(.2,.8,.2,1); }
+.v2-tilt:hover { transform: rotate(0deg) translateY(-10px) !important; }
+.v2-lilac { background: linear-gradient(165deg, var(--lilac-soft), var(--lilac)); }
+.v2-sage { background: linear-gradient(165deg, #E3EABF, var(--sage)); }
+.v2-peach { background: linear-gradient(165deg, var(--peach-soft), var(--peach)); }
+.v2-forest { background: linear-gradient(165deg, #3A4829, #27311B); }
+.v2-bar { height: 5px; border-radius: 99px; overflow: hidden; }
+.v2-bar > span { display: block; height: 100%; border-radius: 99px; }
+
+/* Hero stage. */
+.v2-stage { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,470px) minmax(0,1fr); gap: 28px; align-items: center; }
+/* The page deck. */
+.v2-deck { position: relative; height: 380px; max-width: 1160px; margin: 0 auto; text-align: left; }
+.v2-deck > button { position: absolute; left: 50%; top: 20px; width: 320px; height: 300px; padding: 22px; display: flex; flex-direction: column; gap: 14px; transition: transform .6s cubic-bezier(.2,.8,.2,1), opacity .4s ease; }
+/* Live-nights flow. */
+.v2-flow { display: flex; align-items: center; }
+.v2-conn { flex: 1 1 40px; min-width: 36px; height: 2px; position: relative; background: repeating-linear-gradient(90deg, #555 0 4px, transparent 4px 10px); }
+.v2-conn span { position: absolute; top: -3px; width: 8px; height: 8px; border-radius: 50%; background: var(--orange); animation: v2-travel 2.4s linear infinite; }
+.v2-qr { background: #fff; border-radius: 10px; padding: 7px; display: inline-flex; }
+
+/* Motion: one entrance, gentle floating, live drops. */
+.v2-rise { animation: v2-rise .9s cubic-bezier(.2,.7,.2,1) both; }
+.v2-float { animation: v2-float 7s ease-in-out infinite; }
+.v2-floatb { animation: v2-float 8s ease-in-out -3s infinite; }
+.v2-pop { animation: v2-pop .6s cubic-bezier(.2,.8,.2,1) both; }
+.v2-fill { animation: v2-fill 6s linear both; transform-origin: left; }
+@keyframes v2-rise { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+@keyframes v2-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes v2-pop { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
+@keyframes v2-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes v2-travel { 0% { left: 0; opacity: 0; } 15%, 85% { opacity: 1; } 100% { left: calc(100% - 8px); opacity: 0; } }
+@media (max-width: 920px) {
+    .v2-stage { grid-template-columns: minmax(0,1fr); }
+    .v2-stage .v2-side { transform: none !important; max-width: 470px; width: 100%; margin: 0 auto; }
+    .v2-note { display: none; }
+    .v2-flow { flex-direction: column; gap: 20px; align-items: stretch; }
+    .v2-conn { display: none; }
+    .v2-ways > * { transform: none !important; }
+    .v2-deck > button { width: 280px; }
+}
+@media (prefers-reduced-motion: reduce) { .v2 *, .v2 *::before, .v2 *::after { animation: none !important; transition: none !important; } }
+
+/* The hero's main action: the sage pill from the closing panel, with ink text. */
+.v2-sage-btn { min-height: 56px; padding: 0 34px; background: #D2DBA0; color: #191919 !important; font-weight: 600; box-shadow: 0 1px 0 rgb(255 255 255 / 0.6) inset, 0 12px 26px -12px rgb(75 85 48 / 0.55); }
+.v2-sage-btn:hover { background: #C8D292; }
+/* The hero's second action: a quiet white pill beside the sage one. */
+.v2-soft-btn { min-height: 56px; padding: 0 30px; background: #fff; color: #191919 !important; box-shadow: 0 0 0 1px rgba(25,25,25,.08), 0 8px 20px -14px rgba(25,25,25,.35); }
+.v2-soft-btn:hover { background: #F4F3F0; }

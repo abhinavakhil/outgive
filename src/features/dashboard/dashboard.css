@@ -2,13 +2,13 @@
 /* In the components layer so Tailwind utilities in the markup win over these defaults. */
 @layer components {
 .od {
-    --od-bg: #f2f0ec; --od-card: #fff; --od-cs: #fff; --od-edge: #e4dfd7; --od-soft: #e9e5de; --od-sel: #f6ecfb;
-    --od-ink: #1b1a1f; --od-ink2: #3d3b45; --od-muted: #66636f; --od-line: #e2ddd5; --od-link: #6a35b8; --od-field: #fff; --od-tip: #fff;
-    --od-lime: #7db928; --od-lime-a: #b6e84a; --od-lime-b: #7db928; --od-accent: #b45fd6; --od-cta: #d9a0f0; --od-cta-ink: #1a1440;
-    --od-ok-fg: #3e6b0b; --od-ok-bg: #e6f4cc; --od-warn-fg: #6b5408; --od-warn-bg: #fdf1c4; --od-bad-fg: #b3261e; --od-bad-bg: #fde9e7;
-    --od-bar-dim: linear-gradient(180deg, rgb(180 95 214 / 0.72), rgb(180 95 214 / 0.14)); --od-bar-on: linear-gradient(180deg, #c77be6, #9a45c2); --od-glow: 0 8px 22px rgb(180 95 214 / 0.4);
-    --od-m1: #8cc92a; --od-m2: #b45fd6; --od-m3: #d9d4ca; --od-m4: #f0c98a; --od-donut-glow: drop-shadow(0 10px 18px rgb(125 185 40 / 0.22));
-    --od-c1: #b45fd6; --od-c2: #7db928; --od-heat: 180 95 214;
+    --od-bg: #F4F3F0; --od-card: #fff; --od-cs: #fff; --od-edge: #EEEEEE; --od-soft: #EEEDE9; --od-sel: #EEF2D6;
+    --od-ink: #191919; --od-ink2: #444444; --od-muted: #666666; --od-line: #EEEEEE; --od-link: #191919; --od-field: #fff; --od-tip: #fff;
+    --od-lime: #2F3A22; --od-lime-a: #D2DBA0; --od-lime-b: #2F3A22; --od-accent: #F0783C; --od-cta: #F0783C; --od-cta-ink: #191919;
+    --od-ok-fg: #4B5530; --od-ok-bg: #EEF2D6; --od-warn-fg: #6b5408; --od-warn-bg: #fdf1c4; --od-bad-fg: #b3261e; --od-bad-bg: #fde9e7;
+    --od-bar-dim: linear-gradient(180deg, #DCCBF3, rgb(220 203 243 / 0.35)); --od-bar-on: linear-gradient(180deg, #F59A6E, #F0783C); --od-glow: 0 8px 22px rgb(240 120 60 / 0.35);
+    --od-m1: #D2DBA0; --od-m2: #C6AEE8; --od-m3: #E0DDD6; --od-m4: #FAD8C4; --od-donut-glow: none;
+    --od-c1: #F0783C; --od-c2: #2F3A22; --od-heat: 240 120 60;
     --od-shadow: 0 6px 18px rgb(40 30 20 / 0.06); --od-tip-shadow: 0 14px 30px rgb(0 0 0 / 0.22);
     color-scheme: light;
     min-height: 100dvh; background: var(--od-bg); color: var(--od-ink);

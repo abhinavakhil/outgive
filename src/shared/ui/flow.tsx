@@ -9,10 +9,11 @@ import { cx } from "@/shared/utils/cx";
 export const ACCENT: "pink" | "blue" = "pink";
 export const focus = "outline-(--f-blue) focus-visible:outline-2 focus-visible:outline-offset-2";
 /** Focus on a boxed field: a soft blue tint, not a hard blue border. */
-export const soft = "focus-within:border-(--f-ice-line) focus-within:shadow-[0_0_0_4px_var(--f-ice)]";
+export const soft = "hover:bg-(--f-chip-hover,#EEEDE9) focus-within:bg-(--f-chip-hover,#EEEDE9) focus-within:shadow-[inset_0_0_0_2px_var(--f-ink)]";
 /** One boxed field style for every text answer. */
-export const field = cx("flex h-[72px] items-center gap-4 rounded-[20px] border-[1.5px] border-(--f-line) bg-(--f-card) px-5 shadow-[0_1px_2px_rgb(11_15_25/0.04)] transition", soft);
-export const fieldInput = "min-w-0 flex-1 border-0 bg-transparent p-0 text-[20px] leading-none font-extrabold tracking-[-0.02em] text-(--f-ink) outline-none placeholder:text-(--f-ph) md:text-[24px]";
+/** One field style for every text answer, in the app's HeroUI look (shared/ui/fields.css): filled, rounded, ink ring on focus. */
+export const field = cx("flex h-[72px] items-center gap-4 rounded-[16px] bg-(--f-chip) px-5 transition", soft);
+export const fieldInput = "min-w-0 flex-1 border-0 bg-transparent p-0 text-[20px] leading-none font-medium tracking-[-0.02em] text-(--f-ink) outline-none placeholder:text-(--f-ph) md:text-[24px]";
 /** Selectable card: white, or ice-blue with a soft lift when chosen. */
 export const tile = (on: boolean) => cx("relative cursor-pointer rounded-[18px] border-[1.5px] text-left transition duration-200", focus, on ? "border-(color:--f-sel) bg-(--f-card) shadow-[0_0_0_3px_var(--f-ice),0_12px_28px_-16px_var(--f-glow)]" : "border-(--f-line) bg-(--f-card) hover:-translate-y-px hover:border-(--f-ice-line) hover:shadow-[0_10px_24px_-16px_rgb(11_15_25/0.25)]");
 export const pill = (on: boolean) => cx("h-11 cursor-pointer rounded-full border-[1.5px] px-4 text-[15px] leading-none font-bold tabular-nums transition", focus, on ? "border-(color:--f-sel) bg-(--f-card) text-(--f-blue) shadow-[0_0_0_3px_var(--f-ice)]" : "border-(--f-line) bg-(--f-card) text-(--f-ink) hover:border-(--f-ice-line)");

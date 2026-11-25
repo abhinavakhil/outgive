@@ -1,0 +1,449 @@
+/*
+ * The charity's Ramadan page. One accent, --c (and its text colour --on-c), drives everything.
+ * s-outline (default): a warm cream page, cards with a thin ink outline, outlined pill buttons and gradient grid panels.
+ * s-soft: the colour washes down behind the profile; white cards, no outlines.
+ * k-round / k-pill / k-square set the corner size.
+ */
+.bp { --soft: color-mix(in srgb, var(--c) 12%, #fff); --tint: color-mix(in srgb, var(--c) 22%, #fff); --deep: color-mix(in srgb, var(--c) 72%, #000);
+    --page: #F3F0E8; --card: #fff; --ink: #222; --mute: #666; --line: #222; --lw: 1.5px; --r: 22px; --rs: 14px;
+    position: relative; min-height: 100%; background: var(--page); color: var(--ink); font-family: var(--font); -webkit-font-smoothing: antialiased; color-scheme: light; padding-bottom: 110px; overflow-x: hidden; }
+.bp.k-pill { --r: 30px; --rs: 999px; } .bp.k-square { --r: 8px; --rs: 6px; }
+.bp.s-soft { --page: #F6F5F2; --line: transparent; --lw: 0px; }
+.bp a { color: inherit; text-decoration: none; }
+.bp button { font: inherit; cursor: pointer; }
+.bp :focus-visible { outline: 2px solid var(--c); outline-offset: 3px; }
+.bp-bg { position: absolute; inset: 0 0 auto; height: 360px; pointer-events: none; }
+.s-soft .bp-bg { background: radial-gradient(90% 100% at 50% 0%, color-mix(in srgb, var(--c) 80%, #fff) 0%, var(--c) 40%, transparent 100%); }
+.bp-col { position: relative; width: min(520px, 100%); margin: 0 auto; padding: 22px 16px 0; display: flex; flex-direction: column; gap: 14px; }
+
+/* Profile. */
+.bp-profile { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 12px 8px 4px; }
+.s-soft .bp-profile{ color: var(--on-c); }
+.bp-avatar { display: grid; place-items: center; width: 96px; height: 96px; object-fit: cover; border-radius: var(--r); background: var(--c); color: var(--on-c); font-size: 32px; font-weight: 600; letter-spacing: -.03em; border: var(--lw) solid var(--line); }
+.s-soft .bp-avatar{ background: #fff; color: var(--c); box-shadow: 0 14px 30px -12px rgb(0 0 0 / .35); }
+.bp-profile h1 { margin: 14px 0 0; font-size: 30px; line-height: 1.05; font-weight: 600; letter-spacing: -.035em; }
+.bp-profile p { margin: 6px 0 0; font-size: 16px; opacity: .85; }
+.bp-profile small { margin-top: 4px; font-size: 12.5px; opacity: .7; }
+.bp-socials { display: flex; gap: 8px; margin-top: 14px; }
+.bp-socials a { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 999px; background: var(--card); border: var(--lw) solid var(--line); transition: transform .2s; }
+.s-soft .bp-socials a{ background: color-mix(in srgb, var(--on-c) 16%, transparent); color: var(--on-c); }
+.bp-socials a:hover { transform: translateY(-2px); }
+
+/* Cards, headings, text. */
+.bp-card { background: var(--card); border: var(--lw) solid var(--line); border-radius: var(--r); padding: 18px; }
+.s-soft .bp-card{ box-shadow: 0 0 0 1px rgb(25 25 25 / .05), 0 12px 30px -20px rgb(25 25 25 / .35); }
+.bp-h2 { margin: 12px 4px 0; font-size: 26px; font-weight: 600; letter-spacing: -.035em; }
+.bp-h3 { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -.025em; }
+.bp-help { margin: 2px 4px 10px; font-size: 14px; color: var(--mute); }
+.bp-mute { color: var(--mute); }
+.bp-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.bp-small { margin-top: 10px; font-size: 14px; }
+.bp-big { font-size: 32px; font-weight: 600; letter-spacing: -.045em; }
+.bp-link { font-size: 14px; font-weight: 500; text-decoration: underline !important; text-underline-offset: 3px; }
+.bp-bar { height: 8px; margin-top: 10px; border-radius: 99px; background: var(--soft); overflow: hidden; }
+.s-outline .bp-bar { border: 1px solid var(--line); height: 10px; background: #fff; }
+.bp-bar span { display: block; height: 100%; border-radius: inherit; background: var(--c); transition: width .7s cubic-bezier(.2,.8,.2,1); }
+.bp-stats { display: grid; grid-template-columns: repeat(3, 1fr); margin: 14px 0 0; border-top: var(--lw) solid var(--line); }
+.s-soft .bp-stats{ border-top: 1px solid #EEE; }
+.bp-stats > div { display: flex; flex-direction: column-reverse; padding-top: 12px; }
+.bp-stats > div + div { padding-left: 14px; }
+.bp-stats dt { font-size: 12.5px; color: var(--mute); } .bp-stats dd { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -.03em; }
+
+/* Banner: a gradient grid panel. */
+.bp-banner { position: relative; overflow: hidden; border-radius: var(--r); padding: 22px; color: #fff; border: var(--lw) solid var(--line);
+    background-image: repeating-linear-gradient(90deg, rgb(255 255 255 / .16) 0 1px, transparent 1px 28px), repeating-linear-gradient(0deg, rgb(255 255 255 / .16) 0 1px, transparent 1px 28px), linear-gradient(160deg, color-mix(in srgb, var(--c) 75%, #fff), var(--c) 45%, var(--deep)); }
+.bp-banner::after { content: ""; position: absolute; right: -28px; top: -40px; width: 140px; height: 140px; border-radius: 50%; box-shadow: -22px 18px 0 0 #F7D44C; opacity: .85; }
+.bp-banner > * { position: relative; z-index: 1; }
+.bp-pill { display: inline-block; padding: 5px 11px; border-radius: 99px; background: #fff; color: #222; font-size: 12.5px; font-weight: 600; border: var(--lw) solid var(--line); }
+.bp-banner-big { margin: 12px 0 0; font-size: 46px; line-height: 1; font-weight: 600; letter-spacing: -.05em; }
+.bp-banner-big span { font-size: .48em; font-weight: 500; letter-spacing: -.01em; opacity: .85; }
+.bp-banner-sub { margin: 10px 0 0; font-size: 14.5px; line-height: 1.45; opacity: .92; max-width: 32ch; }
+.bp-nights { display: grid; grid-template-columns: repeat(30, 1fr); gap: 3px; margin-top: 14px; }
+.bp-nights i { height: 8px; border-radius: 3px; background: rgb(255 255 255 / .22); }
+.bp-nights i.l10 { background: rgb(247 212 76 / .35); }
+.bp-nights i.on { background: #fff; } .bp-nights i.on.l10 { background: #F7D44C; }
+
+/* Campaign cards: a gradient grid picture, then the appeal. */
+.bp-camps { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.bp-camp { padding: 10px 10px 16px; }
+.bp-camp > :not(.bp-art) { margin-inline: 8px; }
+.bp-camp h3 { margin-top: 14px; font-size: 19px; font-weight: 600; letter-spacing: -.025em; }
+.bp-camp p { margin-top: 3px; font-size: 14px; }
+.bp-art { position: relative; height: 150px; border-radius: calc(var(--r) - 8px); border: var(--lw) solid var(--line); display: flex; align-items: flex-end; justify-content: space-between; padding: 12px; color: #222;
+    background-image: repeating-linear-gradient(90deg, rgb(255 255 255 / .45) 0 1px, transparent 1px 22px), repeating-linear-gradient(0deg, rgb(255 255 255 / .45) 0 1px, transparent 1px 22px), var(--g); }
+.bp-art.art0 { --g: linear-gradient(180deg, #F8A5E9, #F9E66E); }
+.bp-art.art1 { --g: linear-gradient(180deg, #6A5CF5, #8EE3FA); color: #fff; }
+.bp-art.art2 { --g: linear-gradient(180deg, #B8F28C, #F9E66E); }
+.bp-art.art3 { --g: linear-gradient(180deg, #FDB98A, #F8A5E9); }
+.bp-art b { font-size: 28px; font-weight: 600; letter-spacing: -.04em; }
+.bp-art-tag { padding: 4px 10px; border-radius: 99px; background: #fff; color: #222; font-size: 12px; font-weight: 600; border: var(--lw) solid var(--line); }
+.bp-camp.on, .bp-cause.on { box-shadow: 0 0 0 2.5px var(--c); }
+.s-outline .bp-camp.on, .s-outline .bp-cause.on { border-color: var(--c); box-shadow: 0 0 0 1.5px var(--c); }
+
+/* Causes. */
+.bp-causes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.bp-causes.grid { display: grid; grid-template-columns: 1fr 1fr; }
+.bp-causes.grid .bp-amounts { grid-template-columns: 1fr 1fr; } .bp-causes.grid .bp-amounts button:nth-child(3) { grid-column: span 2; }
+.bp-causes.grid .bp-cause-head { flex-direction: column; align-items: flex-start; }
+.bp-cause-head { display: flex; align-items: center; gap: 12px; }
+.bp-icon { display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; border-radius: var(--rs); background: var(--soft); color: var(--deep); border: var(--lw) solid var(--line); }
+.bp-cause h3 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -.02em; }
+.bp-cause p { margin: 2px 0 0; font-size: 13px; }
+.bp-amounts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+.bp-amounts button { min-height: 44px; border-radius: var(--rs); background: var(--card); color: var(--ink); font-size: 15px; font-weight: 600; border: var(--lw) solid var(--line); transition: background .15s, color .15s, transform .15s; }
+.s-soft .bp-amounts button{ background: #F4F3F0; }
+.bp-amounts button:hover { background: var(--tint); }
+.bp-amounts button[aria-pressed="true"] { background: var(--c); color: var(--on-c); }
+.bp-amounts button:active { transform: scale(.97); }
+
+/* Lists: supporters and gifts. */
+.bp-list { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; font-size: 14.5px; }
+.bp-list li { display: flex; align-items: center; gap: 10px; }
+.bp-list b { font-weight: 600; } .bp-list small { display: block; font-size: 12.5px; color: var(--mute); } .bp-list time { color: var(--mute); font-size: 12.5px; }
+.bp-list .flex-1 b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bp-av { display: grid; place-items: center; width: 34px; height: 34px; flex-shrink: 0; border-radius: 50%; background: var(--soft); color: var(--deep); font-size: 11.5px; font-weight: 600; border: var(--lw) solid var(--line); }
+.bp-rank { display: grid; place-items: center; width: 24px; height: 24px; flex-shrink: 0; border-radius: 8px; font-size: 12px; font-weight: 600; background: #F4F3F0; }
+.bp-rank.r1 { background: var(--c); color: var(--on-c); } .bp-rank.r2 { background: var(--tint); } .bp-rank.r3 { background: var(--soft); }
+.bp-live { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--mute); }
+.bp-live i { width: 7px; height: 7px; border-radius: 50%; background: #2FA84F; animation: bp-blink 1.8s ease-in-out infinite; }
+@keyframes bp-blink { 50% { opacity: .35; } }
+
+/* Journey. */
+.bp-journey { list-style: none; margin: 14px 0 0; padding: 0; }
+.bp-journey li { position: relative; display: flex; gap: 12px; padding-bottom: 16px; }
+.bp-journey li:last-child { padding-bottom: 0; }
+.bp-journey li:not(:last-child)::before { content: ""; position: absolute; left: 7px; top: 18px; bottom: 0; width: 2px; background: #E6E6E6; }
+.bp-journey li.done:not(:last-child)::before { background: var(--c); }
+.bp-journey i { flex-shrink: 0; width: 16px; height: 16px; margin-top: 2px; border-radius: 50%; border: 2px solid #D0D0D0; background: #fff; }
+.bp-journey li.done i { border-color: var(--c); background: var(--c); box-shadow: inset 0 0 0 3px #fff; }
+.bp-journey b { font-size: 15px; font-weight: 600; } .bp-journey p { margin: 2px 0 0; font-size: 13.5px; }
+
+/* Links: outlined pill buttons. */
+.bp-links { display: flex; flex-direction: column; gap: 10px; }
+.bp-btn { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 56px; padding: 0 20px; border-radius: var(--rs); background: var(--card); border: var(--lw) solid var(--line); font-size: 16px; font-weight: 600; transition: transform .2s, box-shadow .2s; }
+.s-outline .bp-btn:hover { background: var(--soft); transform: translateY(-2px); }
+.s-soft .bp-btn{ box-shadow: 0 0 0 1px rgb(25 25 25 / .06), 0 8px 20px -14px rgb(25 25 25 / .35); }
+
+.bp-foot { display: flex; justify-content: space-between; padding: 10px 6px; font-size: 13px; color: var(--mute); }
+.bp-foot b { font-weight: 700; color: var(--ink); }
+
+/* Basket. */
+.bp-basket { position: sticky; bottom: 0; z-index: 20; display: flex; justify-content: center; padding: 14px 16px calc(14px + env(safe-area-inset-bottom)); pointer-events: none; }
+.bp-give { pointer-events: auto; display: flex; align-items: center; justify-content: center; gap: 10px; width: min(488px, 100%); min-height: 58px; border-radius: var(--rs); background: var(--c); color: var(--on-c) !important; font-size: 17px; font-weight: 600; border: var(--lw) solid var(--line); box-shadow: 0 16px 34px -14px var(--c); transition: transform .2s; }
+.s-outline .bp-give { box-shadow: 0 14px 28px -14px var(--c); }
+.bp-give:hover { transform: translateY(-2px); }
+@media (prefers-reduced-motion: reduce) { .bp-live i { animation: none; } .bp-bar span, .bp-give, .bp-btn, .bp-amounts button { transition: none; } }
+
+.bp { flex: 1; }
+
+/* Illustrated cards. */
+.bp-illo { display: grid; place-items: center; width: 84px; height: 76px; flex-shrink: 0; border-radius: var(--rs); border: var(--lw) solid var(--line); overflow: hidden; }
+.k-pill .bp-illo { border-radius: 22px; }
+.bp-illo svg { width: 100%; height: 100%; padding: 4px; }
+.bp-cause-pct { display: block; margin-top: 4px; font-size: 13px; font-weight: 600; }
+.bp-causes.grid .bp-illo { width: 100%; height: 110px; }
+.bp-causes.grid .bp-cause-pct { display: none; }
+.bp-art-illo { position: absolute; inset: 6px 20% 26px; width: 60%; height: calc(100% - 32px); }
+.bp-art { overflow: hidden; }
+.bp-art > span, .bp-art > b { position: relative; z-index: 1; }
+
+/* ---------- s-outgive: the home page's design system ----------
+   White ground with the lilac glow, white 24px cards with the soft card shadow and no outlines, Outfit 500 set tight,
+   pastel lilac / sage / peach panels, ink for selected chips, the accent (default orange) for Give, a forest banner. */
+.bp.s-outgive { --page: #FFFFFF; --line: transparent; --lw: 0px; --ink: #191919; --mute: #666666; --r: 24px; --rs: 999px;
+    background: radial-gradient(70% 520px at 50% 0%, #efe6f6 0%, rgb(239 230 246 / .5) 45%, transparent 80%), radial-gradient(45% 420px at 50% 640px, rgb(240 123 69 / .07), transparent 70%), #FFFFFF; background-repeat: no-repeat; }
+.s-outgive.k-square { --r: 10px; --rs: 10px; } .s-outgive.k-round { --rs: 14px; }
+.s-outgive .bp-card { box-shadow: 0 0 0 1px rgba(25,25,25,.06), 0 2px 4px rgba(25,25,25,.04), 0 28px 56px -20px rgba(25,25,25,.22); }
+.s-outgive h1, .s-outgive .bp-h2, .s-outgive .bp-h3, .s-outgive h3, .s-outgive .bp-big, .s-outgive .bp-banner-big { font-weight: 500; letter-spacing: -.05em; }
+.s-outgive .bp-h2 { font-size: 30px; }
+.s-outgive .bp-avatar { background: linear-gradient(165deg, #DCCBF3, #C6AEE8); color: #191919; box-shadow: inset 0 1px 0 rgba(255,255,255,.55), 0 18px 34px -18px rgba(90,50,160,.55); }
+.s-outgive .bp-socials a { background: #fff; box-shadow: 0 0 0 1px rgba(25,25,25,.08); }
+.s-outgive .bp-banner { color: #EEF2D6; background-image: linear-gradient(170deg, #3A4829 0%, #27311B 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,.12); }
+.s-outgive .bp-banner::after { box-shadow: -22px 18px 0 0 #F0783C; opacity: 1; }
+.s-outgive .bp-pill { background: #D2DBA0; color: #191919; }
+.s-outgive .bp-banner-big { color: #fff; }
+.s-outgive .bp-nights i.on { background: #D2DBA0; } .s-outgive .bp-nights i.l10 { background: rgb(240 120 60 / .3); } .s-outgive .bp-nights i.on.l10 { background: #F0783C; }
+.s-outgive .bp-bar { background: #F4F3F0; }
+.s-outgive .bp-bar span { background: var(--c); }
+.s-outgive .bp-stats { border-top: 1px solid #EEEEEE; }
+.s-outgive .bp-art { background-image: none; }
+.s-outgive .bp-art.art0 { background: linear-gradient(165deg, #DCCBF3, #C6AEE8); }
+.s-outgive .bp-art.art1 { background: linear-gradient(165deg, #E3EABF, #D2DBA0); color: #191919; }
+.s-outgive .bp-art.art2 { background: linear-gradient(165deg, #FDEBDF, #FAD8C4); }
+.s-outgive .bp-art.art3 { background: linear-gradient(165deg, #FDEBDF, #FAD8C4); }
+.s-outgive .bp-art-tag { background: rgba(255,255,255,.85); }
+.s-outgive .bp-illo { box-shadow: inset 0 0 0 1px rgba(25,25,25,.04); }
+.s-outgive .bp-amounts button { background: #F4F3F0; }
+.s-outgive .bp-amounts button:hover { background: #EEEDE9; }
+.s-outgive .bp-amounts button[aria-pressed="true"] { background: #191919; color: #fff; }
+.s-outgive .bp-camp.on, .s-outgive .bp-cause.on { box-shadow: 0 0 0 2px #191919, 0 28px 56px -20px rgba(25,25,25,.22); }
+.s-outgive .bp-icon, .s-outgive .bp-av { background: #F4F3F0; color: #191919; }
+.s-outgive .bp-rank.r1 { background: #F0783C; color: #191919; } .s-outgive .bp-rank.r2 { background: #D2DBA0; } .s-outgive .bp-rank.r3 { background: #DCCBF3; }
+.s-outgive .bp-journey li.done i { border-color: #2F3A22; background: #2F3A22; } .s-outgive .bp-journey li.done:not(:last-child)::before { background: #D2DBA0; }
+.s-outgive .bp-btn { background: #fff; box-shadow: 0 0 0 1px rgba(25,25,25,.06), 0 6px 14px -8px rgba(25,25,25,.2); font-weight: 500; }
+.s-outgive .bp-btn:hover { background: #FAFAF8; transform: translateY(-2px); }
+.s-outgive .bp-give { background: var(--c); color: var(--on-c) !important; box-shadow: 0 10px 22px -10px rgba(233,99,42,.6); }
+.s-outgive .bp-link { color: #191919; }
+
+.bp-tools { position: fixed; top: 14px; right: 14px; z-index: 30; display: flex; gap: 8px; }
+.bp-tool { padding: 9px 15px; border-radius: 999px; background: #fff; color: #191919; font: 500 13.5px "Outfit", system-ui, sans-serif; text-decoration: none; border: 0; cursor: pointer; box-shadow: 0 0 0 1px rgba(25,25,25,.08), 0 8px 20px -12px rgba(25,25,25,.35); }
+.bp-tool[aria-pressed="true"] { background: #191919; color: #fff; }
+
+
+/* Round logo; tidier totals card. */
+.s-outgive .bp-avatar { border-radius: 50%; }
+.bp-kicker { margin: 0 0 2px; font-size: 13px; color: var(--mute); }
+.bp-pct { padding: 4px 10px; border-radius: 99px; background: #EEF2D6; color: #3F4A26; font-size: 13px; font-weight: 500; }
+.bp-goal { margin: 8px 0 0; font-size: 13px; color: var(--mute); }
+.s-outgive .bp-stats { gap: 8px; border-top: 0; margin-top: 16px; }
+.s-outgive .bp-stats > div { padding: 12px 14px; border-radius: 16px; background: #F7F6F3; }
+.s-outgive .bp-stats > div + div { padding-left: 14px; }
+.s-outgive .bp-stats dd { font-size: 20px; font-weight: 500; }
+
+/* Donate toggle on each campaign and cause card. */
+.bp-pick { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; margin-top: 12px; padding: 12px; border: var(--lw) solid var(--line); border-radius: var(--rs); background: var(--c); color: var(--on-c); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; transition: background .15s, transform .15s; }
+.bp-pick svg { width: 16px; height: 16px; }
+.bp-pick:hover { transform: translateY(-1px); }
+.bp-pick[aria-pressed="true"] { background: #191919; color: #fff; }
+.s-outline .bp-pick[aria-pressed="false"], .s-soft .bp-pick[aria-pressed="false"] { background: var(--c); }
+
+/* Causes grid: two cards a row on a phone, three when there's room; compact cards and buttons. */
+.bp-causes.grid { grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 10px; }
+.bp-causes.grid .bp-cause { padding: 10px; display: flex; flex-direction: column; }
+.bp-causes.grid .bp-illo { height: 92px; }
+.bp-causes.grid .bp-cause-head { gap: 8px; flex: 1; }
+.bp-causes.grid h3 { font-size: 15px; }
+.bp-causes.grid .bp-cause p { font-size: 12px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.bp-causes.grid .bp-pick, .bp-camp .bp-pick { padding: 8px 12px; font-size: 13.5px; margin-top: 10px; }
+.bp-causes.grid .bp-pick svg, .bp-camp .bp-pick svg { width: 14px; height: 14px; }
+.bp-camp .bp-pick { width: auto; margin-left: auto; }
+.bp-camp-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; }
+.bp-camp .bp-pick { margin: 0; width: auto; }
+.bp-camp .bp-bar { margin-top: 12px; }
+.bp-causes.grid .bp-pick { padding: 7px 10px; font-size: 13px; }
+/* Organiser buttons sit at the top of the page instead of floating over the cards. */
+.bp-tools { position: absolute; }
+
+/* Nothing on the page can scroll sideways; the banner's crescent is clipped, not scrollable. */
+.bp { overflow-x: clip; } .bp-banner { overflow: clip; }
+
+/* Featured campaigns: a row of three that swipes and moves on by itself. */
+.bp-feat { margin: 10px -16px 0; }
+.bp-feat-row { list-style: none; margin: 0 0 -18px; padding: 4px 16px 36px; display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.bp-feat-row::-webkit-scrollbar { display: none; }
+.bp-feat-row > li { flex: 0 0 86%; scroll-snap-align: center; }
+.bp-dots { display: flex; justify-content: center; gap: 6px; margin-top: -4px; }
+.bp-dots button { width: 7px; height: 7px; padding: 0; border: 0; border-radius: 99px; background: #DAD8D2; cursor: pointer; transition: width .25s, background .25s; }
+.bp-dots button[aria-current="true"] { width: 20px; background: #191919; }
+
+/* The other campaigns: one compact row each. */
+.bp-rows { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.bp-crow { display: flex; align-items: center; gap: 12px; padding: 10px 12px 10px 10px; }
+.bp-crow h3 { margin: 0 0 6px; font-size: 15px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bp-crow .bp-small { display: block; margin-top: 6px; font-size: 12.5px; }
+.bp-crow .bp-pick { width: auto; margin: 0; padding: 7px 12px; font-size: 13px; flex-shrink: 0; }
+.bp-thumb { display: grid; place-items: center; width: 58px; height: 58px; flex-shrink: 0; border-radius: 14px; background: #F1EAFB; }
+.bp-thumb svg { width: 100%; height: 100%; padding: 3px; }
+.bp-thumb.art1 { background: #EEF2D6; } .bp-thumb.art2, .bp-thumb.art3 { background: #FDEBDF; }
+
+/* Top supporters: a podium for the top three, then a short list. */
+.bp-podium { list-style: none; margin: 14px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); align-items: end; gap: 8px; }
+.bp-podium li { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; padding: 18px 8px 12px; border-radius: 18px; text-align: center; }
+.bp-podium .p1 { order: 2; padding-top: 26px; background: #FDEBDF; }
+.bp-podium .p2 { order: 1; background: #EEF2D6; }
+.bp-podium .p3 { order: 3; background: #F1EAFB; }
+.bp-pav { display: grid; place-items: center; width: 46px; height: 46px; margin-bottom: 6px; border-radius: 50%; background: #fff; font-size: 14px; font-weight: 600; box-shadow: 0 6px 14px -8px rgba(25,25,25,.35); }
+.p1 .bp-pav { width: 56px; height: 56px; font-size: 16px; }
+.bp-medal { position: absolute; top: -9px; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #191919; color: #fff; font-size: 11.5px; font-weight: 600; }
+.p1 .bp-medal { background: #F0783C; color: #191919; }
+.bp-podium b { max-width: 100%; font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bp-podium small { font-size: 11.5px; color: var(--mute); }
+.bp-podium strong { margin-top: 4px; font-size: 16px; font-weight: 600; letter-spacing: -.03em; }
+.bp-podium + .bp-list { margin-top: 14px; padding-top: 12px; border-top: 1px solid #EEEEEE; }
+
+/* Organiser view: a dashboard page of its own. */
+.bp-dash { flex: 1; padding: 22px 20px 48px; font-family: "Outfit", system-ui, sans-serif; color: #191919;
+    background: radial-gradient(70% 420px at 50% 0%, #efe6f6 0%, rgb(239 230 246 / .5) 45%, transparent 80%), #fff; background-repeat: no-repeat; }
+.bp-dash-in { width: min(760px, 100%); margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+.bp-dash-head { display: flex; align-items: center; gap: 12px; padding-right: 220px; }
+.bp-dash-head .bp-pav { margin: 0; background: linear-gradient(165deg, #DCCBF3, #C6AEE8); }
+.bp-dash-head h1 { margin: 0; font-size: 26px; font-weight: 500; letter-spacing: -.05em; }
+.bp-dash-head p { margin: 0; font-size: 13.5px; color: #666; }
+@media (min-width: 900px) {
+  /* One column of charts, so each reads at full width; only the four numbers sit side by side. */
+  .bp-dash .bi-kpis { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 560px) { .bp-dash-head { padding-right: 0; padding-top: 44px; } }
+
+/* Appeal totals: amount and goal beside a progress ring, supporters underneath. */
+.bp-totals { padding: 22px 22px 18px; }
+.bp-tot-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.bp-totals .bp-big { display: block; font-size: 38px; line-height: 1; }
+.bp-tot-top p { margin: 8px 0 0; font-size: 14px; }
+.bp-ring { position: relative; display: grid; place-items: center; width: 76px; height: 76px; flex-shrink: 0; }
+.bp-ring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+.bp-ring circle { fill: none; stroke-width: 7; }
+.bp-ring .bg { stroke: #F4F3F0; } .bp-ring .fg { stroke: var(--c); stroke-linecap: round; }
+.bp-ring b { font-size: 16px; font-weight: 600; letter-spacing: -.03em; }
+.bp-tot-foot { display: flex; align-items: center; gap: 10px; margin-top: 18px; padding-top: 16px; border-top: 1px solid #EEEEEE; font-size: 14px; color: var(--mute); }
+.bp-tot-foot b { color: var(--ink); font-weight: 600; }
+.bp-stack { display: flex; }
+.bp-stack i { display: grid; place-items: center; width: 28px; height: 28px; margin-left: -8px; border-radius: 50%; border: 2px solid #fff; font-size: 9.5px; font-weight: 600; font-style: normal; line-height: 1; color: #191919; background: #DCCBF3; }
+.bp-stack i:first-child { margin-left: 0; } .bp-stack .s1 { background: #D2DBA0; } .bp-stack .s2 { background: #FAD8C4; } .bp-stack .s3 { background: #F4F3F0; }
+.bp-giftaid { margin-left: auto; padding: 4px 10px; border-radius: 99px; background: #EEF2D6; color: #3F4A26; font-size: 12.5px; font-weight: 500; white-space: nowrap; }
+.bp-causes.grid .bp-pick { margin-top: 12px; }
+
+/* Leave room for the organiser buttons above the profile. */
+.bp-tools ~ div .bp-col { padding-top: 66px; }
+
+/* Give the Ramadan way: three quick routes into the donate flow. */
+.bp-ways { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.bp-way { display: flex; align-items: center; gap: 14px; padding: 14px 14px 14px 16px; }
+.bp-way.lead { background: linear-gradient(165deg, #E3EABF, #D2DBA0); }
+.bp-way b { display: block; font-size: 16px; font-weight: 500; letter-spacing: -.02em; }
+.bp-way small { display: block; margin-top: 2px; font-size: 13px; line-height: 1.35; color: var(--mute); }
+.bp-way.lead small { color: #4B5530; }
+.bp-way-ico { display: grid; place-items: center; width: 46px; height: 46px; flex-shrink: 0; border-radius: 14px; }
+.bp-way-ico.moon { background: #fff; color: #F0783C; } .bp-way-ico.moon svg { fill: #F0783C; }
+.bp-way-ico.sage { background: #EEF2D6; color: #3F4A26; }
+.bp-way-ico.peach { background: #FDEBDF; color: #C24A14; }
+.bp-way-go { flex-shrink: 0; padding: 10px 16px; border-radius: 99px; background: #191919; color: #fff !important; font-size: 14px; font-weight: 500; text-decoration: none; }
+.bp-way-go:hover { opacity: .88; }
+
+/* Goal card: kicker, big goal, bar, raised / to go, one Give button. */
+.bp-totals .bp-kicker { margin: 0; font-size: 12.5px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #555; }
+.bp-due { padding: 4px 10px; border-radius: 99px; background: #FDEBDF; color: #C24A14; font-size: 13px; font-weight: 500; }
+.bp-totals { padding: 16px 18px; }
+.bp-totals .bp-big { margin-top: 8px; font-size: 38px; }
+.bp-goal-text { margin: 4px 0 0; font-size: 14px; }
+.bp-totals .bp-bar { height: 8px; margin-top: 12px; }
+.bp-goal-nums { margin-top: 8px; font-size: 13px; } .bp-goal-nums b { font-size: 14px; font-weight: 600; }
+.bp-cta { display: flex; align-items: center; justify-content: center; min-height: 48px; margin-top: 12px; border-radius: 999px; background: var(--c); color: var(--on-c) !important; font-size: 16px; font-weight: 600; transition: transform .15s; }
+.bp-cta:hover { transform: translateY(-1px); }
+.bp-goal-wrap { display: flex; flex-direction: column; gap: 12px; }
+
+/* Join fundraisers strip. */
+.bp-join { display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 14px; border-radius: 24px; background: linear-gradient(165deg, #FDEBDF, #FAD8C4); }
+.bp-join b { display: block; font-size: 16px; font-weight: 500; letter-spacing: -.02em; }
+.bp-join small { display: block; font-size: 13px; color: #C24A14; }
+.bp-join .bp-stack i { width: 34px; height: 34px; font-size: 10.5px; border-color: #FBE2D3; }
+.bp-join-go { flex-shrink: 0; padding: 13px 18px; border-radius: 99px; background: #191919; color: #fff !important; font-size: 15px; font-weight: 500; }
+
+/* Campaigns / Causes tabs. */
+.bp-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin: 12px 0 10px; padding: 4px; border-radius: 99px; background: #F1EFEA; }
+.bp-tabs button { min-height: 46px; border: 0; border-radius: 99px; background: transparent; color: #666; font-size: 15px; font-weight: 500; }
+.bp-tabs button[aria-selected="true"] { background: #fff; color: #191919; box-shadow: 0 1px 3px rgba(25,25,25,.12); }
+
+/* Cause cards: two a row, picture on top, a plain Give button. */
+.bp-causes.grid { grid-template-columns: 1fr 1fr; }
+.bp-causes.grid .bp-cause { padding: 10px; gap: 0; }
+.bp-causes.grid .bp-illo { width: 100%; height: 96px; }
+.bp-causes.grid .bp-cause h3 { margin: 12px 4px 0; font-size: 16px; font-weight: 500; }
+.bp-causes.grid .bp-cause p { margin: 2px 4px 0; flex: 1; font-size: 13px; line-height: 1.35; -webkit-line-clamp: 1; }
+.bp-pick.plain { background: #F3F1EC; color: #191919; }
+.bp-pick.plain[aria-pressed="true"] { background: #191919; color: #fff; }
+.bp-causes.grid .bp-pick.plain { min-height: 44px; padding: 10px; font-size: 15px; }
+
+/* Recent gifts: tagged rows, amounts in the accent, top fundraiser underneath. */
+.bp-gifts-wrap { display: flex; flex-direction: column; gap: 10px; }
+.bp-gifts-head { align-items: center; margin: 8px 4px 0; } .bp-gifts-head .bp-h3 { font-size: 22px; }
+.bp-gifts { padding: 0; overflow: hidden; }
+.bp-gifts ul { list-style: none; margin: 0; padding: 0; }
+.bp-gifts li { display: flex; align-items: center; gap: 12px; padding: 14px 18px; }
+.bp-gifts li + li { border-top: 1px solid #EEEEEE; }
+.bp-gifts li b { display: block; font-size: 16px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bp-gifts strong { font-size: 18px; font-weight: 600; color: var(--c); }
+.bp-gav { display: grid; place-items: center; width: 42px; height: 42px; flex-shrink: 0; border-radius: 50%; font-size: 13px; font-weight: 600; }
+.bp-gmeta { display: flex; align-items: center; gap: 8px; margin-top: 3px; font-size: 13px; color: var(--mute); }
+.bp-gmeta em { padding: 2px 8px; border-radius: 99px; font-style: normal; font-size: 12.5px; color: #3F4A26; white-space: nowrap; }
+.g0 { background: #E8DDF7; } .g1 { background: #FDEBDF; } .g2 { background: #EEF2D6; } .g3 { background: #DDE9F7; }
+.bp-gmeta em.g0 { background: #EEF2D6; } .bp-gmeta em.g1 { background: #FDEBDF; color: #C24A14; } .bp-gmeta em.g2 { background: #EEF2D6; } .bp-gmeta em.g3 { background: #E8DDF7; color: #4A2A7A; }
+.bp-gifts-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 18px; border-top: 1px solid #EEEEEE; font-size: 13.5px; color: #444; }
+.bp-gifts-foot b { font-weight: 500; color: #191919; }
+.bp-fundraise { display: flex; align-items: center; justify-content: space-between; min-height: 56px; padding: 0 22px; border-radius: 99px; background: #FDEBDF; color: #C24A14 !important; font-size: 16px; font-weight: 500; }
+
+/* Sticky dock: what's left to raise, and Give now. */
+.bp-dock { pointer-events: auto; display: flex; align-items: center; gap: 12px; width: min(488px, 100%); padding: 8px 8px 8px 20px; border-radius: 999px; background: #191919; color: rgba(255,255,255,.7); font-size: 14px; box-shadow: 0 16px 34px -14px rgba(0,0,0,.5); }
+.bp-dock b { color: #fff; font-weight: 600; }
+.bp-dock .bp-give { width: auto; min-height: 50px; padding: 0 24px; flex-shrink: 0; border-radius: 999px; box-shadow: none; }
+
+/* Give every night, inside the goal card: all 30, the last 10, or the nights the donor picks. */
+.bp-nights-pick { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; padding-top: 14px; border-top: 1px solid #EEEEEE; }
+.bp-nights-lead { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 13.5px; color: var(--mute); }
+.bp-nights-lead svg { color: #F0783C; fill: #F0783C; }
+.bp-seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; border-radius: 99px; background: #F1EFEA; }
+.bp-seg button { min-height: 38px; border: 0; border-radius: 99px; background: transparent; color: #666; font-size: 13.5px; font-weight: 500; }
+.bp-seg button[aria-checked="true"] { background: #fff; color: #191919; box-shadow: 0 1px 3px rgba(25,25,25,.12); }
+.bp-cal { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; }
+.bp-cal button { aspect-ratio: 1; min-height: 28px; padding: 0; border: 0; border-radius: 8px; background: #F4F3F0; color: #444; font-size: 12.5px; font-weight: 500; }
+.bp-cal button.l10 { background: var(--soft); }
+.bp-cal button[aria-pressed="true"] { background: #191919; color: #fff; }
+.bp-nights-pick .bp-cta { margin-top: 2px; }
+.bp-cta[aria-disabled="true"] { opacity: .5; pointer-events: none; }
+
+/* Outline and soft themes fill Give with the accent, so its text takes the accent's text colour. */
+.s-outline .bp-pick.plain[aria-pressed="false"], .s-soft .bp-pick.plain[aria-pressed="false"] { color: var(--on-c); }
+
+/* Give every night keeps its sage panel look inside the goal card: moon tile, translucent switch, ink button. */
+.bp-nights-pick { margin: 14px -6px -4px; padding: 14px; border-top: 0; border-radius: calc(var(--r) - 6px); background: linear-gradient(165deg, #E3EABF, #D2DBA0); gap: 12px; }
+.bp-nights-lead { gap: 12px; font-size: 13px; line-height: 1.35; color: #4B5530; }
+.bp-nights-lead b { display: block; font-size: 16px; font-weight: 500; letter-spacing: -.02em; color: #191919; }
+.bp-moon { display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; border-radius: 14px; background: #fff; }
+.bp-nights-pick .bp-seg { background: rgba(255,255,255,.55); }
+.bp-nights-pick .bp-seg button { color: #3F4A26; }
+.bp-nights-pick .bp-cal button { background: rgba(255,255,255,.55); color: #3F4A26; }
+.bp-nights-pick .bp-cal button.l10 { background: rgba(255,255,255,.9); }
+.bp-nights-pick .bp-cal button[aria-pressed="true"] { background: #191919; color: #fff; }
+.bp-nights-pick .bp-cta { min-height: 50px; margin-top: 0; background: #191919; color: #fff !important; font-size: 15.5px; }
+
+/* Campaign cards: a soft illustration tile with two small chips, then title, bar and a plain Give. */
+.bp .bp-camp .bp-art { height: 168px; padding: 10px; align-items: flex-start; border: 0; background-image: none; }
+.bp .bp-camp .bp-art-illo { inset: 18px 18% 6px; width: 64%; height: calc(100% - 24px); }
+.bp .bp-art-tag { padding: 5px 10px; border: 0; border-radius: 99px; background: rgba(255,255,255,.9); color: #191919; font-size: 12px; font-weight: 500; box-shadow: 0 1px 2px rgba(25,25,25,.08); }
+.bp .bp-art-tag.pct { color: #3F4A26; background: #EEF2D6; }
+.bp-camp { padding: 10px 10px 14px; }
+.bp-camp h3 { margin-top: 14px; font-size: 18px; font-weight: 500; }
+.bp-camp p { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; font-size: 13.5px; }
+.bp-camp .bp-small { margin: 0; font-size: 13px; }
+.bp-camp .bp-small b { font-size: 15px; font-weight: 600; }
+.bp-camp .bp-pick.plain, .bp-crow .bp-pick.plain { min-width: 84px; padding: 10px 18px; font-size: 14.5px; }
+
+.bp-crow { padding: 10px 12px 10px 10px; }
+.bp-crow h3 { margin: 0; font-size: 15px; font-weight: 500; }
+.bp-crow-meta { display: flex; align-items: baseline; gap: 4px; margin-top: 2px; font-size: 12.5px; color: var(--mute); }
+.bp-crow-meta b { color: var(--ink); font-weight: 600; }
+.bp-crow-meta em { margin-left: auto; font-style: normal; font-weight: 500; color: var(--ink); }
+.bp-crow .bp-bar { height: 6px; margin-top: 6px; }
+.bp .bp-thumb { width: 60px; height: 60px; border-radius: 14px; }
+.bp-join b, .bp-join small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Featured campaign: patterned tile with an impact chip, a ring beside the title, donors and a priced Give. */
+.bp .bp-camp .bp-art { height: 150px; }
+.bp .bp-camp .bp-art::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(circle, rgba(255,255,255,.55) 0 5px, transparent 6px); background-size: 22px 22px; }
+.bp .bp-camp .bp-art::after { content: ""; position: absolute; right: 22px; top: 34px; width: 42px; height: 42px; border-radius: 50%; background: #F7D44C; opacity: .85; }
+.bp .bp-camp .bp-art-illo { z-index: 1; }
+.bp .bp-art-tag.dark { background: #191919; color: #fff; }
+.bp-camp-body { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+.bp-camp-body h3 { margin: 0; font-size: 18px; font-weight: 600; }
+.bp-camp-body p { margin: 2px 0 0; }
+.bp-camp-sum { display: block; margin-top: 4px; font-size: 13px; color: var(--mute); }
+.bp-camp-sum b { color: var(--ink); font-weight: 600; }
+.bp .bp-ring { width: 56px; height: 56px; }
+.bp .bp-ring circle { stroke-width: 6; }
+.bp .bp-ring b { font-size: 13px; }
+.bp-camp .bp-camp-foot { margin-top: 14px; }
+.bp-gave { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--mute); }
+.bp-gave .bp-stack i { width: 26px; height: 26px; font-size: 9px; }
+.bp .bp-camp .bp-pick.plain { min-width: 0; padding: 12px 20px; background: #191919; color: #fff; font-size: 15px; font-weight: 600; }
+
+/* More campaigns: a scene thumbnail with the funded share across its foot, a tag, and a round ink Give. */
+.bp-more { margin: 18px 4px 0; font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
+.bp .bp-thumb { position: relative; width: 72px; height: 72px; overflow: hidden; }
+.bp .bp-thumb svg { padding: 4px 4px 16px; }
+.bp-thumb em { position: absolute; inset: auto 0 0; padding: 3px 0; background: rgba(25,25,25,.82); color: #fff; font-style: normal; font-size: 10px; font-weight: 600; text-align: center; }
+.bp-crow-top { display: flex; align-items: flex-start; gap: 8px; }
+.bp-crow-top h3 { flex: 1; min-width: 0; white-space: normal; line-height: 1.2; }
+.bp-crow-tag { flex-shrink: 0; padding: 2px 8px; border-radius: 99px; background: #EEF2D6; color: #3F4A26; font-size: 11.5px; font-weight: 500; white-space: nowrap; }
+.bp-crow .bp-bar { margin-top: 8px; }
+.bp-crow .bp-crow-meta { margin-top: 6px; }
+.bp .bp-crow .bp-pick.plain { min-width: 0; width: 56px; height: 56px; padding: 0; border-radius: 50%; background: #191919; color: #fff; font-size: 14px; font-weight: 600; }

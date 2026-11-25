@@ -19,7 +19,7 @@ export const SiteHeader = ({ right }: { right?: ReactNode }) => {
     const { go } = useApp();
     return (
         <header className="flex items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-4"><BrandLogo onClick={() => go({ name: "home" })} /></div>
+            <div className="flex min-w-0 items-center gap-4"><BrandLogo /></div>
             <nav aria-label="Main" className="flex shrink-0 items-center gap-1 text-sm font-medium text-tertiary sm:gap-2">
                 {(["about", "rules", "faq"] as const).map((n) => (
                     <button key={n} type="button" onClick={() => go({ name: n })} className="hidden cursor-pointer rounded-full px-3 py-1.5 capitalize outline-focus-ring transition hover:text-primary focus-visible:outline-2 sm:block">{n === "faq" ? "FAQ" : n}</button>
@@ -50,7 +50,7 @@ export const ConsoleShell = ({ crumb, badges, actions, nav, current, onNav, chil
     return (
         <div className="min-h-dvh overflow-x-clip bg-primary">
             <header className="sticky top-0 z-30 border-b border-secondary bg-primary/85 backdrop-blur"><Container className="flex flex-wrap items-center justify-between gap-3 py-3">
-                <div className="flex min-w-0 items-center gap-3"><BrandLogo onClick={() => go({ name: "home" })} />{crumb}{badges}</div>
+                <div className="flex min-w-0 items-center gap-3"><BrandLogo />{crumb}{badges}</div>
                 <div className="flex items-center gap-2"><ThemeToggle />{actions}</div>
             </Container></header>
             <Container className="grid gap-6 py-6 lg:grid-cols-[232px_minmax(0,1fr)] lg:gap-8 lg:py-8">

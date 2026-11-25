@@ -2,6 +2,7 @@ import { type FC, type ReactNode, useEffect, useRef, useState } from "react";
 import { AnimatePresence, MotionConfig, motion, useMotionValue, useSpring } from "motion/react";
 import { ArrowRight, BarChart01, Check, CodeBrowser, CreditCard01, Gift01, Globe01, HeartHand, Lock01, QrCode01, Repeat01, Target04, Trophy01, Tv01, Users01, Zap } from "@untitledui/icons";
 import { cx } from "@/shared/utils/cx";
+import { Logo } from "./Logo";
 
 /** The coming-soon page: Outgive's crowdfunding platform, before launch. Also the screen a signed-out visitor sees on any page that is not open yet. */
 
@@ -12,7 +13,6 @@ const FEATURES: [FC<{ className?: string }>, string][] = [
 ];
 const Sparkle = ({ className }: { className?: string }) => <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M12 0c.9 6.6 4.8 10.6 12 12-7.2 1.4-11.1 5.4-12 12-.9-6.6-4.8-10.6-12-12C7.2 10.6 11.1 6.6 12 0z" /></svg>;
 const Heart = ({ className }: { className?: string }) => <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.3 3 4.5 6.7 4.5c2.2 0 3.6 1.2 5.3 3.1 1.7-1.9 3.1-3.1 5.3-3.1 3.7 0 5.8 3.8 4.3 7.2C19.5 16.4 12 21 12 21z" /></svg>;
-const Mark = () => <span className="flex items-center gap-2"><span className="flex size-8 items-center justify-center rounded-xl bg-white text-brand-600 shadow-[0_3px_0_rgb(0_0_0/0.15)]"><Heart className="size-4.5" /></span><span className="font-bubble text-2xl font-bold tracking-tight text-white">outgive</span></span>;
 const usd = (n: number) => `$${Math.round(n).toLocaleString("en")}`;
 const IN = "animate-in fade-in slide-in-from-bottom-6 duration-700 fill-mode-both motion-reduce:animate-none";
 
@@ -48,7 +48,7 @@ const Backdrop = () => (
 
 const Nav = () => (
     <header className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-5 md:px-8">
-        <a href="/" aria-label="Outgive home" className="rounded-xl outline-white focus-visible:outline-2 focus-visible:outline-offset-4"><Mark /></a>
+        <a href="/" aria-label="Outgive home" className="rounded-xl outline-white focus-visible:outline-2 focus-visible:outline-offset-4"><Logo size={28} tone="dark" /></a>
         <nav aria-label="Main" className="flex items-center gap-1 text-sm font-medium text-white/85 sm:gap-2">
             <a href="#features" className="hidden rounded-full px-3 py-2 transition hover:bg-white/10 hover:text-white sm:block">What's coming</a>
             <a href="/blog" className="rounded-full px-3 py-2 transition hover:bg-white/10 hover:text-white">Blog</a>

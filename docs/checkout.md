@@ -106,3 +106,40 @@ Every step sends an event through `track()`. Each event carries `layout`, `campa
 5. For the asks, compare `_shown` with `_accepted`: `checkout_nudge_*` for the monthly nudge and `checkout_next_*` by `kind` for the thank-you screen.
 
 In dev, or with `?debug` on the address, an **events** pill in the corner lists every event as it's sent and lets you switch layouts.
+
+## Ramadan give flow (`/ramadhan/give`)
+
+`src/features/launch/give` is a basket-style flow for the charity's Ramadan page (`/ramadhan`), drawn like a food-delivery app. **The page and the flow share one basket** (`give/store.ts`, localStorage `outgive.rgive.v2`): causes and nights picked on the page are already in the flow, and changes in the flow show back on the page. `?add=<ids>&nights=30|10|odd|pick|once&days=21,27` also fills it, for links from elsewhere.
+
+1. **Menu:** the charity card, offer strip (match, Gift Aid, Zakat policy), quick baskets, then campaigns, causes and one-off duties (Zakat al-Fitr, Fidya, Eid gift) with ADD and a stepper. On a phone a basket bar follows you down the page. From 960px the basket sits in a sticky column on the right.
+2. **Add to the pile:** this is a port of the "Gamified flow for any appeal (v2)" design canvas (Pile flow, `Flow2Pile.dc.html` in https://claude.ai/artifact/UdSiaQ1oe7tQ2TfYVuvL2s), keeping the design's layout, sizes and type (Bricolage Grotesque and Plus Jakarta Sans) in Outgive's colours. The link opens here; the menu is where causes are changed.
+   - On the left, a scene: the appeal card, tonight's pile total, "You + 388 people, one pile", and a coin pile with your coins in orange, landing as you change the amount.
+   - On the right:
+     - five nightly bundles, one per level (£5 Supporter to £100 Legend), and the amount with − / +;
+     - "Your gift becomes" (e.g. "57 Zakat gifts"), and a "£x more unlocks Level n" nudge with a Level up button;
+     - How often (once, every night, last 10, odd nights, pick), Give as (Sadaqah, Zakat or Lillah), and on behalf of someone;
+     - Continue.
+3. **Complete your gift:**
+   - On the left: contact, Power-ups (Gift Aid with the declaration and address; double the last 10 nights), and payment methods with the card form inline.
+   - On the right, a sage summary: your gift card with a mini pile, the lines, "Support our mission" with a tip slider (0 to 30% of each night's gift, or a custom amount), the Gift power bar, the total and the Donate button.
+4. **Paying and the level-up thank-you:** the payment animation, then "Level n unlocked!" with a medal, coin, level and appeal stats, badges, your nights and Bring a friend. the shared payment animation, a tick, then a thank-you that tracks the nights like an order tracker.
+
+The maths is in `give/model.ts` (tested in `model.test.ts`). **The payment is simulated**: `4000 0000 0000 0002` is declined, and any other valid card succeeds. The basket and the donor's details are cleared once the gift is paid. The browser test is `tests/browser/ramadan-give.mjs`.
+
+| Event | Data |
+|---|---|
+| `rg_open` | `items` |
+| `rg_step` | `step` (`menu`, `amount`, `pay`), `items`, `total` |
+| `rg_item_add` / `rg_item_remove` | `item`, `qty`, `where` (`menu`, `side`, `checkout`, `upsell`) |
+| `rg_bundle` | `id` |
+| `rg_schedule` | `mode`, `where` |
+| `rg_bundle_pick` (`value`, `level`) / `rg_levelup` (`to`) / `rg_give_as` / `rg_boost` / `rg_tip` | `value` |
+| `rg_addon` | `id` (`zakat`, `giftAid`, `cover`), `on` |
+| `rg_sheet` | `sheet` (`menu`, `nights`, `behalf`) |
+| `rg_behalf` | `name`, `note` (1 or 0, never the text) |
+| `rg_method` | `method` |
+| `rg_pay_invalid` | `fields` |
+| `rg_pay_start` | `method`, `total`, `payments`, `mode`, `giftaid` |
+| `rg_pay_fail` | `reason`, `method` |
+| `rg_paid` | `method`, `total`, `gifts`, `payments`, `mode`, `items`, `giftaid`, `tip` |
+| `rg_thanks`, `rg_share` (`channel`), `rg_start_page` | |

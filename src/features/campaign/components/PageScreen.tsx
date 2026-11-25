@@ -3,7 +3,7 @@ import { CampaignPage } from "@/features/campaign/components/CampaignPage";
 import { PageManage } from "@/features/campaign/components/PageManage";
 import { CampaignView } from "@/features/campaign/components/CampaignView";
 import { type Campaign, campaigns } from "@/shared/lib/campaign-store";
-import { NotFound } from "@/shared/ui";
+import { NotFound, Loading } from "@/shared/ui";
 import { useApp } from "@/shared/lib/app-context";
 import { CURRENCIES, type Donation, type PageData, type PageUpdate, pageKey } from "@/shared/domain/model";
 import { SAMPLE_PAGE } from "@/shared/lib/demo-data";
@@ -26,8 +26,12 @@ export const usePage = (ref: PageRef) => {
     return { bundle, setBundle, reload: load };
 };
 
-export const PageScreen = ({ pageRef, manage, donate, real }: { pageRef: PageRef; manage: boolean; donate?: number | true; real?: true }) => {
+/** Short addresses for the sample charity's pages: /demo/c/water is the clean water appeal. */
+const ALIAS: Record<string, string> = { water: "clean-water-for-40-villages" };
+
+export const PageScreen = ({ pageRef: asked, manage, donate, real }: { pageRef: PageRef; manage: boolean; donate?: number | true; real?: true }) => {
     const { db, org } = useApp();
+    const pageRef = org?.slug === "clearwell" && ALIAS[asked.slug] ? { ...asked, slug: ALIAS[asked.slug] } : asked;
     const { bundle, setBundle, reload } = usePage(pageRef);
     // Campaigns made in the create flow live in the campaign service; anything else is a page in the database.
     const [local, setLocal] = useState<Campaign | null | undefined>(undefined);
@@ -37,7 +41,7 @@ export const PageScreen = ({ pageRef, manage, donate, real }: { pageRef: PageRef
     if (local === undefined) return null;
     if (real) return <NotFound />; // /f/<slug> shows only real campaigns, never the demo's sample pages
     if (!org) return null;
-    if (bundle === undefined) return <div className="flex min-h-dvh items-center justify-center bg-primary text-sm text-tertiary">Loading…</div>;
+    if (bundle === undefined) return <Loading full className="bg-primary" />;
     if (bundle === null) return <NotFound />;
     if (manage) return <PageManage bundle={bundle} reload={reload} />;
     const page = toPageData(bundle, usdRate);

@@ -1,0 +1,101 @@
+/* The public site's frame, in the Outgive design system (white ground, ink, Outfit, orange for action). Always light. */
+.og-site { min-height: 100dvh; display: flex; flex-direction: column; background: radial-gradient(70% 700px at 50% 0%, #efe6f6 0%, rgb(239 230 246 / 0.5) 45%, transparent 80%), #FFFFFF; background-repeat: no-repeat; color: #191919; font-family: "Outfit", system-ui, sans-serif; -webkit-font-smoothing: antialiased; color-scheme: light; }
+@layer base { .og-site a { color: inherit; text-decoration: none; } }
+.og-site :focus-visible { outline: 2px solid #7B3FD6; outline-offset: 3px; border-radius: 6px; }
+.og-site ::selection { background: #D2DBA0; color: #191919; }
+.og-wrap { width: 100%; max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+.og-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 32px; padding-top: 18px; padding-bottom: 18px; font-size: 15px; }
+.og-nav { display: flex; flex-wrap: wrap; gap: 0 26px; }
+.og-nav a, .og-navl { padding: 12px 4px; color: #666666; transition: color .2s; }
+.og-nav a:hover, .og-navl:hover { color: #191919; }
+@media (max-width: 760px) { .og-nav { display: none; } }
+.og-btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; border-radius: 999px; background: #191919; color: #fff !important; font-weight: 500; transition: transform .2s ease; }
+.og-btn:hover { transform: translateY(-1px); }
+.og-main { flex: 1; padding-top: 56px; padding-bottom: 112px; }
+.og-narrow { max-width: 820px; }
+.og-foot { padding-top: 32px; padding-bottom: 40px; font-size: 15px; color: #666666; }
+.og-foot-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 40px 56px; border-top: 1px solid #EEEEEE; padding-top: 48px; }
+.og-foot-cols { display: flex; flex-wrap: wrap; gap: 32px 72px; }
+.og-foot-cols > div { display: flex; flex-direction: column; }
+.og-foot-cols strong { color: #191919; font-weight: 600; padding: 6px 0; }
+.og-foot-cols a { padding: 6px 0; transition: color .2s; }
+.og-foot-cols a:hover { color: #191919; }
+.og-copy { font-size: 14px; margin-top: 48px; }
+
+/* Page content: Outfit 500 headings set tight, body in muted grey, cards with the design-system shadow. */
+.og-h1 { font-size: clamp(44px, 6vw, 76px); line-height: 0.98; letter-spacing: -0.055em; font-weight: 500; }
+.og-script { font-family: "Playwrite US Trad", "Snell Roundhand", cursive; font-weight: 300; letter-spacing: 0; font-size: .72em; }
+.og-lead { margin-top: 20px; font-size: 19px; line-height: 1.55; color: #666666; max-width: 36em; }
+.og-prose p { font-size: 17px; line-height: 1.65; color: #555555; }
+.og-prose b { color: #191919; font-weight: 600; }
+.og-card { background: #fff; border-radius: 24px; box-shadow: 0 0 0 1px rgba(25,25,25,.06), 0 2px 4px rgba(25,25,25,.04), 0 28px 56px -20px rgba(25,25,25,.22); }
+.og-tag { display: inline-flex; align-items: center; min-height: 26px; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+.og-link { font-weight: 500; border-bottom: 1.5px solid #191919; padding-bottom: 2px; }
+
+/* The spinner: an orange arc on a quiet track. */
+.og-spin { display: inline-block; flex: none; border-radius: 50%; border: 3px solid rgb(25 25 25 / 0.08); border-top-color: #F0783C; animation: og-spin .8s linear infinite; }
+.dark-mode .og-spin { border-color: rgb(255 255 255 / 0.12); border-top-color: #F0783C; }
+@keyframes og-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .og-spin { animation-duration: 2.4s; } .og-btn { transition: none; } }
+
+/* The public frame is always light: pin the light tokens here so app components inside it ignore the site's dark mode. */
+.og-site {
+    --ts-page: #FFFFFF; --ts-raised: #FFFFFF; --ts-tint-1: #FFFFFF; --ts-tint-2: #F4F3F0; --ts-tint-3: #EEEEEE; --ts-fg: #191919; --ts-fg-2: #444444; --ts-fg-3: #666666; --ts-fg-faint: #8F8F8F; --ts-border: rgb(25 25 25 / 0.08);
+    --color-bg-primary: #FFFFFF; --color-bg-secondary: #F4F3F0; --color-bg-tertiary: #F4F3F0; --color-bg-primary_hover: #F4F3F0; --color-bg-secondary_hover: #EEEDE9;
+    --color-text-primary: #191919; --color-text-secondary: #444444; --color-text-tertiary: #666666; --color-text-quaternary: #8F8F8F;
+    --color-border-primary: #E6E6E6; --color-border-secondary: #EEEEEE; --color-fg-primary: #191919; --color-text-brand-secondary: #C24A14;
+}
+
+/* Headings inside the frame (blog and others) take the design system weight. */
+.og-site :is(h1, h2) { font-weight: 500; letter-spacing: -0.045em; }
+.og-site h1 { letter-spacing: -0.055em; }
+
+/* "Book a demo" dialog (react-aria-components), in the design system. */
+.og-overlay { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 12px; background: rgb(25 25 25 / 0.45); backdrop-filter: blur(4px); overflow-y: auto; }
+.og-overlay[data-entering] { animation: og-fade .25s ease; }
+.og-dialog { width: min(600px, 100%); max-height: calc(100dvh - 24px); overflow-y: auto; border-radius: 28px; background: #fff; color: #191919; font-family: "Outfit", system-ui, sans-serif; box-shadow: 0 0 0 1px rgba(25,25,25,.06), 0 40px 80px -30px rgba(25,25,25,.45); color-scheme: light; outline: none; }
+.og-dialog[data-entering] { animation: og-pop .35s cubic-bezier(.2,.8,.2,1); }
+@keyframes og-pop { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes og-fade { from { opacity: 0; } }
+.og-dialog .og-script { font-family: "Playwrite US Trad", cursive; font-weight: 300; font-size: .72em; letter-spacing: 0; }
+.og-close { display: grid; place-items: center; width: 40px; height: 40px; flex-shrink: 0; border-radius: 999px; background: #F4F3F0; cursor: pointer; outline: none; transition: background .2s; }
+.og-close[data-hovered] { background: #EEEDE9; }
+.og-close[data-focus-visible] { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #7B3FD6; }
+
+/* Primary action, HeroUI style: a 14px-radius filled button. */
+.og-submit { display: inline-flex; align-items: center; justify-content: center; width: 100%; min-height: 52px; border-radius: 14px; background: #191919; color: #fff; font: 500 16px/1 "Outfit", system-ui, sans-serif; letter-spacing: -0.01em; cursor: pointer; outline: none; transition: background .2s ease, transform .2s cubic-bezier(.2,.8,.2,1); }
+.og-submit[data-hovered] { background: #000; transform: translateY(-1px); }
+.og-submit[data-focus-visible] { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #7B3FD6; }
+.og-submit[data-disabled] { opacity: .65; cursor: progress; transform: none; }
+.og-error { min-height: 20px; margin-top: -6px; font-size: 14px; color: #B42318; }
+@media (prefers-reduced-motion: reduce) { .og-dialog[data-entering], .og-overlay[data-entering], .og-popover[data-entering] { animation: none; } }
+
+/* The public frame is always light: pin the light tokens here so app components inside it ignore the site's dark mode. */
+.og-site {
+    --ts-page: #FFFFFF; --ts-raised: #FFFFFF; --ts-tint-1: #FFFFFF; --ts-tint-2: #F4F3F0; --ts-tint-3: #EEEEEE; --ts-fg: #191919; --ts-fg-2: #444444; --ts-fg-3: #666666; --ts-fg-faint: #8F8F8F; --ts-border: rgb(25 25 25 / 0.08);
+    --color-bg-primary: #FFFFFF; --color-bg-secondary: #F4F3F0; --color-bg-tertiary: #F4F3F0; --color-bg-primary_hover: #F4F3F0; --color-bg-secondary_hover: #EEEDE9;
+    --color-text-primary: #191919; --color-text-secondary: #444444; --color-text-tertiary: #666666; --color-text-quaternary: #8F8F8F;
+    --color-border-primary: #E6E6E6; --color-border-secondary: #EEEEEE; --color-fg-primary: #191919; --color-text-brand-secondary: #C24A14;
+}
+
+/* Headings inside the frame (blog and others) take the design system weight. */
+.og-site :is(h1, h2) { font-weight: 500; letter-spacing: -0.045em; }
+.og-site h1 { letter-spacing: -0.055em; }
+
+/* "Book a demo" dialog. */
+.og-dialog { width: min(600px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); margin: auto; padding: 0; border: 0; border-radius: 28px; background: #fff; color: #191919; font-family: "Outfit", system-ui, sans-serif; box-shadow: 0 0 0 1px rgba(25,25,25,.06), 0 40px 80px -30px rgba(25,25,25,.45); overflow-y: auto; color-scheme: light; }
+.og-dialog::backdrop { background: rgb(25 25 25 / 0.45); backdrop-filter: blur(4px); }
+.og-dialog[open] { animation: og-pop .35s cubic-bezier(.2,.8,.2,1); }
+@keyframes og-pop { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: none; } }
+.og-dialog :focus-visible { outline: 2px solid #7B3FD6; outline-offset: 2px; }
+.og-dialog .og-script { font-family: "Playwrite US Trad", cursive; font-weight: 300; font-size: .72em; letter-spacing: 0; }
+.og-field { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 500; }
+.og-field i { font-style: normal; font-weight: 400; color: #8F8F8F; }
+.og-field :is(input, select, textarea) { width: 100%; min-height: 48px; padding: 12px 14px; border: 0; border-radius: 12px; background: #F4F3F0; color: #191919; font: 400 16px/1.4 "Outfit", system-ui, sans-serif; outline: none; }
+.og-field select { appearance: none; background: #F4F3F0 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23888' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center; }
+.og-field :is(input, select, textarea):focus { box-shadow: inset 0 0 0 2px #191919; }
+.og-field textarea { resize: vertical; }
+.og-btn-give { min-height: 52px; background: #F0783C; color: #191919 !important; font-weight: 600; cursor: pointer; border: 0; font-size: 16px; }
+.og-btn-give:hover { background: #E0662A; }
+.og-btn-give:disabled { opacity: .7; cursor: progress; }
+@media (prefers-reduced-motion: reduce) { .og-dialog[open] { animation: none; } }

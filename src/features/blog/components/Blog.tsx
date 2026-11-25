@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { ArrowLeft, ArrowRight, CheckCircle } from "@untitledui/icons";
-import { Container, Logo, ThemeToggle } from "@/shared/ui";
+import { SitePage } from "@/shared/ui";
 import { SITE, metaFor, setMeta } from "@/shared/lib/seo";
 import { DEFAULT_BRAND } from "@/shared/domain/model";
 import { AUDIENCES, POSTS, type Post, docTitle } from "../posts";
@@ -9,31 +9,7 @@ import { AUDIENCES, POSTS, type Post, docTitle } from "../posts";
 
 export const dateOf = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
 const label = (p: Post) => AUDIENCES.find(([a]) => a === p.audience)![1];
-const JOIN = "/#join";
-
-const Header = () => (
-    <header className="border-b border-secondary">
-        <Container className="flex h-16 items-center justify-between gap-3">
-            <Logo href="/" />
-            <nav aria-label="Main" className="flex items-center gap-1 text-sm font-medium text-tertiary">
-                <a href="/blog" className="rounded-full px-3 py-2 transition hover:bg-secondary hover:text-primary">Blog</a>
-                <ThemeToggle />
-                <a href={JOIN} className="ml-1 inline-flex h-9 items-center gap-1.5 rounded-full bg-brand-solid px-4 font-semibold whitespace-nowrap text-white transition hover:bg-brand-solid_hover">
-                    <span className="max-sm:hidden">Join the waitlist</span><span className="sm:hidden">Join</span>
-                </a>
-            </nav>
-        </Container>
-    </header>
-);
-
-const Footer = () => (
-    <footer className="mt-24 border-t border-secondary py-10 text-sm text-tertiary">
-        <Container className="flex flex-wrap items-center justify-between gap-4">
-            <span>© {new Date().getFullYear()} {SITE.name}. Crowdfunding built for charities.</span>
-            <nav aria-label="Footer" className="flex gap-5"><a href="/" className="hover:text-primary">Home</a><a href="/blog" className="hover:text-primary">Blog</a><a href={JOIN} className="hover:text-primary">Waitlist</a></nav>
-        </Container>
-    </footer>
-);
+const JOIN = "#demo";
 
 const Card = ({ post }: { post: Post }) => (
     <a href={`/blog/${post.slug}`} className="group flex flex-col gap-3 rounded-2xl bg-primary p-6 ring-1 ring-secondary transition ring-inset hover:-translate-y-0.5 hover:shadow-lg hover:ring-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
@@ -45,10 +21,10 @@ const Card = ({ post }: { post: Post }) => (
 );
 
 const Cta = () => (
-    <aside className="flex flex-col items-start gap-4 rounded-3xl bg-brand-solid p-8 text-white md:p-10">
+    <aside className="flex flex-col items-start gap-4 rounded-[36px] p-8 text-white md:p-12" style={{ background: "linear-gradient(170deg, #3A4829 0%, #27311B 100%)" }}>
         <h2 className="text-2xl font-bold tracking-tight text-balance md:text-3xl">Raising money for a cause?</h2>
         <p className="max-w-xl text-white/85">Outgive is crowdfunding built for charities and the people who raise for them: live leaderboards, team races and big-screen giving moments. It's free for charities, and gifts are paid straight to the charity's own Stripe account.</p>
-        <a href={JOIN} className="inline-flex h-11 items-center gap-2 rounded-full bg-white px-5 font-semibold text-brand-700 transition hover:-translate-y-0.5">Join the waitlist<ArrowRight className="size-4" /></a>
+        <a href={JOIN} className="inline-flex h-11 items-center gap-2 rounded-full bg-[#D2DBA0] px-5 font-semibold text-[#191919] transition hover:-translate-y-0.5">Book a demo<ArrowRight className="size-4" /></a>
     </aside>
 );
 
@@ -148,10 +124,6 @@ export const Blog = ({ slug }: { slug?: string }) => {
         document.querySelector('meta[name="robots"]')?.setAttribute("content", "noindex");
     }, [slug, post]);
     return (
-        <div className="min-h-dvh bg-primary">
-            <Header />
-            <main><Container>{!slug ? <Index /> : post ? <Article post={post} /> : <Missing />}</Container></main>
-            <Footer />
-        </div>
+        <SitePage narrow={false}>{!slug ? <Index /> : post ? <Article post={post} /> : <Missing />}</SitePage>
     );
 };

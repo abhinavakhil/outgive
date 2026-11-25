@@ -7,10 +7,15 @@ describe("tenants", () => {
     it("subdomains and custom domains do", () => { expect(sub).toEqual({ slug: "clearwell", host: null }); expect(custom).toEqual({ slug: null, host: "give.clearwell.org" }); expect(tenantOf("Give.Clearwell.org:443").host).toBe("give.clearwell.org"); });
 });
 describe("parse", () => {
-    it("platform routes", () => { expect(parse("/", bare)).toEqual({ name: "landing" }); expect(parse("/ramadan", bare)).toEqual({ name: "landing" }); expect(parse("/legacy", bare)).toEqual({ name: "legacy" }); expect(parse("/pricing/", bare)).toEqual({ name: "pricing" }); expect(parse("/nope", bare)).toEqual({ name: "notfound" }); });
+    it("platform routes", () => { expect(parse("/", bare)).toEqual({ name: "landing" }); expect(parse("/ramadan", bare)).toEqual({ name: "ramadan" }); expect(parse("/legacy", bare)).toEqual({ name: "legacy" }); expect(parse("/pricing/", bare)).toEqual({ name: "pricing" }); expect(parse("/nope", bare)).toEqual({ name: "notfound" }); });
     it("blog", () => { expect(parse("/blog/", bare)).toEqual({ name: "blog" }); expect(parse("/blog/how-to-start", bare)).toEqual({ name: "post", slug: "how-to-start" }); expect(parse("/blog/a/b", bare)).toEqual({ name: "notfound" }); expect(parse("/blog/x", sub)).toEqual({ name: "notfound" }); expect(parse("/blog", sub)).toEqual({ name: "notfound" }); expect(pathOf({ name: "post", slug: "x" }, bare)).toBe("/blog/x"); });
     it("/demo and /o/<slug> are org prefixes", () => {
+        expect(parse("/leaderboard", bare)).toEqual({ name: "board", org: "clearwell" });
         expect(parse("/demo", bare)).toEqual({ name: "board", org: "clearwell" });
+        expect(pathOf({ name: "board", org: "clearwell" }, bare)).toBe("/leaderboard");
+        expect(parse("/leaderboard/v2", bare)).toEqual({ name: "board", org: "clearwell", skin: "v2" });
+        expect(pathOf({ name: "board", org: "clearwell", skin: "v2" }, bare)).toBe("/leaderboard/v2");
+        expect(pathOf({ name: "board", org: "clearwell" }, sub)).toBe("/");
         expect(parse("/o/Mangrove/f/plant-trees", bare)).toEqual({ name: "page", org: "mangrove", page: { type: "fundraiser", slug: "plant-trees" } });
         expect(parse("/demo/e/gala/manage", bare)).toEqual({ name: "page", org: "clearwell", page: { type: "event", slug: "gala" }, sub: "manage" });
         expect(parse("/demo/c/water/live", bare)).toEqual({ name: "live", org: "clearwell", page: { type: "campaign", slug: "water" } });

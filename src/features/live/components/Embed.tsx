@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Avatar, BrandMark } from "@/shared/ui";
+import { Avatar, BrandMark, Loading } from "@/shared/ui";
 import { useApp } from "@/shared/lib/app-context";
 import { CURRENCIES } from "@/shared/domain/model";
 import { initials } from "@/shared/lib/format";
@@ -19,7 +19,7 @@ export const Embed = ({ pageRef, theme, limit: rowCount }: { pageRef?: PageRef; 
     const base = window.location.origin;
     const link = (path: string) => <a href={base + path} target="_top" rel="noopener" className="inline-flex h-10 items-center justify-center rounded-full bg-cta shadow-press hover:bg-cta-hover px-5 text-sm font-semibold text-cta-ink transition">Give</a>;
     if (pageRef) {
-        if (!bundle) return <div className="p-4 text-sm text-ink-3">Loading…</div>;
+        if (!bundle) return <Loading />;
         const p = bundle.page; const rate = CURRENCIES[p.currency] ?? 1; const raised = p.raised_cents / 100 / rate; const goal = p.goal_cents / 100 / rate; const pct = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
         return (
             <div className="flex flex-col gap-3 rounded-3xl bg-tint-1 p-5 text-ink">

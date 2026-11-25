@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Announcement01, BankNote01, CoinsStacked01, CreditCard01, Download01, Gift01, Globe01, Heart, LinkExternal01, Palette, Plus, PresentationChart01, RefreshCw01, Repeat01, Tv01, Upload01, Users01, UsersPlus, Zap } from "@untitledui/icons";
 import QRCode from "qrcode";
-import { Badge, Button, Input, NativeSelect, TextArea, Toggle, BrandMark, ConsoleShell, Container, Fieldset, Panel, CopyRow, Empty, Stat, Who } from "@/shared/ui";
+import { Badge, Button, Input, NativeSelect, TextArea, Toggle, BrandMark, ConsoleShell, Container, Fieldset, Panel, CopyRow, Empty, Stat, Who, Loading } from "@/shared/ui";
 import { LiveConsole } from "@/features/live";
 import { ago, csv, download } from "@/shared/lib/format";
 import { useApp } from "@/shared/lib/app-context";
@@ -49,7 +49,7 @@ const Overview = () => {
     const { db, org, money, go, brand } = useApp();
     const [s, setS] = useState<OrgStats | null>(null);
     useEffect(() => { db.rpc<OrgStats>("org_stats", { org: org!.id }).then(setS); }, [db, org]);
-    if (!s) return <p className="text-sm text-tertiary">Loading…</p>;
+    if (!s) return <Loading />;
     const days = s.by_day; const max = Math.max(1, ...days.map((d) => Number(d.usd_cents)));
     const week = days.slice(-7).reduce((n, d) => n + Number(d.usd_cents), 0) / 100;
     const raised = Number(s.raised_cents) / 100;

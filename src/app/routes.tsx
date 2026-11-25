@@ -5,6 +5,10 @@ import type { View } from "@/shared/lib/route";
 const screen = <K extends string>(load: () => Promise<Record<K, ComponentType<any>>>, name: K) => lazy(() => load().then((m) => ({ default: m[name] })));
 
 const LandingB = screen(() => import("@/features/marketing"), "LandingB");
+const LandingV2 = screen(() => import("@/features/launch"), "LandingV2");
+const CharityBio = screen(() => import("@/features/launch"), "CharityBio");
+const BioEditor = screen(() => import("@/features/launch"), "BioEditor");
+const RamadanGive = screen(() => import("@/features/launch"), "RamadanGive");
 const Pricing = screen(() => import("@/features/marketing"), "Pricing");
 const Info = screen(() => import("@/features/marketing"), "Info");
 const Blog = screen(() => import("@/features/blog"), "Blog");
@@ -34,6 +38,11 @@ export const screenFor = (view: View): ReactNode => {
     switch (view.name) {
         case "checkout": return view.org ? <OrgCheckout /> : <CheckoutScreen />;
         case "landing-b": return <LandingB />;
+        case "v2": return <LandingV2 />;
+        case "ramadhan": return <CharityBio />;
+        case "ramadhan-edit": return <BioEditor />;
+        case "ramadhan-give": return <RamadanGive />;
+        case "ramadan": return null;
         case "layouts": return <SamplePage />;
         case "ui": return <Gallery />;
         case "ui-variants": return <Variants />;
@@ -44,7 +53,7 @@ export const screenFor = (view: View): ReactNode => {
         case "login": return <Login />;
         case "dashboard": return view.gift ? <Receipt gift={view.gift} /> : <Dashboard tab={view.tab} />;
         case "about": case "rules": case "faq": case "terms": case "privacy": return <Info kind={view.name} />;
-        case "board": return <Leaderboard />;
+        case "board": return <Leaderboard skin={view.skin ?? (view.org === "clearwell" ? "v2" : undefined)} />;
         case "live": return <Live pageRef={view.page} layout={view.layout} theme={view.theme} />;
         case "overlay": return <Overlay pageRef={view.page} style={view.style} />;
         case "give": return <Give pageRef={view.page} />;

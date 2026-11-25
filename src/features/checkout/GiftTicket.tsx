@@ -1,5 +1,6 @@
 /** Layout 3, "Gift ticket": one question at a time on the left, and a ticket on the right that fills in as you go and becomes the receipt. */
 import { cx } from "@/shared/utils/cx";
+import { OgMark } from "@/shared/ui";
 import { METHOD_NAME, impactFor } from "./model";
 import { AfterButtons, AmountInput, Boosts, Details, Dial, Err, ExpressGiftAid, Extras, FreqSeg, GiftRows, Later, Mandate, NextStep, NoPayments, Nudge, PayFields, Presets, Radio, Row, Tribute, TrustPanel, cta, dark, endCopy, soft } from "./parts";
 import type { Ck } from "./useCheckout";
@@ -25,7 +26,7 @@ export const GiftTicket = ({ ck, brand, onShare, onStart }: { ck: Ck; brand: str
         <div className="ck flex min-h-dvh flex-col overflow-x-clip bg-white lg:grid lg:grid-cols-[104px_minmax(0,1fr)_minmax(380px,480px)]">
             {/* Step rail: a column on desktop, a bar on phones */}
             <nav aria-label="Steps" className="flex items-center gap-3 border-b border-(--ck-sep) px-4 py-3 lg:sticky lg:top-0 lg:h-dvh lg:flex-col lg:border-r lg:border-b-0 lg:px-0 lg:py-8">
-                <svg width="40" height="28" viewBox="0 0 34 24" role="img" aria-label={brand} className="flex-none"><circle cx="12" cy="12" r="10" fill="none" stroke="#C77BE6" strokeWidth="3.5" /><circle cx="22" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="3.5" /></svg>
+                <a href="/" aria-label={`${brand} home`} className="flex flex-none"><OgMark size={22} tone="auto" /></a>
                 <div className="ml-auto flex gap-3 sm:gap-5 lg:my-auto lg:ml-0 lg:flex-col lg:gap-[22px]">
                     {NAMES.map((label, i) => {
                         const past = i < step || done, cur = i === step;

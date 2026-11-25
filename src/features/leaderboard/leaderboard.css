@@ -1,0 +1,229 @@
+/*
+ * The board in the home page's world: lilac paper with an orchid accent in light mode, the aubergine board at night.
+ * Everything is scoped to .lb so the dashboard, admin and the 29 layouts' shared tokens elsewhere keep the app palette.
+ * The shared utilities read --ts-* and --color-brand-* inline, so overriding them here re-skins every token-driven part;
+ * the --color-text-* / --color-bg-* mappings resolve on :root, so they are restated.
+ */
+.lb {
+    --color-brand-25: #FAFAF8; --color-brand-50: #F4F3F0; --color-brand-100: #ECEAE5; --color-brand-200: #D2DBA0; --color-brand-300: #C9C6BF;
+    --color-brand-400: #F0783C; --color-brand-500: #2E2E2E; --color-brand-600: #191919; --color-brand-700: #000000; --color-brand-800: #191919;
+    --color-brand-900: #111111; --color-brand-950: #080808;
+    --color-pop-300: #191919; --color-pop-400: #000000;
+    --font-bubble: "Outfit", ui-sans-serif, system-ui, sans-serif;
+
+    --ts-page: #FFFFFF; --ts-raised: #ffffff; --ts-tint-1: #ffffff; --ts-tint-2: #F4F3F0; --ts-tint-3: #EEEEEE; --ts-card-ring: #EEEEEE;
+    --ts-fg: #191919; --ts-fg-2: #444444; --ts-fg-3: #666666; --ts-fg-faint: #8F8F8F; --ts-fg-inverse: #ffffff;
+    --ts-field: #F4F3F0; --ts-field-hover: #EEEDE9; --ts-raised-hover: #FAFAF8; --ts-border: rgb(74 29 107 / 0.1);
+    --ts-edge: 0 0 0 1px #EEEEEE, 0 1px 2px rgb(74 29 107 / 0.05);
+    --ts-lift: 0 0 0 1px #EEEEEE, 0 24px 56px -18px rgb(74 29 107 / 0.28);
+    --ts-cta-text: #191919;
+
+    --color-bg-primary: var(--ts-page); --color-bg-secondary: var(--ts-tint-2); --color-bg-tertiary: var(--ts-tint-2);
+    --color-bg-primary_hover: var(--ts-tint-2); --color-bg-secondary_hover: var(--ts-tint-3);
+    --color-bg-brand-primary: var(--color-brand-50); --color-bg-brand-secondary: var(--color-brand-100);
+    --color-bg-brand-solid: var(--color-brand-600); --color-bg-brand-solid_hover: var(--color-brand-700);
+    --color-text-brand-secondary: var(--color-brand-600); --color-fg-brand-primary: var(--color-brand-600); --color-fg-brand-secondary: var(--color-brand-500);
+    /* Tailwind's text-/bg- namespaces read these names directly. */
+    --text-color-brand-secondary: var(--color-brand-600); --background-color-brand-solid: var(--color-brand-600);
+    --color-border-primary: #E6E6E6; --color-border-secondary: #EEEEEE;
+    --color-text-primary: var(--ts-fg); --color-text-secondary: var(--ts-fg-2); --color-text-tertiary: var(--ts-fg-3);
+    --color-text-quaternary: var(--ts-fg-faint); --color-text-placeholder: var(--ts-fg-faint);
+    --color-fg-primary: var(--ts-fg); --color-fg-quaternary: var(--ts-fg-faint);
+
+    font-family: "Outfit", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+    color: var(--ts-fg);
+    background: var(--ts-page);
+}
+.dark-mode .lb {
+    --ts-page: #1a0b27; --ts-raised: #2e1543; --ts-tint-1: #241035; --ts-tint-2: #2e1543; --ts-tint-3: #3c1d56; --ts-card-ring: #33184b;
+    --ts-fg: #f7effc; --ts-fg-2: #ddcde9; --ts-fg-3: #ab95be; --ts-fg-faint: #826c96; --ts-fg-inverse: #ffffff;
+    --ts-field: #2e1543; --ts-field-hover: #3c1d56; --ts-raised-hover: #3c1d56; --ts-border: rgb(247 239 252 / 0.1);
+    --ts-edge: 0 0 0 1px #33184b;
+    --ts-lift: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 28px 72px -12px rgb(0 0 0 / 0.7);
+    --ts-cta-text: #C6AEE8;
+    --color-text-brand-secondary: #C6AEE8; --color-fg-brand-primary: #C6AEE8; --text-color-brand-secondary: #C6AEE8;
+    --color-bg-brand-primary: color-mix(in srgb, #2E2E2E 18%, #1a0b27); --color-bg-brand-secondary: color-mix(in srgb, #2E2E2E 30%, #1a0b27);
+    --color-border-primary: #4a2766; --color-border-secondary: #33184b;
+}
+
+/* The pink-on-navy action becomes the home page's orchid pill. */
+.lb .bg-cta { background-image: linear-gradient(180deg, #F0783C, #191919); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 8px 18px -6px rgb(122 47 166 / 0.55); }
+.lb .bg-cta:hover { background-image: linear-gradient(180deg, #F48A55, #000000); }
+.lb .text-cta-ink { color: #fff; }
+
+/* One playful word per headline, as on the home page. */
+.lb-script { margin-left: 0.14em; font-family: "Playwrite US Trad", cursive; font-weight: 400; font-size: 0.78em; letter-spacing: 0; color: var(--color-brand-600); }
+.dark-mode .lb-script { color: #C6AEE8; }
+.lb-mono { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* Supporter cards. #1 sits on the purple board; 2nd and 3rd get a metal rank tile. */
+.lb-card { background: var(--ts-raised); box-shadow: var(--ts-edge); }
+.lb-card:hover { box-shadow: 0 0 0 1px var(--color-brand-200), 0 14px 30px -16px rgb(74 29 107 / 0.35); transform: translateY(-1px); }
+.dark-mode .lb-card:hover { box-shadow: 0 0 0 1px #5a2a7c, 0 14px 30px -12px rgb(0 0 0 / 0.6); }
+.lb-first {
+    color: #fff;
+    background: radial-gradient(120% 140% at 0% 0%, #6a2c94 0%, #191919 55%, #111111 100%);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14), 0 18px 40px -18px rgb(58 21 86 / 0.7);
+    --text-color-primary: #fff; --text-color-secondary: rgb(255 255 255 / 0.84); --text-color-tertiary: rgb(255 255 255 / 0.7); --text-color-quaternary: rgb(255 255 255 / 0.55);
+    --text-color-brand-secondary: #D2DBA0;
+}
+.lb-first:hover { transform: translateY(-1px); }
+.lb-rank { background: var(--ts-tint-2); color: var(--ts-fg-2); }
+.lb-rank-1 { background: #D2DBA0; color: #111111; }
+.lb-rank-2 { background: linear-gradient(160deg, #eef0f3, #c9ced6); color: #2f3640; }
+.lb-rank-3 { background: linear-gradient(160deg, #f3d2b3, #c98a57); color: #4a2a12; }
+.lb-amount { background: var(--ts-tint-2); color: var(--ts-fg); }
+.lb-first .lb-amount { background: rgb(255 255 255 / 0.14); color: #fff; }
+
+.lb ::selection { background: #D2DBA0; color: #191919; }
+.dark-mode .lb ::selection { background: #191919; color: #fff; }
+@media (prefers-reduced-motion: reduce) { .lb-card, .lb-first { transition: none; transform: none !important; } }
+
+/* At night the cards sit one step above the page so chips, rank tiles and amount pills (tint-2) still read. */
+.dark-mode .lb-card, .dark-mode .lb-panel { background: var(--ts-tint-1); }
+
+/* Sidebar panels: flat, quiet, one surface each. */
+.lb-panel { background: var(--ts-raised); box-shadow: var(--ts-edge); }
+.lb-chip { background: var(--ts-tint-2); color: var(--ts-fg-2); }
+.lb-first .lb-chip { background: rgb(255 255 255 / 0.14); color: #fff; }
+
+/* The #1 card's accent word and the sidebar panel's script word sit on dark purple: gold. */
+.lb-first .lb-script { color: #D2DBA0; }
+
+/*
+ * /leaderboard/v2: the same board in the /v2 landing page's world. Neutral paper and near-black ink, selected chips in ink,
+ * orange for the action, deep olive for the #1 card, and sage, orange and lilac for the top three. Medium-weight, tight headings.
+ */
+.lb-v2 {
+    --color-brand-50: #f4f6e8; --color-brand-100: #e9eed3; --color-brand-200: #D2DBA0; --color-brand-300: #c4cf93; --color-brand-400: #8fa36a;
+    --color-brand-500: #4d5c3f; --color-brand-600: #191919; --color-brand-700: #000000; --color-brand-800: #2F3A22; --color-brand-900: #232c1c; --color-brand-950: #161b12;
+    --color-pop-300: #F0783C; --color-pop-400: #E0662A;
+    --ts-page: #FFFFFF; --ts-raised: #ffffff; --ts-tint-1: #ffffff; --ts-tint-2: #f2f2f2; --ts-tint-3: #e6e6e6; --ts-card-ring: #EEEEEE;
+    --ts-fg: #191919; --ts-fg-2: #555555; --ts-fg-3: #7d7d7d; --ts-fg-faint: #a3a3a3; --ts-fg-inverse: #ffffff;
+    --ts-field: #f4f4f4; --ts-field-hover: #ededed; --ts-raised-hover: #fcfcfc; --ts-border: rgb(0 0 0 / 0.08);
+    --ts-edge: 0 0 0 1px rgb(0 0 0 / 0.05), 0 1px 2px rgb(0 0 0 / 0.04);
+    --ts-lift: 0 0 0 1px rgb(0 0 0 / 0.04), 0 24px 56px -20px rgb(0 0 0 / 0.22);
+    --ts-cta-text: #191919;
+    --text-color-brand-secondary: #C24A14; --color-text-brand-secondary: #C24A14; --color-fg-brand-primary: #2F3A22;
+    --background-color-brand-solid: #191919; --color-bg-brand-solid: #191919; --color-bg-brand-solid_hover: #000000;
+    --color-bg-brand-primary: #f4f6e8; --color-bg-brand-secondary: #e9eed3;
+    --color-border-primary: #e6e6e6; --color-border-secondary: #EEEEEE;
+}
+.dark-mode .lb-v2 {
+    --ts-page: #111111; --ts-raised: #1d1d1e; --ts-tint-1: #1d1d1e; --ts-tint-2: #2a2a2b; --ts-tint-3: #353536; --ts-card-ring: #262627;
+    --ts-fg: #f6f6f6; --ts-fg-2: #cfcfcf; --ts-fg-3: #9a9a9a; --ts-fg-faint: #6f6f6f; --ts-fg-inverse: #111111;
+    --ts-field: #2a2a2b; --ts-field-hover: #353536; --ts-raised-hover: #2a2a2b; --ts-border: rgb(255 255 255 / 0.09);
+    --ts-edge: 0 0 0 1px rgb(255 255 255 / 0.06);
+    --color-brand-600: #f6f6f6; --background-color-brand-solid: #f6f6f6; --color-bg-brand-solid: #f6f6f6;
+    --text-color-brand-secondary: #f4a57e; --color-text-brand-secondary: #f4a57e;
+    --color-bg-brand-primary: #23281d; --color-bg-brand-secondary: #2F3A22;
+    --color-border-primary: #353536; --color-border-secondary: #262627;
+}
+.dark-mode .lb-v2 .bg-ink, .dark-mode .lb-v2 [aria-pressed="true"].bg-ink { color: #111111; }
+/* Orange action, as on /v2. */
+.lb-v2 .bg-cta { background-image: none; background-color: #F0783C; box-shadow: 0 8px 18px -8px rgb(240 123 69 / 0.6); }
+.lb-v2 .bg-cta:hover { background-color: #E0662A; }
+/* Headings and big figures: medium weight, very tight, like /v2. */
+.lb-v2 h1, .lb-v2 h1 * { font-weight: 500; letter-spacing: -0.055em; }
+.lb-v2 .lb-script { color: #2F3A22; }
+.dark-mode .lb-v2 .lb-script { color: #D2DBA0; }
+/* Cards: white, very round, the soft lifted shadow of /v2's product cards. */
+.lb-v2 .lb-card, .lb-v2 .lb-panel { border-radius: 24px; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.035), 0 2px 4px rgb(0 0 0 / 0.03), 0 18px 40px -22px rgb(0 0 0 / 0.2); }
+.lb-v2 .lb-card:hover { box-shadow: 0 0 0 1px rgb(0 0 0 / 0.06), 0 22px 44px -20px rgb(0 0 0 / 0.26); }
+.dark-mode .lb-v2 .lb-card, .dark-mode .lb-v2 .lb-panel { box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06); }
+.lb-v2 .lb-first { border-radius: 24px; background: radial-gradient(90% 140% at 100% 0%, #44533a 0%, #2F3A22 55%, #232c1c 100%); box-shadow: 0 20px 44px -22px rgb(35 44 28 / 0.75); --text-color-brand-secondary: #D2DBA0; }
+.lb-v2 .lb-first .lb-script { color: #D2DBA0; }
+.lb-v2 .lb-rank-1 { background: #F0783C; color: #ffffff; }
+.lb-v2 .lb-rank-2 { background: #D2DBA0; color: #2F3A22; }
+.lb-v2 .lb-rank-3 { background: #e8def1; color: #4A3A66; }
+.lb-v2 .lb-amount { background: #f2f2f2; }
+.dark-mode .lb-v2 .lb-amount { background: #2a2a2b; }
+.lb-v2 .lb-first .lb-amount { background: rgb(255 255 255 / 0.12); color: #ffffff; }
+.lb-v2 ::selection { background: #D2DBA0; color: #2F3A22; }
+/* The panel button's text follows the olive panel, not the orchid skin. */
+.lb-v2 .lb-first button.bg-white { color: #2F3A22; }
+
+/* ---------- /leaderboard/v2: game stage in the /v2 landing colours (BoardV2.tsx) ---------- */
+.lb-v2 { --ts-page: #FFFFFF; background: #FFFFFF; }
+.lbg {
+    --ink: #191919; --muted: #666666; --faint: #9a9a9a; --rule: #EEEEEE;
+    --orange: #F0783C; --orange-ink: #C24A14; --sage: #D2DBA0; --olive: #2F3A22; --lilac: #C6AEE8; --lilac-ink: #4A3A66;
+    --gold: var(--orange); --silver: #a9b87a; --bronze: #9f84c4;
+    --text-color-primary: var(--ink); --color-text-primary: var(--ink); --ts-fg: var(--ink);
+    color: var(--ink); min-height: 100dvh;
+    background: radial-gradient(60% 34% at 50% 0%, #efe6f6 0%, rgb(239 230 246 / 0.5) 45%, transparent 80%), radial-gradient(40% 26% at 50% 36%, rgb(240 123 69 / 0.07), transparent 70%), #FFFFFF;
+}
+.lbg ::selection { background: var(--sage); color: var(--olive); }
+.lbg :focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+.lbg-title { font-size: clamp(38px, 5.6vw, 72px); line-height: 1; font-weight: 500; letter-spacing: -0.055em; text-wrap: balance; }
+.lbg-live { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; border-radius: 999px; background: #fff; box-shadow: 0 0 0 1px var(--rule); font-size: 12px; color: var(--muted); }
+.lbg-dot { width: 7px; height: 7px; border-radius: 50%; background: #8fa36a; box-shadow: 0 0 0 4px rgb(143 163 106 / 0.2); animation: lbg-blink 1.8s ease-in-out infinite; }
+@keyframes lbg-blink { 50% { opacity: 0.4; } }
+
+/* Period switch: the landing page's floating toolbar. */
+.lbg-seg { display: flex; width: fit-content; max-width: 100%; overflow-x: auto; gap: 2px; padding: 5px; border-radius: 16px; background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / 0.05), 0 12px 28px -14px rgb(0 0 0 / 0.25); }
+.lbg-seg > button { flex-shrink: 0; padding: 7px 14px; border-radius: 11px; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; transition: background 0.2s ease, color 0.2s ease; }
+.lbg-seg > button:hover { color: var(--ink); }
+.lbg-seg > button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+
+/* The podium: orange, sage and lilac plinths. */
+.lbg-spot { --c: var(--sage); --cink: var(--olive); --h: 110px; display: flex; flex: 1; max-width: 230px; min-width: 0; flex-direction: column; align-items: center; animation: lbg-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.lbg-m1 { --c: var(--orange); --cink: #fff; --h: 170px; animation-delay: 0.1s; }
+.lbg-m2 { animation-delay: 0.2s; }
+.lbg-m3 { --c: var(--lilac); --cink: var(--lilac-ink); --h: 80px; animation-delay: 0.3s; }
+@media (max-width: 639px) { .lbg-spot { --h: 76px; } .lbg-m1 { --h: 118px; } .lbg-m3 { --h: 54px; } }
+@keyframes lbg-up { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: none; } }
+.lbg-ring { display: grid; place-items: center; width: 68px; height: 68px; border-radius: 50%; padding: 3px; background: var(--c); box-shadow: 0 14px 30px -12px color-mix(in srgb, var(--c) 80%, transparent); }
+.lbg-ring > span { display: grid; place-items: center; width: 100%; height: 100%; border-radius: 50%; background: #fff; color: var(--ink); font-weight: 600; font-size: 17px; }
+.lbg-m1 .lbg-ring { width: 92px; height: 92px; padding: 4px; }
+.lbg-m1 .lbg-ring > span { font-size: 22px; }
+@media (max-width: 639px) { .lbg-ring { width: 52px; height: 52px; } .lbg-m1 .lbg-ring { width: 68px; height: 68px; } }
+.lbg-prize { font-size: clamp(16px, 2.2vw, 22px); font-weight: 600; letter-spacing: -0.03em; color: var(--ink); font-variant-numeric: tabular-nums; }
+.lbg-m1 .lbg-prize { font-size: clamp(20px, 3vw, 30px); color: var(--orange-ink); }
+.lbg-plinth { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: space-between; width: 100%; height: var(--h); margin-top: 12px; padding: 10px 6px 12px; border-radius: 18px 18px 0 0; background: var(--c); }
+.lbg-m1 .lbg-plinth { background: linear-gradient(180deg, #f59a6e, var(--orange)); }
+.lbg-plinth > span[aria-hidden] { font-size: clamp(30px, 4.4vw, 48px); line-height: 1; font-weight: 600; letter-spacing: -0.04em; color: var(--cink); }
+.lbg-pass { padding: 5px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; white-space: nowrap; cursor: pointer; background: rgb(255 255 255 / 0.7); color: var(--ink); transition: background 0.2s ease; }
+.lbg-pass:hover { background: #fff; }
+@media (max-width: 639px) { .lbg-pass { display: none; } }
+
+/* Claim bar: a white card the podium stands on. */
+.lbg-bar { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 10px; max-width: 980px; margin: 0 auto; padding: 14px; border-radius: 24px; background: #fff; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.04), 0 30px 60px -30px rgb(0 0 0 / 0.3); }
+@media (min-width: 1024px) { .lbg-bar { flex-direction: row; align-items: center; padding: 12px 12px 12px 22px; } }
+.lbg-take { font-size: 26px; line-height: 1.05; font-weight: 600; letter-spacing: -0.04em; color: var(--ink); }
+.lbg-step { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; background: #f2f2f2; color: var(--ink); transition: background 0.2s ease; }
+.lbg-step:hover { background: #e6e6e6; }
+.lbg-input { height: 48px; padding: 0 16px; border-radius: 14px; background: #f4f4f4; color: var(--ink); font-size: 15px; outline: none; }
+.lbg-input::placeholder { color: var(--faint); }
+.lbg-input:focus { box-shadow: inset 0 0 0 2px var(--orange); }
+.lbg-select { appearance: none; cursor: pointer; background: #f4f4f4 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23888' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center; }
+.lbg-cta { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 48px; padding: 0 22px; border-radius: 999px; cursor: pointer; font-size: 15px; font-weight: 600; color: #fff; background: var(--orange); box-shadow: 0 10px 22px -10px rgb(240 123 69 / 0.7); transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), background 0.2s ease; }
+.lbg-cta:hover { transform: translateY(-1px); background: #E0662A; }
+
+/* Ranks: white tiles with the landing's soft shadow. */
+.lbg-chip { flex-shrink: 0; padding: 7px 14px; border-radius: 999px; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--muted); box-shadow: inset 0 0 0 1px var(--rule); background: #fff; transition: background 0.2s ease, color 0.2s ease; }
+.lbg-chip:hover { color: var(--ink); }
+.lbg-chip[aria-pressed="true"] { background: var(--ink); color: #fff; box-shadow: none; }
+.lbg-mini { appearance: none; cursor: pointer; height: 34px; padding: 0 30px 0 12px; border-radius: 999px; font-size: 13px; color: var(--ink); background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='none' stroke='%23888' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center; box-shadow: inset 0 0 0 1px var(--rule); }
+.lbg-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 18px; background: #fff; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.035), 0 2px 4px rgb(0 0 0 / 0.03); transition: box-shadow 0.2s ease, transform 0.2s cubic-bezier(0.22, 1, 0.36, 1); }
+.lbg-row:hover { transform: translateX(2px); box-shadow: 0 0 0 1px rgb(0 0 0 / 0.05), 0 16px 32px -18px rgb(0 0 0 / 0.25); }
+.lbg-avatar { display: grid; place-items: center; flex-shrink: 0; width: 38px; height: 38px; border-radius: 50%; background: #f4f6e8; color: var(--olive); font-size: 12px; font-weight: 600; }
+.lbg-avatar-sm { width: 28px; height: 28px; font-size: 10px; }
+.lbg-gap { padding: 3px 10px; border-radius: 999px; font-size: 12px; color: var(--muted); background: #f4f4f4; white-space: nowrap; }
+.lbg-claim { flex-shrink: 0; height: 32px; padding: 0 14px; border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer; color: var(--ink); box-shadow: inset 0 0 0 1px var(--rule); transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease; }
+.lbg-row:hover .lbg-claim, .lbg-claim:focus-visible { background: var(--orange); color: #fff; box-shadow: none; }
+.lbg-you { box-shadow: inset 0 0 0 2px var(--orange); }
+.lbg-tag { padding: 1px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; background: var(--orange); color: #fff; }
+
+/* Sidebar. */
+.lbg-panel { padding: 20px; border-radius: 24px; background: #fff; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.035), 0 2px 4px rgb(0 0 0 / 0.03), 0 18px 40px -22px rgb(0 0 0 / 0.2); }
+.lbg-panel-glow { background: radial-gradient(90% 120% at 100% 0%, #44533a 0%, var(--olive) 55%, #232c1c 100%); box-shadow: 0 24px 48px -24px rgb(35 44 28 / 0.6); }
+.lbg-panel-glow h2 { color: #fff !important; }
+.lbg-panel-glow p { color: rgb(255 255 255 / 0.7) !important; }
+.lbg-panel-glow .lbg-cta { background: var(--sage); color: var(--olive); box-shadow: none; }
+.lbg-panel-glow .lbg-cta:hover { background: #fff; }
+.lbg-panel-glow button:not(.lbg-cta) { color: rgb(255 255 255 / 0.6) !important; }
+.lbg-medal { display: grid; place-items: center; flex-shrink: 0; width: 22px; height: 22px; border-radius: 7px; font-size: 11px; font-weight: 700; color: var(--muted); background: #f2f2f2; }
+.lbg-medal-1 { background: var(--orange); color: #fff; } .lbg-medal-2 { background: var(--sage); color: var(--olive); } .lbg-medal-3 { background: var(--lilac); color: var(--lilac-ink); }
+.lbg-feed { animation: lbg-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+@media (prefers-reduced-motion: reduce) { .lbg-spot, .lbg-feed, .lbg-dot { animation: none; } .lbg-row, .lbg-cta { transition: none; } }

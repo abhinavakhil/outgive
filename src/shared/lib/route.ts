@@ -1,6 +1,6 @@
 /**
  * Tenant-aware routing. An organisation is reached on its own host (custom domain or <slug>.outgive.org) or under /o/<slug>.
- * /demo is the sample charity's board. On a tenant host the /o/<slug> prefix disappears.
+ * /leaderboard is the sample charity's board (/demo is its old address and still works, as do the /demo/... sub-pages). On a tenant host the /o/<slug> prefix disappears.
  */
 import { PREFIX, type PageType } from "@/shared/domain/model";
 
@@ -26,12 +26,12 @@ export const OVERLAY_STYLES = ["bar", "alert", "ticker"] as const;
 export const DASH_TABS = ["donations", "subscriptions", "analytics", "gateways", "profile", "giving", "account"] as const;
 type LiveLink = { layout?: (typeof LIVE_LINK_LAYOUTS)[number]; theme?: "dark" | "light" };
 export type View =
-    | { name: "landing" } | { name: "legacy" } | { name: "landing-b" } | { name: "layouts" } | { name: "ui" } | { name: "ui-variants" } | { name: "pricing" } | { name: "start" } | { name: "login" }
+    | { name: "landing" } | { name: "legacy" } | { name: "landing-b" } | { name: "v2" } | { name: "ramadan" } | { name: "ramadhan" } | { name: "ramadhan-edit" } | { name: "ramadhan-give" } | { name: "layouts" } | { name: "ui" } | { name: "ui-variants" } | { name: "pricing" } | { name: "start" } | { name: "login" }
     /** /dashboard/giving opens a tab; /dashboard/receipt/<gift id> is that gift's receipt. */
     | { name: "dashboard"; tab?: (typeof DASH_TABS)[number]; gift?: string }
     | { name: "blog" } | { name: "post"; slug: string }
     | { name: "about" } | { name: "rules" } | { name: "faq" } | { name: "terms" } | { name: "privacy" } | { name: "notfound" }
-    | { name: "board"; org: string } | ({ name: "live"; org: string; page?: PageRef } & LiveLink) | { name: "give"; org: string; page?: PageRef }
+    | { name: "board"; org: string; skin?: "v2" } | ({ name: "live"; org: string; page?: PageRef } & LiveLink) | { name: "give"; org: string; page?: PageRef }
     | { name: "overlay"; org: string; page?: PageRef; style?: (typeof OVERLAY_STYLES)[number] }
     /** parent: the campaign a new page sits under, as its key ("c/water"); an id from an older ?for= link also works. */
     | { name: "create"; org: string; parent?: string } | { name: "admin"; org: string; tab?: string }
@@ -44,7 +44,7 @@ export type View =
     | { name: "checkout"; org?: string };
 
 const TYPE_OF: Record<string, PageType> = Object.fromEntries(Object.entries(PREFIX).map(([t, p]) => [p, t as PageType]));
-const STATIC: Record<string, View> = { "/": { name: "landing" }, "/landing-b": { name: "landing-b" }, "/layouts": { name: "layouts" }, "/ui": { name: "ui" }, "/ui/variants": { name: "ui-variants" }, "/pricing": { name: "pricing" }, "/start": { name: "start" }, "/login": { name: "login" }, "/dashboard": { name: "dashboard" }, "/about": { name: "about" }, "/rules": { name: "rules" }, "/faq": { name: "faq" }, "/terms": { name: "terms" }, "/privacy": { name: "privacy" }, "/blog": { name: "blog" }, "/checkout": { name: "checkout" }, "/ramadan": { name: "landing" }, "/legacy": { name: "legacy" } };
+const STATIC: Record<string, View> = { "/": { name: "landing" }, "/landing-b": { name: "landing-b" }, "/v2": { name: "v2" }, "/layouts": { name: "layouts" }, "/ui": { name: "ui" }, "/ui/variants": { name: "ui-variants" }, "/pricing": { name: "pricing" }, "/start": { name: "start" }, "/login": { name: "login" }, "/dashboard": { name: "dashboard" }, "/about": { name: "about" }, "/rules": { name: "rules" }, "/faq": { name: "faq" }, "/terms": { name: "terms" }, "/privacy": { name: "privacy" }, "/blog": { name: "blog" }, "/checkout": { name: "checkout" }, "/ramadan": { name: "ramadan" }, "/ramadhan": { name: "ramadhan" }, "/ramadhan/edit": { name: "ramadhan-edit" }, "/ramadhan/give": { name: "ramadhan-give" }, "/legacy": { name: "legacy" } };
 const clean = (p: string) => (p.length > 1 ? p.replace(/\/+$/, "") : p) || "/";
 
 /** /live/podium/light: an optional layout and theme, in either order. */
@@ -122,6 +122,8 @@ export const parse = (path: string, tenant: Tenant, search = ""): View => {
     }
     if (tenant.host) return orgView(tenant.host, p, q); // slug is resolved from the host by the app; carry the host as the key meanwhile
     if (STATIC[p]) return STATIC[p];
+    if (p === "/leaderboard") return { name: "board", org: DEMO_SLUG };
+    if (p === "/leaderboard/v2") return { name: "board", org: DEMO_SLUG, skin: "v2" };
     if (p === "/create") return drop({ name: "create", org: DEMO_SLUG, parent: q.get("for") ?? undefined });
     const real = p.match(/^\/([a-z]{1,2})\/([^/]+)$/);
     if (real && TYPE_OF[real[1]]) return { name: "page", org: DEMO_SLUG, page: { type: TYPE_OF[real[1]], slug: decodeURIComponent(real[2]) }, real: true };
@@ -139,7 +141,7 @@ export const pathOf = (v: View, tenant: Tenant): string => {
     const opts = (...xs: (string | number | undefined)[]) => xs.filter((x) => x !== undefined && x !== "").map((x) => `/${x}`).join("");
     switch (v.name) {
         case "landing": case "notfound": return "/";
-        case "board": return prefix(v.org) || "/";
+        case "board": return !tenant.slug && !tenant.host && v.org === DEMO_SLUG ? (v.skin ? "/leaderboard/v2" : "/leaderboard") : prefix(v.org) || "/";
         case "live": return `${prefix(v.org)}${v.page ? pg(v.page) : ""}/live${opts(v.layout, v.theme)}`;
         case "overlay": return `${prefix(v.org)}${v.page ? pg(v.page) : ""}/overlay${opts(v.style)}`;
         case "give": return `${prefix(v.org)}${v.page ? pg(v.page) : ""}/${v.page ? "give" : "donate"}`;
