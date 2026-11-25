@@ -6,9 +6,7 @@
 
 // Primitives
 export { Button } from "./base/buttons/button";
-export { Input } from "./base/input/input";
-export { TextArea } from "./base/textarea/textarea";
-export { NativeSelect } from "./base/select/select-native";
+export { Input, NativeSelect, Select, TextArea } from "./fields";
 export { Checkbox } from "./base/checkbox/checkbox";
 export { Toggle } from "./base/toggle/toggle";
 export { Badge } from "./base/badges/badges";
@@ -28,9 +26,12 @@ export { FileUpload } from "./application/file-upload/file-upload-base";
 export { Card, ConsoleShell, Container, Fieldset, Panel, SiteHeader, TwoCol } from "./layout";
 export { CopyRow, Empty, Ring, Stat, Who } from "./display";
 export { BrandLogo, BrandMark, Logo, ThemeToggle } from "./brand";
+export { Logo as OgLogo, Mark as OgMark } from "./og-logo";
 export { Confetti } from "./confetti";
 export { Buddy, type BuddyMood } from "./buddy";
 export { NotFound } from "./not-found";
+export { Loading, SitePage, Spinner } from "./site-shell";
+export { DEMO_FORM, DEMO_HASH, DemoRequest } from "./demo-request";
 
 // Motion pieces ported from Magic UI (MIT), each credited in its file
 export { AnimatedList, AnimatedListItem } from "./magic/animated-list";

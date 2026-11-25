@@ -9,6 +9,8 @@ import { initials } from "@/shared/lib/format";
 import { ALL_VARIANTS, type BoardCtx, EASE, INV, MORE_BOARDS, NUM, YOU } from "@/features/leaderboard/components/boards";
 import { cx } from "@/shared/utils/cx";
 import { track } from "@/shared/lib/analytics";
+import { BoardV2 } from "@/features/leaderboard/components/BoardV2";
+import "../leaderboard.css";
 
 const ago = (m: number) => (m < 1 ? "just now" : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} h ago` : `${Math.round(m / 1440)} d ago`);
 const opts = (xs: string[]) => xs.map((x) => ({ label: x, value: x }));
@@ -39,8 +41,9 @@ const compact = (n: number) => new Intl.NumberFormat("en", { notation: "compact"
 const HeartFilled = ({ className }: { className?: string }) => <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.3 3 4.5 6.7 4.5c2.2 0 3.6 1.2 5.3 3.1 1.7-1.9 3.1-3.1 5.3-3.1 3.7 0 5.8 3.8 4.3 7.2C19.5 16.4 12 21 12 21z" /></svg>;
 const one = (kind: string) => ({ Individuals: "Individual", Teams: "Team", Companies: "Company", Schools: "School" })[kind] ?? kind;
 
-export const Leaderboard = () => {
-    const { db, go, href, money, currency, setCurrency, board, activity, hall, brand, setBrand, me: you, setMe: setYou, org, member, isDemo, user, refresh, toast: showToast } = useApp();
+/** skin "v2": the /leaderboard/v2 design study, in the /v2 landing page's palette (see leaderboard.css). */
+export const Leaderboard = ({ skin }: { skin?: "v2" } = {}) => {
+    const { db, go, href, money, currency, setCurrency, board, activity, brand, setBrand, me: you, setMe: setYou, org, member, isDemo, user, refresh, toast: showToast } = useApp();
     const [period, setPeriod] = useState<BoardKey>("total");
     const [kind, setKind] = useState("All");
     const [region, setRegion] = useState("Worldwide");
@@ -119,12 +122,6 @@ export const Leaderboard = () => {
     const nextUp = mine > 0 ? { text: <>You're <b className="text-primary">#{mine + 1}</b>. <b className="text-primary">{money(byTotal[mine - 1].total + 1 - byTotal[mine].total)}</b> more passes {byTotal[mine - 1].name}.</>, cta: `Give ${money(byTotal[mine - 1].total + 1 - byTotal[mine].total)}`, run: () => openClaim(byTotal[mine - 1].total + 1, mine, byTotal[mine].name, byTotal[mine].kind, byTotal[mine - 1].total + 1 - byTotal[mine].total) }
         : mine === 0 ? { text: <>You hold <b className="text-primary">#1</b>.{byTotal[1] && <> {byTotal[1].name} is {money(byTotal[0].total - byTotal[1].total)} behind.</>}</>, cta: "", run: () => {} }
         : lastRow ? { text: <>Not chasing #1? <b className="text-primary">{money(lastRow.total + 1)}</b> puts your name on the board at #{byTotal.length}.</>, cta: `Join for ${money(lastRow.total + 1)}`, run: () => openClaim(lastRow.total + 1, byTotal.length, heroName, heroKind) } : null;
-    /** The closest race between two of a kind: the pair of schools, teams or companies nearest to level. */
-    const rival = useMemo(() => {
-        let best: [Supporter, Supporter] | null = null;
-        for (const k of ["Schools", "Teams", "Companies"]) { const xs = byTotal.filter((o) => o.kind === k); for (let i = 0; i + 1 < xs.length; i++) if (!best || xs[i + 1].total / xs[i].total > best[1].total / best[0].total) best = [xs[i], xs[i + 1]]; }
-        return best;
-    }, [byTotal]);
 
     const tab = (on: boolean) => cx("inline-flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full px-3 text-[13px] font-semibold whitespace-nowrap outline-focus-ring focus-visible:outline-2", EASE, on ? "bg-ink text-ink-inverse" : "bg-raised text-ink-2 shadow-edge hover:text-ink");
     const claimRow = (o: Row) => openClaim(o.total + 1, byTotal.findIndex((x) => x.id === o.id) + 1);
@@ -135,8 +132,8 @@ export const Leaderboard = () => {
     const gapUp = (o: Row) => (o.rank > 1 ? ranked[o.rank - 2][period] - o[period] + 1 : 0);
     const climb = (o: Row) => <span className="inline-flex items-center gap-0.5 text-xs text-tertiary">{o.rank > 1 ? <><ArrowUp className="size-3" />{fmt(gapUp(o))} to #{o.rank - 1}</> : "Leading"}</span>;
     const meta = (o: Row) => (
-        <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-tertiary"><span className="font-semibold text-secondary">{one(o.kind)}</span><span>·</span><span>{o.country}</span><span>·</span><span>{o.visits.toLocaleString("en")} visits</span>{o.match && <><span>·</span><span className="font-semibold text-primary">Matching gifts up to {money(o.match)}</span></>}{impact(o.total) && <><span className="max-sm:hidden">·</span><span className="max-sm:hidden">funded {impact(o.total)}</span></>}<span>·</span>
-            <button type="button" aria-expanded={open === o.id} onClick={() => setOpen(open === o.id ? null : o.id)} className="cursor-pointer underline-offset-2 hover:text-primary hover:underline">{open === o.id ? "hide details" : "see details"}</button>{boardDef.money && <span className="md:hidden">·</span>}<span className="md:hidden">{claimLink(o)}</span></div>
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-tertiary"><span className="lb-chip rounded-full px-2.5 py-0.5 font-semibold">{one(o.kind)}</span><span>{o.country}</span><span className="tabular-nums max-sm:hidden">{o.visits.toLocaleString("en")} visits</span>{o.match && <span className="font-semibold text-brand-secondary">Matching up to {money(o.match)}</span>}{impact(o.total) && <span className="max-sm:hidden">Funded {impact(o.total)}</span>}
+            <button type="button" aria-expanded={open === o.id} onClick={() => setOpen(open === o.id ? null : o.id)} className="cursor-pointer font-medium underline-offset-2 hover:text-primary hover:underline">{open === o.id ? "Hide details" : "Details"}</button><span className="md:hidden">{claimLink(o)}</span></div>
     );
     const details = (o: Row) => open === o.id && <p className="mt-2 max-w-prose text-sm text-tertiary">{o.name} is giving from {o.country} ({o.region}). All-time {money(o.total)}, this week {money(o.week)}, today {money(o.today)}. {impact(o.total) && `That has funded ${impact(o.total)}. `}{o.recruited > 0 && `Brought in ${o.recruited} donors. `}{o.streak > 0 && `Has given ${o.streak} months in a row. `}{o.match && `Matching every gift up to ${money(o.match)}. `}{o.page ? `Fundraising page: ${o.page}. ` : ""}{o.days === 0 ? "Joined the board today." : `On the board for ${o.days} days.`}</p>;
     const youBadge = (o: Row) => you === o.id && <Badge type="pill-color" color="gray" size="sm">You</Badge>;
@@ -144,18 +141,19 @@ export const Leaderboard = () => {
     const boardCtx: BoardCtx = { val, money, claim: claimRow, pill: claimPill, link: claimLink, badge: youBadge, gap: gapUp, fmt, you, metric: period, canClaim: boardDef.money, label: boardDef.label };
 
     const ListRow = ({ o }: { o: Row }) => (
-        <li id={`row-${o.id}`} className={cx("group relative shrink-0 rounded-2xl px-4 py-3", EASE, o.rank === 1 ? INV : "hover:bg-tint-2", you === o.id && YOU)}>
+        <li id={`row-${o.id}`} className={cx("group relative shrink-0 rounded-[22px] px-3.5 py-3.5 sm:px-5 sm:py-4", EASE, o.rank === 1 ? "lb-first" : "lb-card", you === o.id && YOU)}>
             {claimPill(o)}
-            <div className="flex items-center gap-3.5">
-                <span className={cx("w-9 text-xl", NUM, o.rank <= 3 ? "text-primary" : "text-quaternary")}>#{o.rank}</span>
-                <span className="shrink-0 rounded-full"><Avatar size="md" initials={initials(o.name)} /></span>
+            <div className="flex items-center gap-3 sm:gap-4">
+                <span className={cx("flex size-9 shrink-0 items-center justify-center rounded-xl max-sm:self-start text-[15px] sm:size-11 sm:rounded-2xl sm:text-[17px]", NUM, o.rank <= 3 ? `lb-rank-${o.rank}` : "lb-rank")}>{o.rank === 1 ? <><Crown className="size-5" /><span className="sr-only">1</span></> : o.rank}</span>
+                <span className="shrink-0 rounded-full max-sm:hidden"><Avatar size="md" initials={initials(o.name)} /></span>
                 <div className="min-w-0 flex-1">
-                    <div className="flex items-baseline justify-between gap-3"><span className="flex min-w-0 items-center gap-2"><span className="truncate text-md font-semibold text-primary">{o.name}</span>{youBadge(o)}</span><span className={cx("shrink-0 text-md text-primary", NUM)}>{val(o)}</span></div>
+                    <div className="flex min-w-0 items-center gap-2"><span className="truncate text-[16px] font-semibold tracking-[-0.01em] text-primary sm:text-[17px]">{o.name}</span>{youBadge(o)}</div>
                     <div className="truncate text-sm text-tertiary">{o.tagline}</div>
                     {meta(o)}
                 </div>
+                <span className={cx("lb-amount shrink-0 self-start rounded-full px-3 py-1 text-[15px] sm:px-3.5 sm:py-1.5 sm:text-[17px]", NUM)}>{val(o)}</span>
             </div>
-            <div className="ml-[3.25rem]">{details(o)}</div>
+            <div className="sm:ml-[6.75rem]">{details(o)}</div>
         </li>
     );
 
@@ -386,8 +384,18 @@ export const Leaderboard = () => {
         </div>
     );
 
+    const raised = board.reduce((n, o) => n + o.total, 0);
+    const v2 = {
+        shown, boardSize: board.length, boardTitle: boardDef.title, period, setPeriod, kind, setKind, region, setRegion, currency, setCurrency,
+        val, money, fmt, gap: gapUp, canClaim: boardDef.money, claimRow, heroUsd, setBump, heroName, setHeroName, heroKind, setHeroKind,
+        onHeroClaim: () => openClaim(heroUsd, 1, heroName, heroKind), you, todayTop, activity, todayTotal, raised: money(raised),
+        brandName: brand.name, tagline: brand.tagline, nextUp, go, member: !!member, openBranding: () => setBranding(true),
+        footNote: isDemo ? "Example board with fictional supporters. No payments are taken." : "Gifts are paid to the charity through Stripe.",
+    };
+
     return (
-        <div className="flex min-h-dvh flex-col bg-primary">
+        <div className={cx("lb flex min-h-dvh flex-col bg-primary", skin === "v2" && "lb-v2")}>
+            {skin === "v2" ? <BoardV2 {...v2} /> : <>
             <div className="relative">
                 <Container className="relative flex flex-col gap-4 pt-6 md:px-4 lg:max-w-5xl">
                     <header className="flex flex-col gap-3">
@@ -425,7 +433,7 @@ export const Leaderboard = () => {
                         </div>
                         <div className="relative flex flex-col items-center">
                             <h1 className="flex flex-col items-center text-center text-[44px] leading-[0.95] font-extrabold tracking-[-0.045em] text-ink md:text-[76px]">
-                                <span>Take #1 for</span>
+                                <span>Take #1 <span className="lb-script">for</span></span>
                                 <span className="mt-2 flex items-center gap-3 md:gap-4">
                                     <button type="button" aria-label="Lower amount" onClick={() => setBump((b) => Math.max(1, b - 100))} className={STEP}><Minus className="size-4" /></button>
                                     <span className={cx("text-[52px] leading-none tracking-normal text-ink md:text-[96px]", NUM)}>{money(heroUsd)}</span>
@@ -447,13 +455,13 @@ export const Leaderboard = () => {
                 </Container>
             </div>
             <Container className="flex flex-1 flex-col gap-4 pb-5 md:px-4 lg:max-w-5xl">
-                <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_230px]">
+                <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
                     <main className="flex min-w-0 flex-col gap-2">
                         {nextUp && <div className="mb-1 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-2xl bg-tint-1 px-4 py-3 text-sm text-ink-2"><span className="flex min-w-0 items-center gap-2"><ArrowUp aria-hidden="true" className="size-4 shrink-0 text-ink-3" /><span>{nextUp.text}</span></span>{nextUp.cta && <Button color="primary" size="sm" className="rounded-full" onPress={nextUp.run}>{nextUp.cta}</Button>}</div>}
                         <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-[11px] font-semibold tracking-wide text-ink-3 uppercase">{boardDef.title} · {shown.length}</h2><div className="flex flex-wrap gap-2"><PillSelect label="Layout" size="sm" className="w-44" value={ALL_VARIANTS.find(([k]) => k === variant)?.[1] ?? ""} onChange={(l) => setBrand({ ...brand, variant: ALL_VARIANTS.find(([, x]) => x === l)?.[0] ?? "list" })} options={ALL_VARIANTS.map(([, l]) => l)} /><PillSelect label="Currency" size="sm" className="w-24" value={currency} onChange={setCurrency} options={Object.keys(CURRENCIES)} /><PillSelect label="Region" size="sm" className="w-44" value={region} onChange={setRegion} options={["Worldwide", ...REGIONS]} /></div></div>
                         {boardDef.note && <p className="-mt-1 text-xs text-tertiary">{boardDef.note}</p>}
                         {shown.length === 0 && <p className="rounded-3xl bg-tint-1 p-6 text-sm text-ink-3">Nobody here yet. Be the first to claim a rank for this group and region.</p>}
-                        {shown.length > 0 && variant === "list" && <ol className="flex flex-col gap-0.5 rounded-3xl bg-tint-1 p-2">{shown.map((o) => <ListRow key={o.id} o={o} />)}</ol>}
+                        {shown.length > 0 && variant === "list" && <ol className="flex flex-col gap-2">{shown.map((o) => <ListRow key={o.id} o={o} />)}</ol>}
                         {shown.length > 0 && variant === "podium" && <Podium rows={shown} />}
                         {shown.length > 0 && variant === "race" && <Race rows={shown} />}
                         {shown.length > 0 && variant === "league" && <League rows={shown} />}
@@ -465,37 +473,25 @@ export const Leaderboard = () => {
                         {shown.length > 0 && MORE_BOARDS[variant] && createElement(MORE_BOARDS[variant].board, { rows: shown, c: boardCtx })}
                     </main>
 
-                    <aside className="flex min-w-0 flex-col gap-5">
-                        <section className="flex flex-col gap-2.5"><div className="flex items-center justify-between"><h2 className="flex items-center gap-1.5 text-sm font-semibold text-primary"><span className="size-1.5 rounded-full bg-brand-solid" />Today's ranking</h2><button type="button" onClick={() => setPeriod("today")} className="cursor-pointer text-xs font-medium text-brand-secondary hover:underline">See all ›</button></div>
-                            <ol className="flex flex-col gap-2 text-sm">{todayTop.map((o, i) => (<li key={o.id} className="flex items-center gap-2"><span className={cx("w-5 text-xs text-ink-3", NUM)}>#{i + 1}</span><Avatar size="xs" initials={initials(o.name)} /><span className="min-w-0 flex-1 truncate text-secondary">{o.name}</span><span className={cx("text-xs text-ink", NUM)}>{money(o.today)}</span></li>))}</ol>
+                    <aside className="flex min-w-0 flex-col gap-3 lg:sticky lg:top-6">
+                        <section className="lb-panel flex flex-col gap-3 rounded-[22px] p-5">
+                            <div className="flex items-center justify-between"><h2 className="text-[15px] font-semibold text-primary">Top today</h2><button type="button" onClick={() => setPeriod("today")} className="cursor-pointer text-xs font-semibold text-brand-secondary underline-offset-2 hover:underline">See all</button></div>
+                            <ol className="flex flex-col gap-2.5 text-sm">{todayTop.map((o, i) => (<li key={o.id} className="flex items-center gap-2.5"><span className={cx("flex size-6 shrink-0 items-center justify-center rounded-lg text-xs", NUM, i < 3 ? `lb-rank-${i + 1}` : "lb-rank")}>{i + 1}</span><span className="min-w-0 flex-1 truncate font-medium text-secondary">{o.name}</span><span className={cx("text-sm text-ink", NUM)}>{money(o.today)}</span></li>))}</ol>
                         </section>
-                        <section className="flex flex-col gap-2.5"><h2 className="text-sm font-semibold text-primary">Latest activity</h2>
-                            <ul className="flex flex-col gap-2 text-xs text-tertiary">{activity.slice(0, 4).map((a, i) => (<li key={i}><span className="font-semibold text-primary">{a.who}</span> claimed a rank with {money(a.usd)} · {ago(Math.round((Date.now() - a.at) / 60000))}</li>))}</ul>
+                        <section className="lb-panel flex flex-col gap-3 rounded-[22px] p-5"><h2 className="text-[15px] font-semibold text-primary">Latest gifts</h2>
+                            <ul className="flex flex-col gap-2.5 text-sm">{activity.slice(0, 4).map((a, i) => (<li key={i} className="flex items-baseline gap-2"><span className="min-w-0 flex-1 truncate font-medium text-secondary">{a.who}</span><span className={cx("text-ink", NUM)}>{money(a.usd)}</span><span className="w-14 shrink-0 text-right text-xs text-tertiary">{ago(Math.round((Date.now() - a.at) / 60000)).replace(" ago", "")}</span></li>))}</ul>
                         </section>
-                        {rival && <section className="flex flex-col gap-2.5 rounded-3xl bg-tint-1 p-5"><h2 className="text-sm font-semibold text-primary">Rivalry to watch</h2>
-                            {rival.map((o, i) => (<div key={o.id} className="flex flex-col gap-1"><div className="flex items-baseline justify-between gap-2 text-xs"><span className="truncate font-medium text-secondary">{o.name}</span><span className={cx("text-ink", NUM)}>{money(o.total)}</span></div><div className="h-1.5 overflow-hidden rounded-full bg-tint-3"><div className={cx("h-full rounded-full", i === 0 ? "bg-ink" : "bg-ink-3")} style={{ width: `${(o.total / rival[0].total) * 100}%` }} /></div></div>))}
-                            <p className="text-xs text-tertiary">{rival[1].name} needs {money(rival[0].total + 1 - rival[1].total)} to pass {rival[0].name}.</p>
-                            <Button color="secondary" size="sm" className="rounded-full" onPress={() => openClaim(rival[0].total + 1, byTotal.findIndex((x) => x.id === rival[0].id) + 1, rival[1].name, rival[1].kind, rival[0].total + 1 - rival[1].total)}>Back the challenger</Button>
-                        </section>}
-                        <section className="flex flex-col gap-2.5"><h2 className="flex items-center gap-1.5 text-sm font-semibold text-primary"><Award01 aria-hidden="true" className="size-4 text-ink-3" />Hall of fame</h2>
-                            {hall.length === 0 && <p className="text-xs text-tertiary">The first full week's winner appears here.</p>}
-                            <ol className="flex flex-col gap-2 text-xs text-tertiary">{hall.map(([week, who, usd]) => (<li key={week} className="flex items-baseline justify-between gap-2"><span className="min-w-0 truncate"><span className="font-semibold text-primary">{who}</span> · week of {week}</span><span className={cx("shrink-0 text-ink", NUM)}>{money(usd)}</span></li>))}</ol>
+                        <section className="lb-first flex flex-col items-start gap-2 rounded-[22px] p-5">
+                            <h2 className="text-[17px] leading-snug font-semibold text-primary">Raise for {brand.name} <span className="lb-script">together</span></h2>
+                            <p className="text-sm text-secondary">Start a page, share it, and every gift to it counts toward your rank.</p>
+                            <button type="button" onClick={() => go({ name: "create" })} className={cx("mt-1 inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-full bg-white px-4 text-sm font-semibold text-[#3a1556] outline-white hover:bg-[#f3ebf9] focus-visible:outline-2 focus-visible:outline-offset-2", EASE)}>Start fundraising<ArrowRight className="size-4" /></button>
+                            <button type="button" onClick={() => setBranding(true)} className="cursor-pointer text-xs font-medium text-tertiary underline-offset-2 hover:text-primary hover:underline">Run a board for your charity</button>
                         </section>
-                        <div className="flex flex-col items-start gap-2 rounded-3xl bg-tint-1 p-5">
-                            <h2 className="text-sm font-semibold text-primary">Fundraising for {brand.name}?</h2>
-                            <p className="text-xs text-tertiary">Set up a page in one of 12 layouts. Every gift to it counts toward your rank.</p>
-                            <Button color="primary" size="sm" className="rounded-full" iconTrailing={ArrowRight} onPress={() => go({ name: "create" })}>Start fundraising</Button>
-                        </div>
-                        <div className="flex flex-col items-start gap-2 rounded-3xl bg-tint-1 p-5">
-                            <h2 className="text-sm font-semibold text-primary">Run this for your charity</h2>
-                            <p className="text-xs text-tertiary">Your name, logo, colour and font. See it in ten seconds.</p>
-                            <Button color="secondary" size="sm" className="rounded-full" iconLeading={Brush03} onPress={() => setBranding(true)}>Your branding</Button>
-                        </div>
                     </aside>
                 </div>
                 <footer className="mt-6 flex flex-col items-center gap-3 border-t border-hairline pt-6 pb-4 text-center text-sm text-tertiary">
                     <p><span className="font-semibold text-primary">{board.length}</span> supporters have given <span className="font-semibold text-primary">{money(board.reduce((n, o) => n + o.total, 0))}</span> to {brand.name} through this board{impact(board.reduce((n, o) => n + o.total, 0)) && <>, enough for <span className="font-semibold text-primary">{impact(board.reduce((n, o) => n + o.total, 0))}</span></>}.</p>
-                    <p className="text-xs">{isDemo ? "Demo with fictional supporters. No payments are taken. " : org?.remove_branding ? "" : "Gifts are paid to the charity through Stripe. "}{!org?.remove_branding && <>Leaderboard by <a href="/" data-umami-event="board-to-product" onClick={(e) => { e.preventDefault(); go({ name: "landing" }); }} className="font-semibold text-primary underline-offset-2 hover:underline">Outgive</a>.</>}</p>
+                    <p className="text-xs">{isDemo ? "Example board with fictional supporters. No payments are taken. " : org?.remove_branding ? "" : "Gifts are paid to the charity through Stripe. "}{!org?.remove_branding && <>Leaderboard by <a href="/" data-umami-event="board-to-product" onClick={(e) => { e.preventDefault(); go({ name: "landing" }); }} className="font-semibold text-primary underline-offset-2 hover:underline">Outgive</a>.</>}</p>
                     <nav aria-label="Footer" className="flex flex-wrap items-center justify-center gap-x-1 text-xs font-medium">
                         {([["rules", "Rules"], ["faq", "FAQ"], ["about", "About"], ["create", "Start fundraising"]] as const).map(([n, l], i) => <span key={n} className="flex items-center gap-1">{i > 0 && <span>·</span>}<button type="button" onClick={() => go({ name: n } as Go)} className="cursor-pointer rounded px-1 hover:text-primary hover:underline">{l}</button></span>)}
                         <span className="flex items-center gap-1"><span>·</span><button type="button" onClick={() => setBranding(true)} className="cursor-pointer rounded px-1 hover:text-primary hover:underline">Run your own board</button></span>
@@ -503,6 +499,7 @@ export const Leaderboard = () => {
                     </nav>
                 </footer>
             </Container>
+            </>}
 
             <BrandPanel open={branding} onClose={() => setBranding(false)} />
             <ModalOverlay isOpen={!!claim} isDismissable onOpenChange={(o) => { if (!o) setClaim(null); }}>
@@ -554,7 +551,7 @@ export const Leaderboard = () => {
                         {/* On phones the form is taller than the screen, so the action stays pinned to the bottom of the dialog. */}
                         <div className="sticky bottom-0 -mx-5 -mb-5 flex flex-col gap-2 bg-primary px-5 pt-3 pb-5 md:static md:m-0 md:p-0">
                             <Button size="lg" color="primary" type="submit" className="w-full rounded-full" isDisabled={!(giftUsd > 0) || busy}>{busy ? "One moment…" : giftUsd > 0 ? `Give ${money(giftUsd)} and take #${landing}` : "Enter an amount"}</Button>
-                            <p className="text-center text-xs text-tertiary">{isDemo ? "Demo only. No payment is taken. On a live board your rank appears once the payment clears." : `Paid to ${brand.name} through Stripe. Your rank appears once the payment clears.`}</p>
+                            <p className="text-center text-xs text-tertiary">{isDemo ? "Example board: no payment is taken. On a live board your rank appears once the payment clears." : `Paid to ${brand.name} through Stripe. Your rank appears once the payment clears.`}</p>
                         </div>
                     </form>
                 </Dialog></Modal>

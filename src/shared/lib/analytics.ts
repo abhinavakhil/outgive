@@ -18,7 +18,7 @@ export const initAnalytics = () => {
 export type TrackData = Record<string, string | number>;
 /** Every event sent this visit, newest last, for the dev panel and browser tests. */
 export const sent: { event: string; data?: TrackData; at: number }[] = [];
-if (import.meta.env.DEV) (window as unknown as { __events: typeof sent }).__events = sent;
+if (import.meta.env.DEV && typeof window !== "undefined") (window as unknown as { __events: typeof sent }).__events = sent;
 const listeners = new Set<() => void>();
 export const onTrack = (fn: () => void) => { listeners.add(fn); return () => { listeners.delete(fn); }; };
 

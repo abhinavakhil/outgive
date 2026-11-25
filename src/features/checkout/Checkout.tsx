@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { Loading } from "@/shared/ui";
 import { flag } from "@/shared/lib/flags";
 import { onTrack, sent } from "@/shared/lib/analytics";
 import { campaigns } from "@/shared/lib/campaign-store";
@@ -124,7 +125,7 @@ export const CheckoutScreen = () => {
     const payments = useMemo(() => sid ? demoPayments({
         record: (o) => campaigns.donate(sid, { name: o.donor.anonymous ? "Anonymous" : `${o.donor.first} ${o.donor.last}`.trim(), usd: o.amount + (o.total - o.recur), message: "", at: Date.now(), monthly: o.freq === "monthly" || undefined, dedication: o.tribute?.name || undefined }),
     }) : undefined, [sid]);
-    if (state === "loading") return <div className="flex min-h-dvh items-center justify-center text-sm text-tertiary">Loading…</div>;
+    if (state === "loading") return <Loading full />;
     if (state === "missing") return <div className="flex min-h-dvh flex-col items-center justify-center gap-2 p-6 text-center"><strong className="text-lg">That campaign isn't here.</strong><a className="text-brand-secondary underline" href="/checkout">Try the sample checkout</a></div>;
     const { c, storeId } = state;
     return (

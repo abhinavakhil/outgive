@@ -1,6 +1,6 @@
 import { type FC, type ReactNode, useEffect, useRef, useState } from "react";
 import { Announcement01, Calendar, Clock, Flag01, Heart, Link01, Users01 } from "@untitledui/icons";
-import { ARROW, ShareDialog, Svg, TICK, UP, shareTargets, youtubeId } from "@/shared/ui";
+import { ARROW, OgLogo, ShareDialog, Svg, TICK, UP, shareTargets, youtubeId } from "@/shared/ui";
 import { DonateDialog } from "@/features/donate";
 import { Leaderboard } from "@/features/campaign/components/Leaderboard";
 import { useApp } from "@/shared/lib/app-context";
@@ -172,9 +172,8 @@ export const CampaignView = ({ campaign, onChange }: { campaign: Campaign; onCha
             </div>
 
             <header className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-5 md:px-8">
-                <button type="button" onClick={() => go({ name: "home" })} className="flex cursor-pointer items-center gap-2 rounded-xl outline-white focus-visible:outline-2 focus-visible:outline-offset-4">
-                    <span className="flex size-8 items-center justify-center rounded-xl bg-white text-brand-600 shadow-[0_3px_0_rgb(0_0_0/0.15)]"><Heart className="size-4.5" /></span>
-                    <span className="font-bubble text-2xl font-bold tracking-tight text-white">outgive</span>
+                <button type="button" onClick={() => go({ name: "landing" })} aria-label="Outgive home" className="flex cursor-pointer items-center gap-2 rounded-xl outline-white focus-visible:outline-2 focus-visible:outline-offset-4">
+                    <OgLogo size={26} tone="dark" />
                 </button>
                 <nav className="flex items-center gap-1 text-sm font-medium text-white/85 sm:gap-2">
                     <button type="button" onClick={() => go({ name: "create" })} className="hidden cursor-pointer rounded-full px-3 py-2 transition hover:bg-white/10 hover:text-white sm:block">Start your own page</button>

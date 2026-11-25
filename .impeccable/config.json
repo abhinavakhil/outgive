@@ -8,6 +8,12 @@
         "value": "inter",
         "createdAt": "2026-11-21T09:38:16.506Z",
         "reason": "Agent decision: Inter is Outgive's brand text font (outgive.css --font-body) and matches the user's reference design for the Ramadan page"
+      },
+      {
+        "rule": "overused-font",
+        "value": "geist",
+        "createdAt": "2026-11-24T10:19:12.321Z",
+        "reason": "user confirmed: asked to use GeistSans on the Ramadan home page (2026-11-24)"
       }
     ]
   }

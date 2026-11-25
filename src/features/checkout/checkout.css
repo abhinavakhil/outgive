@@ -5,13 +5,13 @@ html.ck-preview, html.ck-preview * { scrollbar-width: none; }
 html.ck-preview::-webkit-scrollbar, html.ck-preview *::-webkit-scrollbar { display: none; }
 @layer components {
 .ck {
-    --ck-font: "Bricolage Grotesque", Urbanist, "Avenir Next", "Segoe UI", system-ui, sans-serif;
-    --ck-ink: #1a1440; --ck-ink-2: #3b3658; --ck-muted: #63607a; --ck-faint: #8b88a0;
-    --ck-line: #e1daf0; --ck-line-2: #e7e2f3; --ck-sep: #efeaf8; --ck-field: #fbfafe; --ck-track: #cfc6e2;
-    --ck-accent: #d9a0f0; --ck-accent-strong: #b45fd6; --ck-accent-soft: #faf1fe; --ck-link: #4f2fc0;
-    --ck-tint: #f4f0fc; --ck-seg: #f2eefb;
-    --ck-green: #14704a; --ck-green-ink: #14573b; --ck-green-soft: #ddf4e8; --ck-mint: #c9ebd8;
-    --ck-gold-soft: #fdf6dd; --ck-gold-ink: #6b5408; --ck-coral-soft: #fde7e1; --ck-coral-ink: #5c2318;
+    --ck-font: "Outfit", Urbanist, "Avenir Next", "Segoe UI", system-ui, sans-serif;
+    --ck-ink: #191919; --ck-ink-2: #444444; --ck-muted: #666666; --ck-faint: #8F8F8F;
+    --ck-line: #E6E6E6; --ck-line-2: #EEEEEE; --ck-sep: #EEEEEE; --ck-field: #FFFFFF; --ck-track: #E0DDD6;
+    --ck-accent: #F0783C; --ck-accent-strong: #C24A14; --ck-accent-soft: #FDEBDF; --ck-link: #191919;
+    --ck-tint: #F4F3F0; --ck-seg: #F4F3F0;
+    --ck-green: #2F3A22; --ck-green-ink: #4B5530; --ck-green-soft: #EEF2D6; --ck-mint: #D2DBA0;
+    --ck-gold-soft: #fdf6dd; --ck-gold-ink: #6b5408; --ck-coral-soft: #FDEBDF; --ck-coral-ink: #C24A14;
     --ck-err: #b3261e;
     color-scheme: light;
     font-family: var(--ck-font);

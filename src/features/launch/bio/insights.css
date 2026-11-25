@@ -1,0 +1,33 @@
+/* Insights: design system cards (white, 24px radius, soft shadow), Outfit, one hue per chart (--c). */
+.bi { display: flex; flex-direction: column; gap: 12px; font-family: "Outfit", system-ui, sans-serif; color: #191919; }
+.bi-box { display: flex; flex-direction: column; gap: 10px; padding: 18px; border-radius: 24px; background: #fff; box-shadow: 0 0 0 1px rgba(25,25,25,.06), 0 2px 4px rgba(25,25,25,.04), 0 28px 56px -20px rgba(25,25,25,.22); }
+.bi-box h3 { margin: 0; font-size: 17px; font-weight: 500; letter-spacing: -.03em; }
+.bi-help { margin: 0; font-size: 13px; color: #666; line-height: 1.45; } .bi-help b { color: #191919; }
+/* Insights. */
+.bi-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0; }
+.bi-kpis > div { display: flex; flex-direction: column-reverse; padding: 14px; border-radius: 16px; background: #fff; box-shadow: 0 0 0 1px rgba(25,25,25,.06), 0 2px 4px rgba(25,25,25,.04), 0 20px 40px -22px rgba(25,25,25,.22); }
+.bi-kpis dt { font-size: 12.5px; color: #666; } .bi-kpis dd { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -.035em; }
+.bi-chart { position: relative; margin: 0; }
+.bi-chart svg { display: block; width: 100%; overflow: visible; }
+.bi-grid { stroke: #EEE; stroke-width: 1; }
+.bi-area { fill: color-mix(in srgb, var(--c) 14%, transparent); }
+.bi-line { fill: none; stroke: var(--c); stroke-width: 2; stroke-linejoin: round; }
+.bi-cross { stroke: #222; stroke-width: 1; stroke-dasharray: 2 3; }
+.bi-dot { fill: var(--c); stroke: #fff; stroke-width: 2; }
+.bi-axis { font-size: 10px; fill: #8F8F8F; font-family: "Outfit", system-ui, sans-serif; }
+.bi-bars { display: flex; align-items: flex-end; gap: 2px; height: 110px; }
+.bi-bars span { flex: 1; border-radius: 4px 4px 0 0; background: color-mix(in srgb, var(--c) 35%, #fff); transition: background .15s; }
+.bi-bars span.l10 { background: var(--c); }
+.bi-bars span.hot { background: #222; }
+.bi-axis-row { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; color: #8F8F8F; }
+.bi-tip { position: absolute; top: -8px; translate: -50% -100%; pointer-events: none; display: flex; flex-direction: column; padding: 6px 10px; border-radius: 10px; background: #222; color: #fff; font-size: 11.5px; white-space: nowrap; }
+.bi-tip b { font-size: 14px; font-weight: 600; }
+.bi-rank { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; font-size: 13.5px; }
+.bi-rank li { display: grid; grid-template-columns: 120px 1fr auto; align-items: center; gap: 10px; }
+.bi-rank-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bi-rank-bar { height: 10px; border-radius: 99px; background: #F4F3F0; overflow: hidden; } .bi-rank-bar i { display: block; height: 100%; border-radius: inherit; background: var(--c); }
+.bi-sup { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; font-size: 14px; }
+.bi-sup li { display: flex; align-items: center; gap: 10px; }
+.bi-sup li > span:first-child { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 8px; background: #F4F3F0; font-size: 12px; font-weight: 600; }
+.bi-sup small { display: block; font-size: 12px; color: #666; }
+

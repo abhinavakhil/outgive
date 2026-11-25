@@ -4,35 +4,36 @@
 @font-face { font-family: "Junicode"; src: url("/fonts/Junicode-Roman.woff2") format("woff2"); font-weight: 400 700; font-display: swap; }
 @font-face { font-family: "Junicode Italic"; src: url("/fonts/Junicode-Italic.woff2") format("woff2"); font-weight: 400 700; font-display: swap; }
 
-/* Outgive look: electric royal blue, white type, bubble numbers, a pink pop and a hand-drawn note. Rubik for text, Fredoka for big numbers, Caveat for scribbles. */
+/* Outgive look, from the Outgive design system: white ground, ink #191919 text and primary buttons, neutral greys, orange #F0783C for giving.
+   Outfit for every heading and body; Playwrite US Trad as the one script word. The old token names are kept so every screen picks this up. */
 @theme {
-    --font-body: "Bricolage Grotesque", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-    --font-display: "Bricolage Grotesque", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-body: "Outfit", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-display: "Outfit", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
     /* Headline serif and its italic accent, as on zen-browser.app (Junicode, SIL OFL, self-hosted in public/fonts). */
     --font-serif: "Junicode", "Instrument Serif", Georgia, serif;
     --font-accent: "Junicode Italic", "Instrument Serif", Georgia, serif;
-    --font-bubble: "Fredoka", "Inter", ui-rounded, system-ui, sans-serif;
-    --font-jakarta: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+    --font-bubble: "Outfit", ui-sans-serif, system-ui, sans-serif;
+    --font-jakarta: "Outfit", ui-sans-serif, system-ui, sans-serif;
     --font-segoe: "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-    --font-hand: "Caveat", "Segoe Print", cursive;
+    --font-hand: "Playwrite US Trad", "Snell Roundhand", cursive;
 
-    --color-brand-25: rgb(246 248 255);
-    --color-brand-50: rgb(236 241 255);
-    --color-brand-100: rgb(219 228 255);
-    --color-brand-200: rgb(190 206 255);
-    --color-brand-300: rgb(150 176 255);
-    --color-brand-400: rgb(104 139 255);
-    --color-brand-500: rgb(66 108 255);
-    --color-brand-600: rgb(43 89 255);
-    --color-brand-700: rgb(28 66 214);
-    --color-brand-800: rgb(24 52 168);
-    --color-brand-900: rgb(22 40 120);
-    --color-brand-950: rgb(12 22 66);
+    --color-brand-25: #FAFAF8;
+    --color-brand-50: #F4F3F0;
+    --color-brand-100: #ECEAE5;
+    --color-brand-200: #E0DDD6;
+    --color-brand-300: #C9C6BF;
+    --color-brand-400: #666666;
+    --color-brand-500: #2E2E2E;
+    --color-brand-600: #191919;
+    --color-brand-700: #000000;
+    --color-brand-800: #141414;
+    --color-brand-900: #0E0E0E;
+    --color-brand-950: #080808;
 
-    /* Pink balloon and red heart from the moodboard. */
-    --color-pop-100: rgb(255 226 243);
-    --color-pop-300: rgb(255 176 222);
-    --color-pop-400: rgb(255 145 207);
+    /* Orange: the give action (design system "orange", "peach-soft"). */
+    --color-pop-100: #FDEBDF;
+    --color-pop-300: #F0783C;
+    --color-pop-400: #E0662A;
     --color-heart: rgb(255 59 79);
 
     --color-neutral-25: rgb(251 252 255);
@@ -41,7 +42,7 @@
     --color-neutral-200: rgb(224 229 240);
     --color-neutral-300: rgb(200 207 222);
     --color-neutral-400: rgb(152 160 182);
-    --color-neutral-500: rgb(110 118 142);
+    --color-neutral-500: #8A8A8A;
     --color-neutral-600: rgb(84 92 116);
     --color-neutral-700: rgb(58 65 88);
     --color-neutral-800: rgb(34 40 60);
@@ -51,31 +52,31 @@
 
 :root:not(.dark-mode) {
     --color-bg-primary: rgb(255 255 255);
-    --color-bg-secondary: rgb(244 246 252);
+    --color-bg-secondary: #F4F3F0;
     /* Brand tints follow the scale so a white-label colour (set on <html> by brand.ts) recolours everything. */
     --color-bg-brand-primary: var(--color-brand-50);
     --color-bg-brand-secondary: var(--color-brand-100);
     --color-text-brand-secondary: var(--color-brand-600);
-    --color-border-secondary: rgb(228 232 243);
+    --color-border-secondary: #EEEEEE;
     color-scheme: light;
 }
 
 .dark-mode {
     color-scheme: dark;
-    --color-bg-primary: rgb(10 14 32);
-    --color-bg-secondary: rgb(18 24 48);
-    --color-bg-tertiary: rgb(28 36 66);
-    --color-bg-primary_hover: rgb(18 24 48);
-    --color-bg-brand-primary: color-mix(in srgb, var(--color-brand-950) 70%, rgb(10 14 32));
+    --color-bg-primary: #191919;
+    --color-bg-secondary: #242424;
+    --color-bg-tertiary: #2A2A2A;
+    --color-bg-primary_hover: #242424;
+    --color-bg-brand-primary: color-mix(in srgb, var(--color-brand-950) 70%, #191919);
     --color-bg-brand-secondary: var(--color-brand-950);
     --color-bg-brand-solid: var(--color-brand-600);
-    --color-text-primary: rgb(242 245 255);
-    --color-text-secondary: rgb(206 213 235);
-    --color-text-tertiary: rgb(146 156 188);
+    --color-text-primary: #F2F2F2;
+    --color-text-secondary: #D6D6D6;
+    --color-text-tertiary: #A8A8A8;
     --color-text-brand-secondary: var(--color-brand-300);
-    --color-text-brand-primary: rgb(242 245 255);
-    --color-border-secondary: rgb(36 45 80);
-    --color-border-primary: rgb(52 63 104);
+    --color-text-brand-primary: #F2F2F2;
+    --color-border-secondary: #333333;
+    --color-border-primary: #3A3A3A;
     --color-fg-brand-primary: var(--color-brand-400);
     --color-fg-brand-secondary: var(--color-brand-400);
 }
@@ -85,37 +86,37 @@
  * navy text, cool greys, royal-blue highlights, a pink primary action and white buttons with blue text. Inter for text, Fredoka for numbers.
  */
 :root:not(.dark-mode) {
-    --ts-page: #f5f7fc; --ts-raised: #ffffff; --ts-tint-1: #ffffff; --ts-tint-2: #ecf0f8; --ts-tint-3: #e0e5f0; --ts-card-ring: #ecf0f8;
-    --ts-fg: #12182c; --ts-fg-2: #3a4158; --ts-fg-3: #6e768e; --ts-fg-faint: #98a0b6; --ts-fg-inverse: #ffffff;
-    --ts-field: #f5f7fc; --ts-field-hover: #eef1f8; --ts-raised-hover: #fbfcff; --ts-border: rgb(18 24 44 / 0.08);
-    --ts-edge: 0 0 0 1px #e0e5f0, 0 1px 2px rgb(18 24 44 / 0.04);
-    --ts-lift: 0 0 0 1px #ecf0f8, 0 24px 64px -16px rgb(12 22 66 / 0.25);
-    --ts-cta-text: #002ac2;
+    --ts-page: #FFFFFF; --ts-raised: #FFFFFF; --ts-tint-1: #FFFFFF; --ts-tint-2: #F4F3F0; --ts-tint-3: #EEEEEE; --ts-card-ring: #EEEEEE;
+    --ts-fg: #191919; --ts-fg-2: #444444; --ts-fg-3: #666666; --ts-fg-faint: #8F8F8F; --ts-fg-inverse: #FFFFFF;
+    --ts-field: #F4F3F0; --ts-field-hover: #EEEDE9; --ts-raised-hover: #FAFAF8; --ts-border: rgb(25 25 25 / 0.08);
+    --ts-edge: 0 0 0 1px rgb(25 25 25 / 0.06), 0 2px 4px rgb(25 25 25 / 0.04);
+    --ts-lift: 0 0 0 1px rgb(25 25 25 / 0.06), 0 2px 4px rgb(25 25 25 / 0.04), 0 28px 56px -20px rgb(25 25 25 / 0.22);
+    --ts-cta-text: #191919;
     --ts-paper: #efefef; --ts-prose: #304f67; --ts-mark: #c3f59c;
     --ts-soft: 0 1.67px 4.18px rgb(181 186 203 / 0.31), 0 17.57px 10.88px rgb(181 187 203 / 0.16), 0 31.8px 12.55px rgb(181 187 203 / 0.05), inset 0 7px 32px #fff;
 
     --color-bg-primary: var(--ts-page); --color-bg-tertiary: var(--ts-tint-2);
     --color-bg-secondary: var(--ts-page); --color-bg-primary_hover: var(--ts-tint-2); --color-bg-secondary_hover: var(--ts-tint-2); --color-bg-secondary_alt: var(--ts-page); --color-bg-primary_alt: #ffffff;
-    --color-border-primary: #e0e5f0; --color-border-secondary: #ecf0f8;
+    --color-border-primary: #E6E6E6; --color-border-secondary: #EEEEEE;
     --color-text-primary: var(--ts-fg); --color-text-secondary: var(--ts-fg-2); --color-text-tertiary: var(--ts-fg-3);
     --color-text-quaternary: var(--ts-fg-faint); --color-text-placeholder: var(--ts-fg-faint);
     --color-fg-primary: var(--ts-fg); --color-fg-quaternary: var(--ts-fg-faint);
 }
 .dark-mode {
-    --ts-page: rgb(10 14 32); --ts-raised: rgb(28 36 66); --ts-tint-1: rgb(18 24 48); --ts-tint-2: rgb(28 36 66); --ts-tint-3: rgb(36 45 80); --ts-card-ring: rgb(28 36 66);
-    --ts-fg: rgb(242 245 255); --ts-fg-2: rgb(206 213 235); --ts-fg-3: rgb(146 156 188); --ts-fg-faint: rgb(110 118 142); --ts-fg-inverse: rgb(10 14 32);
-    --ts-field: rgb(28 36 66); --ts-field-hover: rgb(36 45 80); --ts-raised-hover: rgb(36 45 80); --ts-border: rgb(242 245 255 / 0.1);
+    --ts-page: #191919; --ts-raised: #2A2A2A; --ts-tint-1: #242424; --ts-tint-2: #2A2A2A; --ts-tint-3: #333333; --ts-card-ring: #2A2A2A;
+    --ts-fg: #F2F2F2; --ts-fg-2: #D6D6D6; --ts-fg-3: #A8A8A8; --ts-fg-faint: #8A8A8A; --ts-fg-inverse: #191919;
+    --ts-field: #2A2A2A; --ts-field-hover: #333333; --ts-raised-hover: #333333; --ts-border: rgb(242 242 242 / 0.1);
     --ts-edge: 0 0 #0000;
     --ts-lift: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 28px 72px -12px rgb(0 0 0 / 0.7);
     --ts-cta-text: var(--color-brand-300);
-    --ts-paper: rgb(10 14 32); --ts-prose: rgb(178 200 218); --ts-mark: rgb(132 204 22 / 0.4);
+    --ts-paper: #191919; --ts-prose: #D6D6D6; --ts-mark: rgb(132 204 22 / 0.4);
     --ts-soft: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 12px 28px -8px rgb(0 0 0 / 0.6);
 
     --color-bg-primary: var(--ts-page); --color-bg-secondary: var(--ts-tint-1); --color-bg-tertiary: var(--ts-tint-2);
     --color-bg-primary_hover: var(--ts-tint-2); --color-bg-secondary_hover: var(--ts-tint-3); --color-bg-secondary_alt: var(--ts-tint-1); --color-bg-primary_alt: var(--ts-tint-1);
-    --color-bg-brand-primary: color-mix(in srgb, var(--color-brand-500) 16%, rgb(10 14 32));
-    --color-bg-brand-secondary: color-mix(in srgb, var(--color-brand-500) 28%, rgb(10 14 32));
-    --color-border-primary: rgb(52 63 104); --color-border-secondary: rgb(36 45 80);
+    --color-bg-brand-primary: color-mix(in srgb, var(--color-brand-500) 16%, #191919);
+    --color-bg-brand-secondary: color-mix(in srgb, var(--color-brand-500) 28%, #191919);
+    --color-border-primary: #3A3A3A; --color-border-secondary: #333333;
     --color-text-primary: var(--ts-fg); --color-text-secondary: var(--ts-fg-2); --color-text-tertiary: var(--ts-fg-3);
     --color-text-quaternary: var(--ts-fg-faint); --color-text-placeholder: var(--ts-fg-faint);
     --color-fg-primary: var(--ts-fg); --color-fg-quaternary: var(--ts-fg-faint);
@@ -131,7 +132,7 @@
     --background-color-ink: var(--color-brand-600); --text-color-ink-inverse: #ffffff; --background-color-ink-inverse: #ffffff; --ring-color-ink: var(--color-brand-600); --border-color-ink: var(--color-brand-600);
     --color-raised: var(--ts-raised); --color-raised-hover: var(--ts-raised-hover); --color-tint-1: var(--ts-tint-1); --color-tint-2: var(--ts-tint-2); --color-tint-3: var(--ts-tint-3);
     --color-field: var(--ts-field); --color-field-hover: var(--ts-field-hover); --color-hairline: var(--ts-border);
-    --color-cta: var(--color-pop-300); --color-cta-hover: var(--color-pop-400); --color-cta-ink: #000d3d; --color-cta-blue: var(--ts-cta-text);
+    --color-cta: var(--color-pop-300); --color-cta-hover: var(--color-pop-400); --color-cta-ink: #191919; --color-cta-blue: var(--ts-cta-text);
     --shadow-edge: var(--ts-edge); --shadow-lift: var(--ts-lift);
     --shadow-press: 0 3px 0 rgb(0 0 0 / 0.15);
     --color-paper: var(--ts-paper); --color-prose: var(--ts-prose); --shadow-soft: var(--ts-soft);
@@ -207,33 +208,32 @@ body {
 .form-xl .pn-editor { min-height: 24rem; }
 .penna.pn-readonly p { margin: 0 0 1em; }
 
-/* Create flow (design canvas "Campaign Create Flow", Round 3 talk + Round 4 A): its own palette, scoped here. */
+/* Create flow: its own variables, set to the Outgive design system (white ground, lilac wash, ink text, orange action). */
 .focus-bg {
-    --f-ink: #0b0f19; --f-blue: #2b59ff; --f-sky: #8aa6ff; --f-ice: #eef3ff; --f-ice-line: #c9d6ff; --f-sel: #8aa4ff; --f-body: #4b5563; --f-grey: #6b7280; --f-faint: #8a93a6;
-    --f-ph: #c3c8d4; --f-line: #e3e7ef; --f-line-2: #eef1f6; --f-soft: #f7f9fd; --f-chip: #f3f6fb; --f-kbd: #f3f5f9; --f-story: #3a4150; --f-card: #fff; --f-mark: #cdf57b;
-    --f-rec-bg: #ffeaf5; --f-rec: #b0236e; --f-rec-dot: #ff4f9e; --f-cloud: #fff;
-    /* One accent per variant: --f-blue is "the accent", whichever hue it is. */
-    --f-glow: rgb(43 89 255 / 0.3); --f-sky-1: #dcebff; --f-sky-2: #f4f8ff;
-    --f-cta: #2b59ff; --f-cta-hover: #2149e0; --f-cta-ink: #fff; --f-cta-arrow: #2b59ff;
+    --f-ink: #191919; --f-blue: #191919; --f-sky: #C6AEE8; --f-ice: #F4F3F0; --f-ice-line: #E0DDD6; --f-sel: #C6AEE8; --f-body: #555555; --f-grey: #666666; --f-faint: #8F8F8F;
+    --f-ph: #A8A8A8; --f-line: #EEEEEE; --f-line-2: #F2F2F2; --f-soft: #FAFAF8; --f-chip: #F4F3F0; --f-kbd: #F4F3F0; --f-story: #333333; --f-card: #fff; --f-mark: #D2DBA0;
+    --f-rec-bg: #FDEBDF; --f-rec: #C24A14; --f-rec-dot: #F0783C; --f-cloud: #fff;
+    --f-glow: rgb(198 174 232 / 0.35); --f-sky-1: #efe6f6; --f-sky-2: #faf7fc;
+    --f-cta: #F0783C; --f-cta-hover: #E0662A; --f-cta-ink: #191919; --f-cta-arrow: #191919;
+    font-family: "Outfit", ui-sans-serif, system-ui, sans-serif !important;
     background: linear-gradient(180deg, var(--f-sky-1) 0%, var(--f-sky-2) 48%, #fff 100%); color: var(--f-ink);
 }
 .focus-bg.talk-bg { background: linear-gradient(180deg, var(--f-sky-1) 0%, var(--f-sky-2) 38%, #fff 100%); }
-.focus-bg[data-accent="pink"] {
-    --f-blue: #d12f7f; --f-sky: #ffa8d2; --f-ice: #fff0f7; --f-ice-line: #ffc6e2; --f-sel: #f08bbd; --f-glow: rgb(209 47 127 / 0.25);
-    --f-sky-1: #ffe3f1; --f-sky-2: #fff4fa; --f-rec-bg: #fff0f7;
-    --f-cta: #ffb0de; --f-cta-hover: #ff9dd4; --f-cta-ink: #000d3d; --f-cta-arrow: #000d3d;
-}
+.focus-bg[data-accent="pink"] { --f-blue: #191919; }
 .dark-mode .focus-bg {
-    --f-ink: #eef2fb; --f-blue: #6b9bff; --f-ice: rgb(43 89 255 / 0.22); --f-sky: #3a5bb8; --f-sel: #6b8cff; --f-ice-line: rgb(107 155 255 / 0.4); --f-body: #b6bfd2; --f-grey: #9aa3b8; --f-faint: #8790a6;
-    --f-ph: #4a5470; --f-line: #2a3350; --f-line-2: #222a44; --f-soft: #161d33; --f-chip: #1b2340; --f-kbd: #1b2340; --f-story: #c9d1e3; --f-card: #10172c; --f-mark: rgb(205 245 123 / 0.85);
-    --f-rec-bg: rgb(255 79 158 / 0.18); --f-rec: #ffa3cf; --f-cloud: rgb(255 255 255 / 0.05);
-    --f-glow: rgb(0 0 0 / 0.5); --f-cta: #4d74ff; --f-cta-hover: #6b8cff; --f-cta-arrow: #2b59ff;
-    background: linear-gradient(180deg, #0b1230 0%, #0e1530 48%, rgb(10 14 32) 100%);
+    --f-ink: #F2F2F2; --f-blue: #F2F2F2; --f-ice: #2A2A2A; --f-sky: #4A3A66; --f-sel: #C6AEE8; --f-ice-line: #3A3A3A; --f-body: #C9C9C9; --f-grey: #A8A8A8; --f-faint: #8A8A8A;
+    --f-ph: #6F6F6F; --f-line: #333333; --f-line-2: #2A2A2A; --f-soft: #202020; --f-chip: #2A2A2A; --f-kbd: #2A2A2A; --f-story: #D6D6D6; --f-card: #242424; --f-mark: rgb(210 219 160 / 0.85);
+    --f-rec-bg: rgb(240 120 60 / 0.18); --f-rec: #F4A57E; --f-cloud: rgb(255 255 255 / 0.05);
+    --f-glow: rgb(0 0 0 / 0.5); --f-cta: #F0783C; --f-cta-hover: #F48A55; --f-cta-ink: #191919; --f-cta-arrow: #191919;
+    background: linear-gradient(180deg, #231c2b 0%, #1c1a1f 48%, #191919 100%);
 }
-.dark-mode .focus-bg[data-accent="pink"] {
-    --f-blue: #ff7ab8; --f-ice: rgb(255 79 158 / 0.16); --f-ice-line: rgb(255 122 184 / 0.4); --f-sel: #ff7ab8; --f-sky: #8a3a63;
-    --f-cta: #ffb0de; --f-cta-hover: #ff9dd4; --f-cta-ink: #000d3d; --f-cta-arrow: #000d3d;
-    background: linear-gradient(180deg, #1c0d22 0%, #120e24 48%, rgb(10 14 32) 100%);
-}
+.dark-mode .focus-bg[data-accent="pink"] { --f-blue: #F2F2F2; }
 .focus-bg mark { background: var(--f-mark); color: #0b0f19; font-weight: 700; padding: 1px 6px; border-radius: 6px; }
 @keyframes eq { 0%, 100% { scale: 1 0.35; } 50% { scale: 1 1; } }
+
+/* Design system: the focus ring is brand purple; text selection is sage. */
+:root { --color-focus-ring: #7B3FD6; }
+::selection { background: #D2DBA0; color: #191919; }
+
+/* Design system type: headings are Outfit 500, set tight, on the create flow and the public pages. */
+.focus-bg :is(h1, h2) { font-weight: 500 !important; letter-spacing: -0.05em !important; }

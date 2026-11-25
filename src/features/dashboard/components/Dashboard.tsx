@@ -1,7 +1,7 @@
 import { type ReactNode, useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { MotionConfig } from "motion/react";
 import { DASH_BG, DASH_THEME_KEY, dashDark } from "@/shared/lib/dash-theme";
-import { BlurFade } from "@/shared/ui";
+import { BlurFade, OgLogo, Loading } from "@/shared/ui";
 import { initials } from "@/shared/lib/format";
 import { useApp } from "@/shared/lib/app-context";
 import type { DASH_TABS } from "@/shared/lib/route";
@@ -38,7 +38,6 @@ const TITLES: Record<ViewId, [string, string]> = {
 const OWN: ViewId[] = ["giving", "account"];
 const Glyph = ({ d, filled = true }: { d: string; filled?: boolean }) => <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" className="flex-none"><path d={d} fill={filled ? "currentColor" : "none"} fillRule="evenodd" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" strokeLinecap="round" /></svg>;
 /** The design's mark: two interlocking rings, one lime, one ink. */
-const Rings = () => <svg width="34" height="24" viewBox="0 0 34 24" aria-hidden="true" className="flex-none"><circle cx="12" cy="12" r="10" fill="none" style={{ stroke: "var(--od-lime)" }} strokeWidth="3.5" /><circle cx="22" cy="12" r="10" fill="none" style={{ stroke: "var(--od-ink)" }} strokeWidth="3.5" /></svg>;
 const THEMES: [boolean, string, string][] = [[false, "Light theme", "M12 16a4 4 0 100-8 4 4 0 000 8zM12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6L7 7M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"], [true, "Dark theme", "M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.500z"]];
 const stored = (k: string) => { try { return localStorage.getItem(k); } catch { return null; } };
 const store = (k: string, v: string) => { try { localStorage.setItem(k, v); } catch { /* storage unavailable */ } };
@@ -83,7 +82,7 @@ export const Dashboard = ({ tab }: { tab?: Tab }) => {
     useEffect(() => { if (!menu) return; const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setMenu(false); }; window.addEventListener("keydown", esc); return () => window.removeEventListener("keydown", esc); }, [menu]);
     useEffect(() => { document.title = `${TITLES[view][0]} · ${org && !OWN.includes(view) ? org.name : "Outgive"}`; }, [view, org]);
 
-    const logo = <button type="button" onClick={() => go({ name: "landing" })} aria-label="Outgive home" className="flex min-h-11 items-center gap-2.5 border-0 bg-transparent p-0 text-(--od-ink)"><Rings /><span className="text-2xl font-medium tracking-[-0.6px]">outgive</span></button>;
+    const logo = <button type="button" onClick={() => go({ name: "landing" })} aria-label="Outgive home" className="flex min-h-11 items-center gap-2.5 border-0 bg-transparent p-0 text-(--od-ink)"><OgLogo size={26} tone="auto" /></button>;
     if (!user) return <div className={cx("od", dark && "dark")}><div className="mx-auto flex max-w-md flex-col gap-8 px-4 py-6">{logo}<div className="od-card rounded-3xl p-6"><SignIn next={window.location.pathname} title="Your dashboard" sub="Sign in to see your fundraising, gifts and receipts." /></div></div></div>;
 
     const failed = data?.subs.filter((s) => s.failed && s.status === "active").length ?? 0;
@@ -94,7 +93,7 @@ export const Dashboard = ({ tab }: { tab?: Tab }) => {
             {id === "subscriptions" && failed > 0 && <span className="ml-auto text-xs font-semibold whitespace-nowrap text-(--od-bad-fg)">{failed} failed</span>}
         </button>
     );
-    const loading = <p className={cx("py-10 text-center text-[15px]", MUTED)}>Loading…</p>;
+    const loading = <Loading />;
     const noOrg = (
         <section className="od-card mx-auto flex w-full max-w-[760px] flex-col items-start gap-3 p-7 sm:p-9">
             <h2 className="od-h2 sm">You don't run an organisation yet</h2>

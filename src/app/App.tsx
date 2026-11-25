@@ -1,3 +1,4 @@
+import { Spinner } from "@/shared/ui";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppContext, type Go, makeMoney } from "@/shared/lib/app-context";
 import { applyBrand } from "@/shared/lib/brand";
@@ -5,7 +6,7 @@ import { type Activity, type Brand, DEFAULT_BRAND, PREFIX, type Supporter } from
 import { type DB, db as loadDb, isDemo } from "@/shared/lib/db";
 import { DEMO_SLUG, type Tenant, type View, parse, pathOf, tenantOf } from "@/shared/lib/route";
 import { type BoardRow, type Org, type User, toBrand, toSupporter } from "@/shared/domain/types";
-import { ComingSoon, ComingSoonGate, Ramadan } from "@/features/launch";
+import { ComingSoon, ComingSoonGate, LandingV2, Ramadan } from "@/features/launch";
 import { screenFor } from "@/app/routes";
 import { LEGAL_DRAFT, SITE, metaFor, setMeta } from "@/shared/lib/seo";
 import { DASH_BG, dashDark } from "@/shared/lib/dash-theme";
@@ -15,19 +16,27 @@ const save = (key: string, v: unknown) => { try { localStorage.setItem(key, JSON
 const orgOf = (v: View) => ("org" in v ? v.org : null);
 
 /** Every page is open. Set VITE_LAUNCHED=false at build time to put the "Coming soon" gate back on every path except local dev. */
+/**
+ * Open for now: the landing page, the charity's Ramadan page and its donate flow, and the sample leaderboard. Every other screen
+ * shows "Coming soon" and is kept out of search. Set VITE_ALL_PAGES=true to open everything again (local work on other screens).
+ */
+const ALL_PAGES = import.meta.env.VITE_ALL_PAGES === "true";
+const isOpen = (v: View) => ALL_PAGES || v.name === "landing" || v.name === "ramadhan" || v.name === "ramadhan-give" || (v.name === "board" && v.org === DEMO_SLUG && location.pathname.startsWith("/leaderboard"));
+
 const LOCAL = import.meta.env.VITE_LAUNCHED !== "false" || import.meta.env.DEV || /^(localhost|127\.0\.0\.1|\[::1\]|10\.|192\.168\.)/.test(window.location.hostname);
 
 /** What the build put in #root for this path, read before React replaces it. */
 const PRERENDERED = document.getElementById("root")?.innerHTML ?? "";
 
 /** On /dashboard the splash wears the dashboard's own page colour, so nothing flashes before its chunk arrives. */
-const Splash =({ text }: { text: string }) => <div className="flex min-h-dvh items-center justify-center bg-primary text-sm text-tertiary" style={window.location.pathname.startsWith("/dashboard") ? { background: DASH_BG[dashDark() ? "dark" : "light"], color: dashDark() ? "#A6A3B0" : "#66636F" } : undefined}>{text}</div>;
+/** While the app or a screen loads: a spinner on the screen's own background (the dashboard keeps its theme). */
+const Splash = ({ text }: { text: string }) => <div className="flex min-h-dvh items-center justify-center bg-primary" style={window.location.pathname.startsWith("/dashboard") ? { background: DASH_BG[dashDark() ? "dark" : "light"] } : undefined}><Spinner label={text} /></div>;
 
 export const App = () => {
     const [tenant, setTenant] = useState<Tenant>(() => tenantOf(window.location.host));
     const [view, setView] = useState<View>(() => {
         const t = tenantOf(window.location.host), v = parse(window.location.pathname, t, window.location.search);
-        if (v.name === "create") { const to = pathOf(v, t); if (to !== window.location.pathname + window.location.search) try { window.history.replaceState(null, "", to); } catch { /* history unavailable */ } }
+        if (v.name === "create" || v.name === "board") { const to = pathOf(v, t); if (to !== window.location.pathname + window.location.search) try { window.history.replaceState(null, "", to); } catch { /* history unavailable */ } }
         return v;
     });
     const [dbi, setDbi] = useState<DB | null>(null);
@@ -116,7 +125,7 @@ export const App = () => {
     useEffect(() => {
         // A blog post (from its article, in the blog's chunk) and a real campaign page set their own title.
         if (view.name !== "post" && view.name !== "checkout" && !(view.name === "page" && view.real)) setMeta(...metaFor(view.name, brand));
-        const noindex = ["legacy", "checkout", "notfound", "ui", "ui-variants", "dashboard", "admin", "landing-b", "thanks", "login", "overlay", "embed"].includes(view.name) || (LEGAL_DRAFT && (view.name === "terms" || view.name === "privacy"));
+        const noindex = !isOpen(view) || ["legacy", "checkout", "notfound", "ui", "ui-variants", "dashboard", "admin", "landing-b", "v2", "ramadan", "ramadhan-edit", "ramadhan-give", "thanks", "login", "overlay", "embed"].includes(view.name) || (view.name === "board" && !!view.skin) || (LEGAL_DRAFT && (view.name === "terms" || view.name === "privacy"));
         document.querySelector('meta[name="robots"]')?.setAttribute("content", noindex ? "noindex" : "index, follow");
         let canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
         if (!canonical) { canonical = document.createElement("link"); canonical.rel = "canonical"; document.head.appendChild(canonical); }
@@ -124,19 +133,21 @@ export const App = () => {
     }, [view, brand, tenant]);
 
     // The coming-soon screens need no data, so they render at once instead of waiting for the database.
-    if (view.name === "landing") return <Ramadan />;
+    if (view.name === "landing") return <LandingV2 />;
+    if (!isOpen(view)) return <ComingSoonGate />;
+    if (view.name === "ramadan") return <Ramadan />;
     if (view.name === "legacy") return <ComingSoon />;
     // The blog needs no data either. While its chunk loads, the prerendered article stays on screen instead of a blank page.
     if (view.name === "blog" || view.name === "post") return <Suspense fallback={<div className="contents" dangerouslySetInnerHTML={{ __html: PRERENDERED }} />}>{screenFor(view)}</Suspense>;
     if (!LOCAL) return <ComingSoonGate />;
     // The checkout brings its own data and look, so it does not wait for the demo database.
-    if (view.name === "checkout" && !view.org) return <Suspense fallback={<Splash text="Loading…" />}>{screenFor(view)}</Suspense>;
+    if (view.name === "checkout" && !view.org) return <Suspense fallback={<Splash text="Loading" />}>{screenFor(view)}</Suspense>;
     if (dbError) return <Splash text={`Could not start: ${dbError}`} />;
-    if (!ctx) return <Splash text="Loading…" />;
+    if (!ctx) return <Splash text="Loading" />;
     const needsOrg = !!slug;
     const screen = () => {
-        if (needsOrg && !orgMissing && !org) return <Splash text="Loading…" />;
-        return <Suspense fallback={<Splash text="Loading…" />}>{screenFor(needsOrg && orgMissing ? { name: "notfound" } : view)}</Suspense>;
+        if (needsOrg && !orgMissing && !org) return <Splash text="Loading" />;
+        return <Suspense fallback={<Splash text="Loading" />}>{screenFor(needsOrg && orgMissing ? { name: "notfound" } : view)}</Suspense>;
     };
     return (
         <AppContext.Provider value={ctx}>
