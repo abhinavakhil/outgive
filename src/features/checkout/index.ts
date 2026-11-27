@@ -6,3 +6,5 @@ export { Checkout, CheckoutScreen, OrgCheckout } from "./Checkout";
 export { SAMPLE, type CheckoutCampaign, type Extra, ICONS } from "./model";
 export type { Layout, Order } from "./useCheckout";
 export { FLYERS } from "./parts";
+export { StripeFields, type StripeFieldsHandle } from "./StripeFields";
+export { type PayResult, payFunction, returnedPayment, settle } from "./payments";

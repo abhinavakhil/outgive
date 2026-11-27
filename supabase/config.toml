@@ -420,5 +420,7 @@ enabled = true
 verify_jwt = false
 [functions.checkout]
 verify_jwt = false
+[functions.pay]
+verify_jwt = false
 [functions.connect]
 verify_jwt = true

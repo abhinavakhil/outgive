@@ -13,6 +13,8 @@ export interface DB {
     user: () => Promise<User | null>;
     onAuth: (cb: (u: User | null) => void) => Unsub;
     signInEmail: (email: string, redirect: string) => Promise<void>;
+    /** The 6-digit code from the sign-in email, for when the link would open on another device. */
+    verifyEmail: (email: string, code: string) => Promise<void>;
     signInGoogle: (redirect: string) => Promise<void>;
     signOut: () => Promise<void>;
     /** New or changed gifts for an org, as they land. */
@@ -40,6 +42,7 @@ const supabaseDb = async (): Promise<DB> => {
         user: async () => toUser((await sb.auth.getUser()).data.user),
         onAuth: (cb) => { const { data } = sb.auth.onAuthStateChange((_e, s) => cb(toUser(s?.user ?? null))); return () => data.subscription.unsubscribe(); },
         signInEmail: async (email, redirect) => { const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: redirect } }); if (error) throw err(error); },
+        verifyEmail: async (email, code) => { const { error } = await sb.auth.verifyOtp({ email, token: code, type: "email" }); if (error) throw err(error); },
         signInGoogle: async (redirect) => { const { error } = await sb.auth.signInWithOAuth({ provider: "google", options: { redirectTo: redirect } }); if (error) throw err(error); },
         signOut: async () => { await sb.auth.signOut(); },
         onDonations: (orgId, cb) => {

@@ -12,7 +12,15 @@ export interface StartInput {
     extras_cents?: number;
     /** The covered card fee, charged with every payment. */
     cover_cents?: number;
+    /** A tip to Outgive, charged with the first payment. */
+    tip_cents?: number;
     donor_name?: string; donor_email?: string; anonymous?: boolean; dedication?: string; cause?: string; origin?: string; return_to?: string;
+    /** Zakat, Sadaqah, Sadaqah Jariyah or Lillah: kept on the gift so restricted funds can be reported apart. */
+    fund?: string;
+    /** The donor made a Gift Aid declaration; their home address is in details. */
+    gift_aid?: boolean;
+    /** What the gift is made of (basket items, nights, on behalf of, Gift Aid address), stored on the donation for the charity. */
+    details?: Record<string, unknown>;
 }
 export interface StatusInput { action: "status"; id: string }
 export type PayInput = StartInput | StatusInput;
@@ -41,18 +49,20 @@ export const validate = (b: PayInput) => {
     if (!["card", "wallet", "dd", "bank", "paypal"].includes(b.method)) return "Unknown payment method";
     if (!["once", "monthly", "yearly"].includes(b.freq ?? "once")) return "freq must be once, monthly or yearly";
     if (!Number.isInteger(b.amount_cents) || b.amount_cents < 100) return "The minimum gift is 1.00";
-    if (!cents(b.extras_cents) || !cents(b.cover_cents)) return "extras_cents and cover_cents must be whole, positive numbers";
+    if (!cents(b.extras_cents) || !cents(b.cover_cents) || !cents(b.tip_cents)) return "extras_cents, cover_cents and tip_cents must be whole, positive numbers";
     if (totals(b).today > 99_999_900) return "That amount is above the card limit";
     if (!/^[A-Za-z]{3}$/.test(b.currency ?? "")) return "currency must be a 3-letter code";
     if (b.donor_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(b.donor_email)) return "That email address does not look right";
-    if ((b.dedication ?? "").length > 200 || (b.cause ?? "").length > 80 || (b.donor_name ?? "").length > 80) return "Text is too long";
+    if ((b.dedication ?? "").length > 200 || (b.cause ?? "").length > 80 || (b.donor_name ?? "").length > 80 || (b.fund ?? "").length > 40) return "Text is too long";
+    if (b.details !== undefined && (typeof b.details !== "object" || b.details === null || JSON.stringify(b.details).length > 8000)) return "details must be a small object";
+    if (b.gift_aid && !(typeof b.details?.postcode === "string" && b.details.postcode.trim() && typeof b.details?.house === "string" && b.details.house.trim())) return "Gift Aid needs a house name or number and a postcode";
     return null;
 };
 
-/** gift = what the charity is credited with; today = the first charge; recur = every later charge. */
-export const totals = (b: Pick<StartInput, "amount_cents" | "extras_cents" | "cover_cents">) => {
-    const extras = b.extras_cents ?? 0, cover = b.cover_cents ?? 0;
-    return { gift: b.amount_cents + extras, cover, today: b.amount_cents + extras + cover, recur: b.amount_cents + cover };
+/** gift = what the charity is credited with; today = the first charge (tip included); recur = every later charge. */
+export const totals = (b: Pick<StartInput, "amount_cents" | "extras_cents" | "cover_cents" | "tip_cents">) => {
+    const extras = b.extras_cents ?? 0, cover = b.cover_cents ?? 0, tip = b.tip_cents ?? 0;
+    return { gift: b.amount_cents + extras, cover, tip, today: b.amount_cents + extras + cover + tip, recur: b.amount_cents + cover };
 };
 
 export interface Intent { status: string; client_secret?: string | null; last_payment_error?: { code?: string; decline_code?: string } | null }

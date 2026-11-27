@@ -5,6 +5,10 @@
 import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 import { cx } from "@/shared/utils/cx";
 import { type BioPage, type BlockId, GIFTS, SUPPORTERS, money, onColour } from "./model";
+
+/** [name, amount, kind] and [who, amount, cause, how long ago], as the page shows them. */
+export type Supporter = (typeof SUPPORTERS)[number];
+export type Gift = (typeof GIFTS)[number];
 import { CauseArt, ILLUSTRATION_BG } from "./illustrations";
 import { type Mode, fridaysFrom, nightsFor } from "../give/model";
 import { useGive } from "../give/store";
@@ -33,7 +37,7 @@ const FONT_STACK: Record<string, string> = { Outfit: '"Outfit"', "DM Sans": '"DM
 /** Where a Give button goes: a summary line, plus the basket and nights to start the donate flow with. */
 export type GiveHref = (summary: string, start?: { add?: string[]; nights?: string; days?: number[] }) => string;
 
-export const BioView = ({ page, now = Date.now(), giveHref }: { page: BioPage; now?: number; giveHref: GiveHref }) => {
+export const BioView = ({ page, now = Date.now(), giveHref, supporters: sup = SUPPORTERS, gifts = GIFTS }: { page: BioPage; now?: number; giveHref: GiveHref; supporters?: Supporter[]; gifts?: Gift[] }) => {
     // The basket is shared with the give flow: what's picked here is already in the basket there, and the other way round.
     const [give, setGive] = useGive();
     const basket: Record<string, boolean> = Object.fromEntries(Object.entries(give.qty).map(([k, v]) => [k, v > 0]));
@@ -110,7 +114,7 @@ export const BioView = ({ page, now = Date.now(), giveHref }: { page: BioPage; n
                                 </div>
                             </div>
                             <div className="bp-camp-foot">
-                                <span className="bp-gave"><span className="bp-stack" aria-hidden="true">{SUPPORTERS.slice(0, 3).map(([n], i) => <i key={n} className={`s${i}`}>{initials(n)}</i>)}</span>{c.donors ? `${c.donors.toLocaleString("en-GB")} gave` : "Be the first to give"}</span>
+                                <span className="bp-gave"><span className="bp-stack" aria-hidden="true">{sup.slice(0, 3).map(([n], i) => <i key={n} className={`s${i}`}>{initials(n)}</i>)}</span>{c.donors ? `${c.donors.toLocaleString("en-GB")} gave` : "Be the first to give"}</span>
                                 <Pick title={c.title} on={!!basket[c.id]} onClick={() => pick(c.id)} label={c.price ? `Give ${money(c.price)}` : "Give"} />
                             </div>
                         </li>
@@ -154,20 +158,20 @@ export const BioView = ({ page, now = Date.now(), giveHref }: { page: BioPage; n
         supporters: () => (
             <section key="supporters" aria-labelledby="bp-sup" className="bp-card">
                 <div className="bp-row"><h2 id="bp-sup" className="bp-h3">Top supporters</h2><a href="/leaderboard" className="bp-link">See all</a></div>
-                <ol className="bp-podium">{SUPPORTERS.slice(0, 3).map(([n, v, k], i) => <li key={n} className={`p${i + 1}`}><span className="bp-medal">{i + 1}</span><span className="bp-pav">{initials(n)}</span><b>{n}</b><small>{k}</small><strong>{money(v)}</strong></li>)}</ol>
-                <ol className="bp-list" start={4}>{SUPPORTERS.slice(3).map(([n, v, k], i) => <li key={n}><span className="bp-rank">{i + 4}</span><span className="bp-av">{initials(n)}</span><span className="flex-1 min-w-0"><b>{n}</b><small>{k}</small></span><b>{money(v)}</b></li>)}</ol>
+                <ol className="bp-podium">{sup.slice(0, 3).map(([n, v, k], i) => <li key={n} className={`p${i + 1}`}><span className="bp-medal">{i + 1}</span><span className="bp-pav">{initials(n)}</span><b>{n}</b><small>{k}</small><strong>{money(v)}</strong></li>)}</ol>
+                <ol className="bp-list" start={4}>{sup.slice(3).map(([n, v, k], i) => <li key={n}><span className="bp-rank">{i + 4}</span><span className="bp-av">{initials(n)}</span><span className="flex-1 min-w-0"><b>{n}</b><small>{k}</small></span><b>{money(v)}</b></li>)}</ol>
             </section>
         ),
         gifts: () => (
             <section key="gifts" aria-labelledby="bp-gifts" className="bp-gifts-wrap">
                 <div className="bp-row bp-gifts-head"><h2 id="bp-gifts" className="bp-h3">Recent gifts</h2><span className="bp-live"><i />Live</span></div>
                 <div className="bp-card bp-gifts">
-                    <ul>{GIFTS.map(([who, v, to, ago], i) => <li key={who + ago}><span className={`bp-gav g${i % 4}`}>{who === "Anonymous" ? "?" : initials(who)}</span><span className="min-w-0 flex-1"><b>{who}</b><span className="bp-gmeta"><em className={`g${i % 4}`}>{to}</em>{ago}</span></span><strong>{money(v)}</strong></li>)}</ul>
-                    <div className="bp-gifts-foot"><span>Top fundraiser: <b>{SUPPORTERS[0][0]} · {money(SUPPORTERS[0][1])}</b></span><a href="/leaderboard" className="bp-link">Leaderboard</a></div>
+                    <ul>{gifts.map(([who, v, to, ago], i) => <li key={who + ago}><span className={`bp-gav g${i % 4}`}>{who === "Anonymous" ? "?" : initials(who)}</span><span className="min-w-0 flex-1"><b>{who}</b><span className="bp-gmeta"><em className={`g${i % 4}`}>{to}</em>{ago}</span></span><strong>{money(v)}</strong></li>)}</ul>
+                    <div className="bp-gifts-foot"><span>{sup[0] ? <>Top fundraiser: <b>{sup[0][0]} · {money(sup[0][1])}</b></> : "Be the first on the board"}</span><a href="/leaderboard" className="bp-link">Leaderboard</a></div>
                 </div>
                 <div className="bp-join">
-                    <span className="bp-stack" aria-hidden="true">{SUPPORTERS.slice(0, 3).map(([n], i) => <i key={n} className={`s${i}`}>{initials(n)}</i>)}</span>
-                    <span className="min-w-0 flex-1"><b>Join 48 fundraisers</b><small>Top page has raised {money(SUPPORTERS[0][1])}</small></span>
+                    <span className="bp-stack" aria-hidden="true">{sup.slice(0, 3).map(([n], i) => <i key={n} className={`s${i}`}>{initials(n)}</i>)}</span>
+                    <span className="min-w-0 flex-1"><b>Join 48 fundraisers</b><small>{sup[0] ? `Top page has raised ${money(sup[0][1])}` : "Start the first page"}</small></span>
                     <a href="/create" className="bp-join-go">Start a page</a>
                 </div>
             </section>

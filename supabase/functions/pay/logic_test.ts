@@ -17,7 +17,7 @@ Deno.test("pay input validation", () => {
 });
 
 Deno.test("totals: extras are charged once, the covered fee every time", () => {
-    assertEquals(totals({ amount_cents: 2500, extras_cents: 300, cover_cents: 58 }), { gift: 2800, cover: 58, today: 2858, recur: 2558 });
+    assertEquals(totals({ amount_cents: 2500, extras_cents: 300, cover_cents: 58 }), { gift: 2800, cover: 58, tip: 0, today: 2858, recur: 2558 });
 });
 
 Deno.test("a PaymentIntent maps to the checkout's four states", () => {
@@ -41,4 +41,14 @@ Deno.test("a PayPal order: approve, capture, done", () => {
     assertEquals(fromPayPal({ id: "O", status: "COMPLETED", purchase_units: [{ payments: { captures: [{ status: "PENDING" }] } }] }, ID).status, "processing");
     assertEquals(fromPayPal({ details: [{ issue: "INSTRUMENT_DECLINED" }] }, ID).error?.code, "card_declined");
     assertEquals(fromPayPal({}, ID).status, "failed");
+});
+
+Deno.test("a tip is charged today but never repeats", () => {
+    assertEquals(totals({ amount_cents: 2500, cover_cents: 50, tip_cents: 250 }), { gift: 2500, cover: 50, tip: 250, today: 2800, recur: 2550 });
+});
+
+Deno.test("Gift Aid needs the donor's house and postcode", () => {
+    const b = { action: "start", attempt_key: "k".repeat(20), org_id: "o", method: "card", currency: "GBP", amount_cents: 1000, gift_aid: true } as StartInput;
+    assertEquals(validate(b), "Gift Aid needs a house name or number and a postcode");
+    assertEquals(validate({ ...b, details: { house: "12", postcode: "E1 6AN" } }), null);
 });
