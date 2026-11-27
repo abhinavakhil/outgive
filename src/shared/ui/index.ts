@@ -31,7 +31,7 @@ export { Confetti } from "./confetti";
 export { Buddy, type BuddyMood } from "./buddy";
 export { NotFound } from "./not-found";
 export { Loading, SitePage, Spinner } from "./site-shell";
-export { DEMO_FORM, DEMO_HASH, DemoRequest } from "./demo-request";
+export { DEMO_FORM, DEMO_HASH, DemoRequest, postForm } from "./demo-request";
 
 // Motion pieces ported from Magic UI (MIT), each credited in its file
 export { AnimatedList, AnimatedListItem } from "./magic/animated-list";

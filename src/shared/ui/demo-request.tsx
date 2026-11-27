@@ -12,17 +12,20 @@ import { track } from "@/shared/lib/analytics";
 import "./site-shell.css";
 
 /**
- * The Google Form the answers go to. `action` is the form's address ending in /formResponse; each field maps to its
- * entry id. Both come from the form's "Get pre-filled link". Leave `action` empty to fall back to email.
+ * The Google Form the answers go to (the waitlist on "Coming soon" pages uses it too). `action` is the form's address ending in
+ * /formResponse; each field maps to its entry id, both from the form's "Get pre-filled link". Leave `action` empty to fall back to email.
+ * Google drops a response silently if a required question is empty or a choice doesn't match an option exactly, so the form's
+ * required questions are required here too, and TYPES match its options. The form has no phone question: the phone goes in the message.
  */
 export const DEMO_FORM = {
-    action: "",
-    fields: { name: "", email: "", phone: "", organisation: "", type: "", country: "", message: "" },
+    action: "https://docs.google.com/forms/d/e/1FAIpQLSfiCeL_oPHvbx7z_V_RvUS2qERW7KwYl8d4vk1dDaZz1TsTWQ/formResponse",
+    fields: { name: "entry.724948910", email: "entry.1978901479", organisation: "entry.317468016", type: "entry.1709615057", country: "entry.858591767", message: "entry.1410932910", phone: "" },
 };
 const FALLBACK_EMAIL = "hello@outgive.tech";
 export const DEMO_HASH = "#demo";
 
-const TYPES = ["Charity", "Mosque", "Community group", "Other"];
+/** [label, the form's option]. */
+const TYPES: [string, string][] = [["Charity", "Charity"], ["Mosque", "Mosque"], ["Community group", "Community Group"], ["Other", "Other"]];
 type Answers = { name: string; email: string; phone: string; organisation: string; type: string; country: string; message: string };
 const EMPTY: Answers = { name: "", email: "", phone: "", organisation: "", type: "", country: "", message: "" };
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -34,9 +37,14 @@ const send = async (a: Answers) => {
         window.location.href = `mailto:${FALLBACK_EMAIL}?subject=${encodeURIComponent(`Demo request: ${a.organisation}`)}&body=${encodeURIComponent(body)}`;
         return;
     }
-    const data = new FormData();
-    for (const [k, id] of Object.entries(DEMO_FORM.fields)) if (id) data.append(id, a[k as keyof Answers]);
-    await fetch(DEMO_FORM.action, { method: "POST", mode: "no-cors", body: data });
+    await postForm({ ...a, type: TYPES.find(([l]) => l === a.type)?.[1] ?? a.type, message: [a.message.trim(), a.phone.trim() && `Phone: ${a.phone.trim()}`].filter(Boolean).join("\n\n") });
+};
+
+/** Posts answers to the Google Form. Google sends no CORS headers, so the reply can't be read: only a network failure throws. */
+export const postForm = async (a: Partial<Record<keyof typeof DEMO_FORM.fields, string>>) => {
+    const body = new URLSearchParams();
+    for (const [k, id] of Object.entries(DEMO_FORM.fields)) if (id && a[k as keyof typeof a]) body.append(id, a[k as keyof typeof a]!);
+    await fetch(DEMO_FORM.action, { method: "POST", mode: "no-cors", body });
 };
 
 export const DemoRequest = () => {
@@ -61,11 +69,13 @@ export const DemoRequest = () => {
     const set = (k: keyof Answers) => (v: string) => { setA((x) => ({ ...x, [k]: v })); setErr({ text: "" }); };
     const submit = async (e: FormEvent) => {
         e.preventDefault();
-        if (!a.name.trim()) return setErr({ field: "name", text: "Add your name." });
+        if (!a.name.trim()) return setErr({ field: "name", text: "Add your full name." });
         if (!EMAIL.test(a.email.trim())) return setErr({ field: "email", text: "Add an email we can reply to." });
-        if (!a.organisation.trim()) return setErr({ field: "organisation", text: "Add your charity or mosque's name." });
+        if (!a.organisation.trim()) return setErr({ field: "organisation", text: "Add your organisation's name." });
+        if (!a.type) return setErr({ field: "type", text: "Choose your organisation type." });
+        if (!a.country.trim()) return setErr({ field: "country", text: "Add your country." });
         setState("sending");
-        try { await send({ ...a, name: a.name.trim(), email: a.email.trim(), organisation: a.organisation.trim() }); setState("sent"); track("demo-requested", { type: a.type || "unset" }); }
+        try { await send({ ...a, name: a.name.trim(), email: a.email.trim(), organisation: a.organisation.trim(), country: a.country.trim() }); setState("sent"); track("demo-requested", { type: a.type || "unset" }); }
         catch { setState("idle"); setErr({ text: `It didn't send. Check your connection and try again, or email ${FALLBACK_EMAIL}.` }); }
     };
 
@@ -90,14 +100,14 @@ export const DemoRequest = () => {
                                 <Button onPress={close} aria-label="Close" className="og-close"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg></Button>
                             </div>
                             <div className="grid gap-3 sm:grid-cols-2">
-                                <Input label="Your name" isRequired value={a.name} onChange={set("name")} placeholder="Aisha Khan" autoComplete="name" isInvalid={err.field === "name"} />
-                                <Input label="Work email" isRequired type="email" value={a.email} onChange={set("email")} placeholder="aisha@yourcharity.org" autoComplete="email" isInvalid={err.field === "email"} />
-                                <Input label="Charity or mosque" isRequired value={a.organisation} onChange={set("organisation")} placeholder="Clearwell Trust" autoComplete="organization" isInvalid={err.field === "organisation"} />
-                                <Input label="Phone" type="tel" value={a.phone} onChange={set("phone")} placeholder="+44 7700 900123" autoComplete="tel" />
-                                <Select label="Type" value={a.type} onChange={set("type")} placeholder="Charity, mosque…" options={TYPES.map((t) => ({ label: t, value: t }))} />
-                                <Input label="Country" value={a.country} onChange={set("country")} placeholder="United Kingdom" autoComplete="country-name" />
+                                <Input label="Full name" isRequired value={a.name} onChange={set("name")} placeholder="Jane Smith" autoComplete="name" isInvalid={err.field === "name"} />
+                                <Input label="Work email" isRequired type="email" value={a.email} onChange={set("email")} placeholder="you@organisation.org" autoComplete="email" isInvalid={err.field === "email"} />
+                                <Input label="Organisation name" isRequired value={a.organisation} onChange={set("organisation")} placeholder="e.g. Hope Foundation" autoComplete="organization" isInvalid={err.field === "organisation"} />
+                                <Input label="Phone number" type="tel" value={a.phone} onChange={set("phone")} placeholder="+44 7700 900000" autoComplete="tel" />
+                                <Select label="Organisation type" isRequired value={a.type} onChange={set("type")} placeholder="Select type" options={TYPES.map(([t]) => ({ label: t, value: t }))} />
+                                <Input label="Country" isRequired value={a.country} onChange={set("country")} placeholder="e.g. United Kingdom" autoComplete="country-name" isInvalid={err.field === "country"} />
                             </div>
-                            <TextArea label="About your appeal" rows={3} value={a.message} onChange={set("message")} placeholder="What you're raising for this Ramadan, and roughly how much" />
+                            <TextArea label="Tell us about your appeal" rows={3} value={a.message} onChange={set("message")} placeholder="What are you raising for, and roughly how much?" />
                             <p role="alert" className="og-error">{err.text}</p>
                             <Button type="submit" isDisabled={state === "sending"} className="og-submit">{state === "sending" ? "Sending…" : "Book my demo"}</Button>
                             <p className="-mt-1 text-center text-[13px] text-[#8F8F8F]">We'll only use these details to contact you about Outgive.</p>

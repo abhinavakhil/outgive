@@ -47,7 +47,7 @@
 }
 
 /* The pink-on-navy action becomes the home page's orchid pill. */
-.lb .bg-cta { background-image: linear-gradient(180deg, #F0783C, #191919); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 8px 18px -6px rgb(122 47 166 / 0.55); }
+.lb .bg-cta { background-image: none; background-color: #D2DBA0; box-shadow: 0 8px 18px -8px rgba(110,125,60,.55); }
 .lb .bg-cta:hover { background-image: linear-gradient(180deg, #F48A55, #000000); }
 .lb .text-cta-ink { color: #fff; }
 
@@ -121,7 +121,7 @@
 }
 .dark-mode .lb-v2 .bg-ink, .dark-mode .lb-v2 [aria-pressed="true"].bg-ink { color: #111111; }
 /* Orange action, as on /v2. */
-.lb-v2 .bg-cta { background-image: none; background-color: #F0783C; box-shadow: 0 8px 18px -8px rgb(240 123 69 / 0.6); }
+.lb-v2 .bg-cta { background-image: none; background-color: #D2DBA0; box-shadow: 0 8px 18px -8px rgba(110,125,60,.55); }
 .lb-v2 .bg-cta:hover { background-color: #E0662A; }
 /* Headings and big figures: medium weight, very tight, like /v2. */
 .lb-v2 h1, .lb-v2 h1 * { font-weight: 500; letter-spacing: -0.055em; }
@@ -197,8 +197,8 @@
 .lbg-input::placeholder { color: var(--faint); }
 .lbg-input:focus { box-shadow: inset 0 0 0 2px var(--orange); }
 .lbg-select { appearance: none; cursor: pointer; background: #f4f4f4 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23888' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center; }
-.lbg-cta { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 48px; padding: 0 22px; border-radius: 999px; cursor: pointer; font-size: 15px; font-weight: 600; color: #fff; background: var(--orange); box-shadow: 0 10px 22px -10px rgb(240 123 69 / 0.7); transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), background 0.2s ease; }
-.lbg-cta:hover { transform: translateY(-1px); background: #E0662A; }
+.lbg-cta { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 48px; padding: 0 22px; border-radius: 999px; cursor: pointer; font-size: 15px; font-weight: 600; color: #191919; background: #D2DBA0; box-shadow: 0 10px 22px -10px rgba(110,125,60,.55); transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), background 0.2s ease; }
+.lbg-cta:hover { transform: translateY(-1px); background: #C5CF9A; }
 
 /* Ranks: white tiles with the landing's soft shadow. */
 .lbg-chip { flex-shrink: 0; padding: 7px 14px; border-radius: 999px; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--muted); box-shadow: inset 0 0 0 1px var(--rule); background: #fff; transition: background 0.2s ease, color 0.2s ease; }
