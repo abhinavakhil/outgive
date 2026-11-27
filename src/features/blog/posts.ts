@@ -18,6 +18,8 @@ export type Post = {
     published: string; updated: string; minutes: number;
     answer: string; takeaways: string[]; body: ReactNode;
     faq: [string, string][]; sources: [string, string][];
+    /** Sanity posts only: the writer, and a cover image (absolute URL) with its alt text. */
+    author?: string; cover?: string; coverAlt?: string;
 };
 
 /** Newest first. */

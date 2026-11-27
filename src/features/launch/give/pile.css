@@ -362,3 +362,5 @@
 .gb .gb-amount input:focus { outline: 0; }
 .gb .gb-amount label:focus-within { border-radius: 16px; box-shadow: 0 0 0 4px rgb(240 120 60 / .18); }
 @media (prefers-reduced-motion: reduce) { .gb input[type="checkbox"]::after { transition: none !important; } }
+.gb .og-home { display: flex; border-radius: 8px; text-decoration: none; }
+.gb .og-home:hover { opacity: .85; }

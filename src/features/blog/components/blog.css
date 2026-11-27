@@ -1,0 +1,125 @@
+/* The blog: plain on purpose. Ink on white, grey for secondary text, hairlines between things, purple only on hover and links. */
+.bl-meta { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; font-size: 14px; color: #8A8A8A; }
+.bl-desc { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; font-size: 15px; line-height: 1.55; color: #666666; }
+.bl-cover { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 16px; }
+.bl-btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; border-radius: 999px; background: #191919; color: #fff !important; font-weight: 500; white-space: nowrap; }
+.bl-list a:hover b, .bl-next a:hover b, .bl-lead:hover h2 { color: #5B2BB8; }
+
+/* ---- index */
+.bl-hero { padding: 8px 0 40px; border-bottom: 1px solid #EEEEEE; }
+.bl-hero h1 { margin: 0; font-size: clamp(44px, 6vw, 72px); font-weight: 500; line-height: 1; letter-spacing: -0.05em; }
+.bl-hero p { margin: 14px 0 0; font-size: 18px; color: #666666; }
+
+.bl-top { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 64px; padding: 48px 0 72px; }
+.bl-lead { display: flex; flex-direction: column; gap: 14px; }
+.bl-lead .bl-cover { margin-bottom: 8px; }
+.bl-lead h2 { margin: 0; font-size: clamp(30px, 3.6vw, 44px); font-weight: 500; line-height: 1.08; letter-spacing: -0.035em; text-wrap: balance; transition: color .2s; }
+.bl-lead p:last-child { margin: 0; max-width: 38em; font-size: 17px; line-height: 1.6; color: #666666; }
+.bl-next { margin: 0; padding: 0 0 0 32px; border-left: 1px solid #EEEEEE; list-style: none; }
+.bl-next li + li { border-top: 1px solid #EEEEEE; }
+.bl-next a { display: flex; flex-direction: column; gap: 8px; padding: 20px 0; }
+.bl-next li:first-child a { padding-top: 4px; }
+.bl-next b { font-size: 18px; font-weight: 500; line-height: 1.3; letter-spacing: -0.015em; text-wrap: balance; transition: color .2s; }
+
+.bl-all-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; padding-bottom: 12px; border-bottom: 1px solid #191919; }
+.bl-all-head h2, .bl-more h2 { margin: 0; font-size: 28px; font-weight: 500; letter-spacing: -0.03em; }
+.bl-tabs { display: flex; flex-wrap: wrap; gap: 20px; }
+.bl-tabs button { padding: 6px 0; border: 0; border-bottom: 2px solid transparent; background: none; font: inherit; font-size: 15px; color: #8A8A8A; cursor: pointer; transition: color .2s, border-color .2s; }
+.bl-tabs button:hover { color: #191919; }
+.bl-tabs button[aria-pressed="true"] { color: #191919; border-bottom-color: #191919; }
+.bl-list { margin: 0; padding: 0; list-style: none; }
+.bl-list li { border-bottom: 1px solid #EEEEEE; }
+.bl-list a { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 8px 48px; padding: 24px 0; }
+.bl-list a > span { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.bl-list b { font-size: 20px; font-weight: 500; line-height: 1.3; letter-spacing: -0.02em; transition: color .2s; }
+.bl-list .bl-meta { justify-content: flex-end; }
+
+.bl-cta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 32px; margin-top: 96px; padding: 28px 0; border-top: 1px solid #191919; border-bottom: 1px solid #EEEEEE; }
+.bl-cta p { margin: 0; max-width: 46em; font-size: 17px; line-height: 1.55; color: #666666; }
+.bl-cta b { color: #191919; font-weight: 500; }
+
+/* ---- article: centred header, then contents | text | space */
+.bl-head { max-width: 760px; margin: 0 auto; text-align: center; }
+.bl-crumb { display: flex; justify-content: center; gap: 8px; margin: 0; font-size: 14px; color: #8A8A8A; }
+.bl-crumb a:hover { color: #191919; }
+.bl-head h1 { margin: 18px 0 0; font-size: clamp(34px, 4.6vw, 56px); font-weight: 500; line-height: 1.05; letter-spacing: -0.045em; text-wrap: balance; }
+.bl-dek { max-width: 620px; margin: 20px auto 0; font-size: 19px; line-height: 1.55; color: #666666; text-wrap: pretty; }
+.bl-byline { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; margin-top: 36px; padding: 14px 0; border-top: 1px solid #EEEEEE; border-bottom: 1px solid #EEEEEE; text-align: left; }
+.bl-by { display: flex; align-items: center; gap: 12px; font-size: 14px; color: #8A8A8A; }
+.bl-by > span:last-child { display: flex; flex-direction: column; gap: 1px; }
+.bl-by b { font-weight: 500; color: #191919; }
+.bl-avatar { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 999px; background: #4E22A0; }
+.bl-share { display: flex; align-items: center; gap: 6px; }
+.bl-share button, .bl-share a { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 36px; height: 36px; padding: 0 10px; border: 0; border-radius: 999px; background: #fff; box-shadow: 0 0 0 1px rgba(25,25,25,.12); font: inherit; font-size: 14px; color: #191919; cursor: pointer; transition: box-shadow .2s; }
+.bl-share button:hover, .bl-share a:hover { box-shadow: 0 0 0 1px rgba(25,25,25,.4); }
+.bl-share a { padding: 0; }
+.bl-head .bl-cover { margin-top: 32px; }
+
+.bl-page { display: grid; grid-template-columns: 1fr minmax(0, 680px) 1fr; gap: 56px; margin-top: 8px; }
+.bl-article { grid-column: 2; }
+.bl-answer { margin: 40px 0 0; padding-left: 20px; border-left: 2px solid #191919; font-size: 21px; line-height: 1.55; letter-spacing: -0.01em; color: #191919; text-wrap: pretty; }
+.bl-takeaways { margin-top: 40px; padding: 24px 0; border-top: 1px solid #EEEEEE; border-bottom: 1px solid #EEEEEE; }
+.bl-takeaways h2 { margin: 0; font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #8A8A8A; }
+.bl-takeaways ul { display: flex; flex-direction: column; gap: 10px; margin: 14px 0 0; padding-left: 20px; list-style: disc; }
+.bl-takeaways li { font-size: 17px; line-height: 1.55; color: #3D3D3D; }
+.bl-takeaways li::marker { color: #B0B0B0; }
+
+.bl-prose { margin-top: 48px; font-size: 18px; line-height: 1.7; color: #3D3D3D; }
+.bl-prose :where(h2) { margin-top: 2.2em; font-size: 28px; font-weight: 500; letter-spacing: -0.03em; line-height: 1.2; color: #191919; scroll-margin-top: 24px; text-wrap: balance; }
+.bl-prose :where(h3) { font-weight: 600; color: #191919; }
+.bl-prose :where(a) { color: #191919; text-decoration: underline; text-decoration-color: #C6AEE8; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.bl-prose :where(a:hover) { text-decoration-color: #5B2BB8; }
+.bl-prose :where(strong) { color: #191919; font-weight: 600; }
+.bl-prose :where(img) { border-radius: 14px; }
+.bl-prose :where(figcaption) { font-size: 14px; color: #8A8A8A; }
+.bl-prose :where(blockquote) { border-left: 2px solid #191919; font-style: normal; font-weight: 400; color: #191919; }
+/* The posts' highlighted notes (posts/kit.tsx): a plain rule, not a coloured box. */
+.bl-prose .not-prose.border-l-4 { margin: 40px 0; padding: 22px 24px; border: 0; border-radius: 16px; background: #F4F3F0; color: #3D3D3D; font-size: 17px; line-height: 1.6; }
+.bl-prose .not-prose.border-l-4 > p:first-child { color: #191919; font-weight: 600; }
+
+.bl-faq { margin-top: 72px; border-bottom: 1px solid #EEEEEE; }
+.bl-faq h2, .bl-sources h2 { margin: 0; padding-bottom: 12px; font-size: 24px; font-weight: 500; letter-spacing: -0.03em; border-bottom: 1px solid #191919; scroll-margin-top: 24px; }
+.bl-faq details + details { border-top: 1px solid #EEEEEE; }
+.bl-faq summary { display: flex; justify-content: space-between; gap: 16px; padding: 18px 0; font-size: 17px; font-weight: 500; cursor: pointer; list-style: none; }
+.bl-faq summary::-webkit-details-marker { display: none; }
+.bl-faq summary::after { content: "+"; font-size: 20px; line-height: 1; color: #8A8A8A; transition: transform .2s; }
+.bl-faq details[open] summary::after { transform: rotate(45deg); }
+.bl-faq details p { margin: 0 0 20px; font-size: 16px; line-height: 1.65; color: #555555; }
+.bl-sources { margin-top: 56px; font-size: 14px; color: #666666; }
+.bl-sources h2 { font-size: 18px; }
+.bl-sources ol { display: flex; flex-direction: column; gap: 6px; margin: 16px 0 0; padding-left: 20px; }
+.bl-sources a { text-decoration: underline; text-underline-offset: 3px; } .bl-sources a:hover { color: #191919; }
+.bl-sources > p { margin: 14px 0 0; color: #8A8A8A; }
+
+.bl-toc { grid-column: 1; justify-self: end; width: 100%; max-width: 220px; position: sticky; top: 32px; align-self: start; margin-top: 44px; }
+.bl-toc > p { margin: 0 0 12px; font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #8A8A8A; }
+.bl-toc ol { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.bl-toc a { display: block; padding: 5px 0; font-size: 14px; line-height: 1.4; color: #8A8A8A; transition: color .2s; }
+.bl-toc a:hover, .bl-toc a[aria-current] { color: #191919; }
+
+.bl-more { max-width: 1000px; margin: 96px auto 0; }
+.bl-more h2 { padding-bottom: 12px; border-bottom: 1px solid #191919; }
+.bl-missing { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 96px 0; text-align: center; }
+.bl-missing h1 { margin: 0; font-size: 36px; font-weight: 500; }
+.bl-missing p { margin: 0; color: #666666; }
+
+@media (max-width: 1000px) {
+    .bl-page { grid-template-columns: minmax(0, 1fr); }
+    .bl-article { grid-column: 1; max-width: 680px; margin: 0 auto; width: 100%; }
+    .bl-page > span { display: none; }
+    .bl-toc { display: none; }
+    .bl-top { grid-template-columns: 1fr; gap: 32px; }
+    .bl-next { padding-left: 0; border-left: 0; border-top: 1px solid #EEEEEE; }
+    .bl-next li:first-child a { padding-top: 20px; }
+}
+@media (max-width: 640px) {
+    .bl-list a { grid-template-columns: 1fr; }
+    .bl-list .bl-meta { justify-content: flex-start; order: -1; }
+    .bl-list b { font-size: 18px; }
+    .bl-answer { font-size: 19px; }
+    .bl-head { text-align: left; }
+    .bl-crumb { justify-content: flex-start; }
+    .bl-dek { margin-left: 0; font-size: 17px; }
+    .bl-share button { font-size: 0; gap: 0; padding: 0; }
+    .bl-prose { font-size: 17px; }
+}
