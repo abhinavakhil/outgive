@@ -150,7 +150,7 @@ export const demoDb = async (): Promise<DB> => {
         mode: "demo", rpc,
         user: async () => DEMO_USER,
         onAuth: () => () => {},
-        signInEmail: async () => {}, signInGoogle: async () => {}, signOut: async () => {},
+        signInEmail: async () => {}, verifyEmail: async () => {}, signInGoogle: async () => {}, signOut: async () => {},
         onDonations: (_org, cb) => { donationListeners.add(cb); return () => donationListeners.delete(cb); },
         onOrg: (_org, cb) => { orgListeners.add(cb); return () => orgListeners.delete(cb); },
         fn: async <T,>(name: string, body: Record<string, unknown>): Promise<T> => {

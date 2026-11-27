@@ -164,29 +164,39 @@ export const returnedPayment = (): string | null => {
 };
 
 /**
- * Stripe and PayPal through the `pay` function. `fn` is `(await db()).fn`; `target` says whose gift it is; `fields` gives the mounted
- * StripeFields handle. The body is built field by field, so nothing else on the order (a demo card least of all) can reach the server.
+ * The `pay` function with a request body the caller builds (the Ramadan give flow does; livePayments builds one from a checkout Order).
+ * `fields` gives the mounted StripeFields handle. start, confirm and status never throw: a failure is a result.
  */
-export const livePayments = (fn: Fn, target: { org_id?: string; page_id?: string }, fields: () => Confirmer | null, redirect: (url: string) => void = (url) => window.location.assign(url)): PaymentProvider => ({
-    start: async (o, attemptKey) => {
-        try {
-            return fromServer(await fn<ServerResult>("pay", {
-                action: "start", attempt_key: attemptKey, ...target, method: methodOf(o), freq: o.freq, currency: o.currency,
-                amount_cents: toMinor(o.amount, o.currency), extras_cents: toMinor(o.total - o.recur, o.currency), cover_cents: toMinor(o.recur - o.amount, o.currency),
-                donor_name: `${o.donor.first} ${o.donor.last}`.trim(), donor_email: o.donor.email || undefined, anonymous: o.donor.anonymous, dedication: o.tribute?.name ?? "", cause: o.fund ?? "",
-                origin: window.location.origin, return_to: window.location.pathname + window.location.search,
-            }));
-        } catch (e) { return failed("", e); }
+export const payFunction = (fn: Fn, fields: () => Confirmer | null, redirect: (url: string) => void = (url) => window.location.assign(url)) => ({
+    start: async (body: Record<string, unknown>): Promise<PayResult> => {
+        try { return fromServer(await fn<ServerResult>("pay", { action: "start", origin: window.location.origin, return_to: window.location.pathname + window.location.search, ...body })); } catch (e) { return failed("", e); }
     },
-    confirm: async (r) => {
+    confirm: async (r: PayResult): Promise<PayResult> => {
         if (r.redirectUrl) { redirect(r.redirectUrl); return new Promise<PayResult>(() => {}); } // the page is leaving; `returnedPayment` picks it up on the way back
         if (!r.clientSecret) return r;
         const f = fields();
         if (!f) return failed(r.id, { message: "The card form isn’t ready yet. Try again in a moment." });
         try { const { error } = await f.confirm(r.clientSecret, returnUrl(r.id)); return error ? failed(r.id, error) : { status: "processing", id: r.id }; } catch (e) { return failed(r.id, e); }
     },
-    status: async (id) => { try { return fromServer(await fn<ServerResult>("pay", { action: "status", id })); } catch (e) { return failed(id, e); } },
+    status: async (id: string): Promise<PayResult> => { try { return fromServer(await fn<ServerResult>("pay", { action: "status", id })); } catch (e) { return failed(id, e); } },
 });
+
+/**
+ * Stripe and PayPal through the `pay` function, for the checkout. `fn` is `(await db()).fn`; `target` says whose gift it is.
+ * The body is built field by field, so nothing else on the order (a demo card least of all) can reach the server.
+ */
+export const livePayments = (fn: Fn, target: { org_id?: string; page_id?: string }, fields: () => Confirmer | null, redirect?: (url: string) => void): PaymentProvider => {
+    const p = payFunction(fn, fields, redirect);
+    return {
+        start: (o, attemptKey) => p.start({
+            attempt_key: attemptKey, ...target, method: methodOf(o), freq: o.freq, currency: o.currency,
+            amount_cents: toMinor(o.amount, o.currency), extras_cents: toMinor(o.total - o.recur, o.currency), cover_cents: toMinor(o.recur - o.amount, o.currency),
+            donor_name: `${o.donor.first} ${o.donor.last}`.trim(), donor_email: o.donor.email || undefined, anonymous: o.donor.anonymous, dedication: o.tribute?.name ?? "", cause: o.fund ?? "",
+        }),
+        confirm: p.confirm,
+        status: p.status,
+    };
+};
 
 // ---------------------------------------------------------------- a host's own handler
 /**

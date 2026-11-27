@@ -26,7 +26,7 @@ export const OVERLAY_STYLES = ["bar", "alert", "ticker"] as const;
 export const DASH_TABS = ["donations", "subscriptions", "analytics", "gateways", "profile", "giving", "account"] as const;
 type LiveLink = { layout?: (typeof LIVE_LINK_LAYOUTS)[number]; theme?: "dark" | "light" };
 export type View =
-    | { name: "landing" } | { name: "legacy" } | { name: "landing-b" } | { name: "v2" } | { name: "ramadan" } | { name: "ramadhan" } | { name: "ramadhan-edit" } | { name: "ramadhan-give" } | { name: "layouts" } | { name: "ui" } | { name: "ui-variants" } | { name: "pricing" } | { name: "start" } | { name: "login" }
+    | { name: "landing" } | { name: "legacy" } | { name: "landing-b" } | { name: "v2" } | { name: "ramadan" } | { name: "ramadhan" } | { name: "ramadhan-edit" } | { name: "ramadhan-give" } | { name: "ramadhan-login" } | { name: "ramadhan-account" } | { name: "ramadhan-team" } | { name: "layouts" } | { name: "ui" } | { name: "ui-variants" } | { name: "pricing" } | { name: "start" } | { name: "login" }
     /** /dashboard/giving opens a tab; /dashboard/receipt/<gift id> is that gift's receipt. */
     | { name: "dashboard"; tab?: (typeof DASH_TABS)[number]; gift?: string }
     | { name: "blog" } | { name: "post"; slug: string }
@@ -44,7 +44,7 @@ export type View =
     | { name: "checkout"; org?: string };
 
 const TYPE_OF: Record<string, PageType> = Object.fromEntries(Object.entries(PREFIX).map(([t, p]) => [p, t as PageType]));
-const STATIC: Record<string, View> = { "/": { name: "landing" }, "/landing-b": { name: "landing-b" }, "/v2": { name: "v2" }, "/layouts": { name: "layouts" }, "/ui": { name: "ui" }, "/ui/variants": { name: "ui-variants" }, "/pricing": { name: "pricing" }, "/start": { name: "start" }, "/login": { name: "login" }, "/dashboard": { name: "dashboard" }, "/about": { name: "about" }, "/rules": { name: "rules" }, "/faq": { name: "faq" }, "/terms": { name: "terms" }, "/privacy": { name: "privacy" }, "/blog": { name: "blog" }, "/checkout": { name: "checkout" }, "/ramadan": { name: "ramadan" }, "/ramadhan": { name: "ramadhan" }, "/ramadhan/edit": { name: "ramadhan-edit" }, "/ramadhan/give": { name: "ramadhan-give" }, "/legacy": { name: "legacy" } };
+const STATIC: Record<string, View> = { "/": { name: "landing" }, "/landing-b": { name: "landing-b" }, "/v2": { name: "v2" }, "/layouts": { name: "layouts" }, "/ui": { name: "ui" }, "/ui/variants": { name: "ui-variants" }, "/pricing": { name: "pricing" }, "/start": { name: "start" }, "/login": { name: "login" }, "/dashboard": { name: "dashboard" }, "/about": { name: "about" }, "/rules": { name: "rules" }, "/faq": { name: "faq" }, "/terms": { name: "terms" }, "/privacy": { name: "privacy" }, "/blog": { name: "blog" }, "/checkout": { name: "checkout" }, "/ramadan": { name: "ramadan" }, "/ramadhan": { name: "ramadhan" }, "/ramadhan/edit": { name: "ramadhan-edit" }, "/ramadhan/give": { name: "ramadhan-give" }, "/ramadhan/login": { name: "ramadhan-login" }, "/ramadhan/account": { name: "ramadhan-account" }, "/ramadhan/team": { name: "ramadhan-team" }, "/legacy": { name: "legacy" } };
 const clean = (p: string) => (p.length > 1 ? p.replace(/\/+$/, "") : p) || "/";
 
 /** /live/podium/light: an optional layout and theme, in either order. */

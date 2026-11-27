@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_PAGE } from "../bio/model";
-import { type Choice, expiryOk, impactOf, levelOf, luhn, menuFrom, nightsFor, quote } from "./model";
+import { type Choice, type Item, expiryOk, impactOf, levelOf, luhn, menuFrom, nightsFor, quote, splitOf } from "./model";
 
 const menu = menuFrom(DEFAULT_PAGE);
 const base: Choice = { qty: { food: 2, water: 1 }, mode: "10", picked: [], boost: 0, roundUp: false, cover: false, giftAid: false, tip: 0, qadr: 0, extra: 0 };
@@ -67,5 +67,26 @@ describe("ramadan give quote", () => {
         expect(luhn("4242 4242 4242 4241")).toBe(false);
         expect(expiryOk("12/30", new Date(2026, 10, 1))).toBe(true);
         expect(expiryOk("10/26", new Date(2026, 10, 1))).toBe(false);
+    });
+});
+
+describe("splitOf", () => {
+    const menu: Item[] = [
+        { id: "food", title: "Food", note: "", price: 4, per: "", art: "food", section: "causes" },
+        { id: "water", title: "Water", note: "", price: 5, per: "", art: "water", section: "causes" },
+        { id: "fitr", title: "Fitr", note: "", price: 5, per: "", art: "food", section: "obligations", once: true },
+    ];
+    const ch = (p: Partial<Choice>): Choice => ({ qty: {}, mode: "10", picked: [], boost: 0, roundUp: false, cover: false, giftAid: false, tip: 0, qadr: 0, extra: 0, ...p });
+    it("shares the gift by each item's value over its nights, and adds up to the gift exactly", () => {
+        const c = ch({ qty: { food: 1, water: 1, fitr: 1 } });
+        const q = quote(c, menu);
+        const s = splitOf(c, q, menu);
+        expect(Object.values(s).reduce((n, v) => n + v, 0)).toBe(Math.round(q.gifts * 100));
+        expect(s.fitr).toBe(500);
+        expect(s.water).toBeGreaterThan(s.food);
+    });
+    it("puts a gift with no items on the general fund", () => {
+        const c = ch({ qty: {}, mode: "once", amount: 20 });
+        expect(splitOf(c, quote(c, menu), menu)).toEqual({ general: 2000 });
     });
 });

@@ -29,6 +29,8 @@ export type BioPage = {
     theme: Theme;
     blocks: { id: BlockId; on: boolean }[];
     campaigns: Campaign[]; causes: Cause[]; links: Link[]; journey: Step[];
+    /** People who have given, from live data (bio/live.ts). Unset on the sample page. */
+    backers?: number;
 };
 
 export const ICONS = {

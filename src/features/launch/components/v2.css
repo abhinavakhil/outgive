@@ -91,3 +91,8 @@
 /* The hero's second action: a quiet white pill beside the sage one. */
 .v2-soft-btn { min-height: 56px; padding: 0 30px; background: #fff; color: #191919 !important; box-shadow: 0 0 0 1px rgba(25,25,25,.08), 0 8px 20px -14px rgba(25,25,25,.35); }
 .v2-soft-btn:hover { background: #F4F3F0; }
+
+/* The hero's script word sits on a tilted peach pill, with the crescent tucked on its corner. */
+.v2-mark { position: relative; display: inline-block; padding: 0 .32em; margin: 0 .06em; isolation: isolate; }
+.v2-mark::before { content: ""; position: absolute; inset: .02em -.02em -.06em; z-index: -1; border-radius: 999px; background: #FAD8C4; transform: rotate(-3deg); box-shadow: inset 0 0 0 1px rgb(194 74 20 / .12); }
+.v2-mark::after { content: ""; position: absolute; right: -.14em; top: -.2em; width: .46em; height: .46em; border-radius: 50%; background: radial-gradient(circle at 30% 30%, transparent .19em, #F0783C .2em); }

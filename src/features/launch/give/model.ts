@@ -143,3 +143,21 @@ export const expiryOk = (mmyy: string, now = new Date()) => {
     if (!m || +m[1] < 1 || +m[1] > 12) return false;
     return new Date(2000 + +m[2], +m[1], 1) > now;
 };
+
+/**
+ * How a gift is shared between causes, in pence, for the page's per-cause totals: each item's share of the basket's value over
+ * its nights (once items count once), the "give with this gift" extra to emergency. Pennies left by rounding go to the largest share.
+ */
+export const splitOf = (ch: Choice, q: Quote, menu: Item[]): Record<string, number> => {
+    const nights = Math.max(1, q.nights.length), total = Math.round(q.gifts * 100);
+    const w: Record<string, number> = {};
+    for (const i of menu) if (ch.qty[i.id]) w[i.id] = ch.qty[i.id] * i.price * (i.once ? 1 : nights);
+    if (ch.extra) { const em = menu.find((i) => i.art === "emergency" && !i.once)?.id ?? "general"; w[em] = (w[em] ?? 0) + ch.extra; }
+    const sum = Object.values(w).reduce((n, v) => n + v, 0);
+    if (!total) return {};
+    if (!sum) return { general: total };
+    const out = Object.fromEntries(Object.entries(w).map(([k, v]) => [k, Math.floor((v / sum) * total)]));
+    const top = Object.keys(out).sort((a, b) => out[b] - out[a])[0];
+    out[top] += total - Object.values(out).reduce((n, v) => n + v, 0);
+    return out;
+};

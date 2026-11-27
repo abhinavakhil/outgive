@@ -14,10 +14,12 @@ import { HandHeart, ArrowLeft, ArrowRight, CaretDown, CaretRight, CaretUp, Check
 import { track } from "@/shared/lib/analytics";
 import { OgLogo } from "@/shared/ui";
 import { cx } from "@/shared/utils/cx";
-import { FLYERS } from "@/features/checkout";
+import { FLYERS, type PayResult, StripeFields, type StripeFieldsHandle, payFunction, returnedPayment, settle } from "@/features/checkout";
+import { db, isDemo } from "@/shared/lib/db";
+import { type Live, useLive, withStats } from "../bio/live";
 import { CauseArt, ILLUSTRATION_BG } from "../bio/illustrations";
 import { type BioPage, SUPPORTERS, onColour, useBioPage } from "../bio/model";
-import { type Item, LEVELS, MATCH, MODES, type Mode, NIGHTS, type Quote, expiryOk, gbp, impactOf, itemCount, levelOf, luhn, menuFrom, quote } from "./model";
+import { type Item, LEVELS, MATCH, MODES, type Mode, NIGHTS, type Quote, expiryOk, gbp, impactOf, itemCount, levelOf, luhn, menuFrom, quote, splitOf } from "./model";
 import { type Donor, type Give, type Method, clearGive, useGive } from "./store";
 import "./give.css";
 import "./pile.css";
@@ -26,6 +28,26 @@ type Page = "menu" | "amount" | "pay";
 type SetGive = ReturnType<typeof useGive>[1];
 type Add = (id: string, by: number, where: string) => void;
 type Paid = { receipt: string; q: Quote; mode: Mode; first: string; giftAid: boolean; method: Method; impact: string; level: number };
+const paidFrom = (receipt: string, g: Give, q: Quote, menu: Item[]): Paid => ({ receipt, q, mode: g.mode, first: g.donor.first.trim(), giftAid: g.giftAid, method: g.method, impact: impactOf(q.gifts - q.onceItems, g.qty, menu), level: levelOf(q.nightly) });
+
+/**
+ * The pay function's request for this basket. ponytail: the whole Ramadan schedule is charged today as one payment; charging each
+ * night needs a saved card and a nightly job (Stripe off-session), add it when the charity wants night-by-night charges.
+ */
+const payBody = (g: Give, q: Quote, menu: Item[], orgId: string, attemptKey: string) => {
+    const d = g.donor, top = menu.filter((i) => g.qty[i.id]).sort((a, b) => b.price * g.qty[b.id] - a.price * g.qty[a.id])[0];
+    return {
+        attempt_key: attemptKey, org_id: orgId, currency: "GBP", freq: "once",
+        method: g.method === "paypal" ? "paypal" : g.method === "card" ? "card" : "wallet",
+        amount_cents: Math.round(q.gifts * 100), cover_cents: Math.round(q.fees * 100), tip_cents: Math.round(q.tips * 100),
+        donor_name: `${d.first} ${d.last}`.trim(), donor_email: d.email.trim() || undefined, anonymous: d.anon,
+        fund: d.giveAs, gift_aid: g.giftAid, dedication: d.behalfOn ? d.behalf.trim() : "", cause: top?.title.slice(0, 80) ?? "Ramadan",
+        details: {
+            items: g.qty, mode: g.mode, nights: q.nights, note: d.note.trim().slice(0, 500), news: d.news, split: splitOf(g, q, menu),
+            ...(g.giftAid ? { house: d.house.trim(), postcode: d.postcode.trim() } : {}),
+        },
+    };
+};
 
 /** Icons are Phosphor (bold by default, fill for marks that should read solid), one family across the flow. */
 type PIcon = typeof Check;
@@ -58,7 +80,10 @@ const useStartFromUrl = (menu: Item[], set: SetGive) => {
 };
 
 export const RamadanGive = () => {
-    const { page: bio } = useBioPage();
+    const { page: local } = useBioPage();
+    // With Supabase connected: the page as the charity saved it, and its org for the payment.
+    const live = useLive();
+    const bio = useMemo(() => (live ? withStats(live.bio ?? local, live.stats).page : local), [live, local]);
     const menu = useMemo(() => menuFrom(bio), [bio]);
     const [g, set] = useGive();
     useStartFromUrl(menu, set);
@@ -80,6 +105,14 @@ export const RamadanGive = () => {
     // An emptied basket has nothing to check out.
     // Nothing to pay for yet: back to step 1.
     useEffect(() => { if (page === "pay" && !q.total && !paid) setPage("amount"); }, [page, q.total, paid]);
+    // Back from PayPal or a bank's page: ask the pay function how it ended. The basket is still here, so the thank-you can show it.
+    useEffect(() => {
+        const id = isDemo ? null : returnedPayment();
+        if (!id) return;
+        void db().then((d) => settle(payFunction(d.fn, () => null), id)).then((r) => {
+            if (r.status === "succeeded" || r.status === "processing") { track("rg_paid", { method: g.method, total: q.total, returned: 1 }); setPaid(paidFrom(id.slice(0, 8).toUpperCase(), g, q, menu)); clearGive(); }
+        });
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const add: Add = (id, by, where) => {
         const n = Math.max(0, Math.min(99, (g.qty[id] ?? 0) + by));
@@ -117,7 +150,7 @@ export const RamadanGive = () => {
                     </header>
                     {page === "amount"
                         ? <GiveStep menu={menu} g={g} set={set} q={q} bio={bio} onMenu={() => go("menu")} onNext={() => go("pay")} />
-                        : <CompleteStep menu={menu} g={g} set={set} q={q} bio={bio} onEdit={() => history.back()} onPaid={(p) => { setPaid(p); clearGive(); window.scrollTo({ top: 0 }); }} />}
+                        : <CompleteStep menu={menu} g={g} set={set} q={q} bio={bio} live={live} onEdit={() => history.back()} onPaid={(p) => { setPaid(p); clearGive(); window.scrollTo({ top: 0 }); }} />}
                 </div>
             )}
             {page === "menu" && count > 0 && (
@@ -392,7 +425,7 @@ const appealOf = (bio: BioPage, menu: Item[], g: Give) => {
     const top = menu.filter((i) => g.qty[i.id] && !i.once).sort((a, b) => b.price * g.qty[b.id] - a.price * g.qty[a.id])[0];
     const raised = bio.campaigns.reduce((n, x) => n + x.raised, 0) + bio.causes.reduce((n, x) => n + x.raised, 0);
     const goal = bio.campaigns.reduce((n, x) => n + x.goal, 0) + bio.causes.reduce((n, x) => n + x.goal, 0);
-    return { title: top?.title ?? "Where most needed", art: top?.art ?? "zakat", bg: APPEAL_BG[top?.art ?? ""] ?? GB.mint, raised, goal, backers: 388 };
+    return { title: top?.title ?? "Where most needed", art: top?.art ?? "zakat", bg: APPEAL_BG[top?.art ?? ""] ?? GB.mint, raised, goal, backers: bio.backers ?? 388, live: bio.backers !== undefined };
 };
 
 /** The pile's columns: a bell of peach coins, with the donor's yellow coins on top, as the design draws it. */
@@ -477,7 +510,7 @@ const Stage = ({ m, tablet, amt, perS, bio, menu, g }: { m: boolean; tablet?: bo
                 <span key={`c${amt}`} className="gb-drop gb-in" style={{ ...drop(m ? -30 : -64, m ? 54 : 70, -4), animationDelay: ".16s" }}><Coin size={m ? 16 : 26} /></span>
             </>}
             {front.map((f) => <Figure key={f.name} f={f} m={m} floorB={floorB} youLabel={youLabel} />)}
-            {!m && <div className="gb-crowd"><span className="gb-crowd-av"><i style={{ background: "#FAD8C4" }}>AK</i><i style={{ background: "#DCCBF3" }}>YS</i><i style={{ background: "#D2DBA0" }}>MH</i></span><span><b>{(ap.backers + (amt > 0 ? 1 : 0)).toLocaleString("en-GB")}</b> people around this appeal</span><span style={{ flex: 1 }} /><span className="gb-today">+12 tonight</span></div>}
+            {!m && <div className="gb-crowd"><span className="gb-crowd-av"><i style={{ background: "#FAD8C4" }}>AK</i><i style={{ background: "#DCCBF3" }}>YS</i><i style={{ background: "#D2DBA0" }}>MH</i></span><span><b>{(ap.backers + (amt > 0 ? 1 : 0)).toLocaleString("en-GB")}</b> people around this appeal</span><span style={{ flex: 1 }} />{!ap.live && <span className="gb-today">+12 tonight</span>}</div>}
         </div>
     );
 };
@@ -573,7 +606,7 @@ const PAY: { id: Method; label: string; sub: string; marks: string[]; note: stri
     { id: "paypal", label: "PayPal", sub: "Log in to your PayPal account", marks: ["PayPal"], note: "You will be taken to PayPal to log in and confirm, then brought back here." },
 ];
 
-const CompleteStep = ({ menu, g, set, q, bio, onEdit, onPaid }: { menu: Item[]; g: Give; set: SetGive; q: Quote; bio: BioPage; onEdit: () => void; onPaid: (p: Paid) => void }) => {
+const CompleteStep = ({ menu, g, set, q, bio, live, onEdit, onPaid }: { menu: Item[]; g: Give; set: SetGive; q: Quote; bio: BioPage; live: Live | null; onEdit: () => void; onPaid: (p: Paid) => void }) => {
     const m = useNarrow();
     const [phase, setPhase] = useState<"idle" | "paying" | "success">("idle");
     const [error, setError] = useState("");
@@ -588,7 +621,10 @@ const CompleteStep = ({ menu, g, set, q, bio, onEdit, onPaid }: { menu: Item[]; 
     const lastTen = !once && q.nights.some((n) => n > 20);
     const perS = once ? "" : "/night";
     const bad = new Set(tried ? detailsMissing(g) : []);
-    const cardBad = g.method === "card" && (!luhn(card.num) || !expiryOk(card.exp) || !/^\d{3,4}$/.test(card.cvc));
+    // Live: Stripe's own fields take the card and check it; the flow's card inputs are the demo's.
+    const stripeRef = useRef<StripeFieldsHandle>(null);
+    const attempt = useRef<{ sig: string; key: string } | null>(null);
+    const cardBad = isDemo && g.method === "card" && (!luhn(card.num) || !expiryOk(card.exp) || !/^\d{3,4}$/.test(card.cvc));
     // The tip is a share of each night's gift, on the design's 0 to 30% scale, or an amount typed in.
     const tp = amt ? Math.round((g.tip / amt) * 100) : 0;
     const onStop = [0, 5, 10, 15, 20, 25, 30].includes(tp) && !customTip;
@@ -602,6 +638,7 @@ const CompleteStep = ({ menu, g, set, q, bio, onEdit, onPaid }: { menu: Item[]; 
     const pay = () => {
         const missing = detailsMissing(g);
         if (missing.length || cardBad) { setTried(true); track("rg_pay_invalid", { fields: [...missing, ...(cardBad ? ["card"] : [])].join(",") }); setTimeout(() => document.querySelector(".gb-field.bad input, .gb-card.bad input")?.scrollIntoView({ behavior: "smooth", block: "center" }), 50); return; }
+        if (!isDemo) return void payLive();
         setError(""); setPhase("paying");
         track("rg_pay_start", { method: g.method, total: q.total, payments: q.charges.length, mode: g.mode, giftaid: g.giftAid ? 1 : 0 });
         // ponytail: simulated payment. Stripe's decline test card fails; swap in the checkout's payment provider to take real money.
@@ -611,6 +648,25 @@ const CompleteStep = ({ menu, g, set, q, bio, onEdit, onPaid }: { menu: Item[]; 
             track("rg_paid", { method: g.method, total: q.total, gifts: q.gifts, payments: q.charges.length, mode: g.mode, items: itemCount(g.qty), giftaid: g.giftAid ? 1 : 0, tip: q.tips, level: lvl });
             setTimeout(() => onPaid({ receipt: `RG-${Math.random().toString(36).slice(2, 8).toUpperCase()}`, q, mode: g.mode, first: d.first.trim(), giftAid: g.giftAid, method: g.method, impact, level: lvl }), 1900);
         }, 2900);
+    };
+    /** The real payment, through the pay function. A retry of the same basket reuses the attempt key, so it can never charge twice. */
+    const payLive = async () => {
+        if (!live) { setError("Payments are not set up for this charity yet."); return; }
+        const fail = (r: PayResult) => { setPhase("idle"); setError(r.error?.message ?? r.message ?? "The payment didn’t go through. Try again. You won’t be charged twice."); track("rg_pay_fail", { reason: r.error?.code ?? r.status, method: g.method }); };
+        setError("");
+        if (g.method !== "paypal") { const bad = await stripeRef.current?.submit(); if (bad) { setError(bad.message); return; } }
+        const sig = JSON.stringify([g, q.total]);
+        if (attempt.current?.sig !== sig) attempt.current = { sig, key: crypto.randomUUID().replace(/-/g, "") };
+        setPhase("paying");
+        track("rg_pay_start", { method: g.method, total: q.total, payments: 1, mode: g.mode, giftaid: g.giftAid ? 1 : 0, live: 1 });
+        const p = payFunction((await db()).fn, () => stripeRef.current);
+        let r = await p.start(payBody(g, q, menu, live.org_id, attempt.current.key));
+        if (r.status === "requires_action") r = await p.confirm(r);
+        if (r.status === "processing" && !r.delayed) r = await settle(p, r.id);
+        if (r.status !== "succeeded" && r.status !== "processing") return fail(r);
+        setPhase("success");
+        track("rg_paid", { method: g.method, total: q.total, gifts: q.gifts, payments: 1, mode: g.mode, items: itemCount(g.qty), giftaid: g.giftAid ? 1 : 0, tip: q.tips, level: lvl, live: 1 });
+        setTimeout(() => onPaid(paidFrom(r.id.slice(0, 8).toUpperCase(), g, q, menu)), 1900);
     };
     const Text = ({ k, label, type, ac, ph }: { k: "email" | "first" | "last" | "house" | "postcode"; label: string; type?: string; ac: string; ph: string }) =>
         <GbField label={label} type={type} ac={ac} ph={ph} bad={bad.has(k)} value={d[k]} onChange={(v) => setD({ [k]: k === "postcode" ? v.toUpperCase() : v })} />;
@@ -643,7 +699,7 @@ const CompleteStep = ({ menu, g, set, q, bio, onEdit, onPaid }: { menu: Item[]; 
                 <div className="gb-total"><b>{once ? "Total today" : `Total over ${q.charges.length} payments`}</b><b className="gb-h" style={{ fontSize: m ? 28 : 36 }}>{money(q.total)}</b></div>
             </div>
             {error && <p role="alert" className="rg-error">{error}</p>}
-            <button type="button" className="gb-btn primary lg" onClick={pay} disabled={phase !== "idle"}>{phase !== "idle" ? "Processing…" : once ? `Donate ${money(q.total)}` : `Donate ${money(q.charges.find((c) => c.night > 0)?.total ?? q.total)}${perS}`}</button>
+            <button type="button" className="gb-btn primary lg" onClick={pay} disabled={phase !== "idle"}>{phase !== "idle" ? "Processing…" : once || !isDemo ? `Donate ${money(q.total)}` : `Donate ${money(q.charges.find((c) => c.night > 0)?.total ?? q.total)}${perS}`}</button>
             <span className="gb-fine"><Ico d={I.lock} size={14} fill />Encrypted by Stripe · 100% of your gift reaches {bio.name} · simulated in this preview</span>
         </>
     );
@@ -681,7 +737,12 @@ const CompleteStep = ({ menu, g, set, q, bio, onEdit, onPaid }: { menu: Item[]; 
                                     <span className="gb-marks">{pm.id === "card" ? pm.marks.map((mk) => <span key={mk}>{mk}</span>) : <MethodMark m={pm.id} />}</span>
                                     <span className="gb-radio" />
                                 </button>
-                                {on && pm.id === "card" && (
+                                {on && !isDemo && pm.id !== "paypal" && (
+                                    <div className="gb-method-body">
+                                        <StripeFields ref={stripeRef} total={q.total} currency="GBP" method={pm.id === "card" ? "card" : "wallet"} onBehalfOf={live?.stripe_account ?? null} />
+                                    </div>
+                                )}
+                                {on && isDemo && pm.id === "card" && (
                                     <div className="gb-method-body">
                                         <div className={cx("gb-card", tried && cardBad && "bad")}>
                                             <span><input aria-label="Card number" placeholder="Card number" inputMode="numeric" autoComplete="cc-number" value={card.num} onChange={(e) => setCard({ ...card, num: e.target.value.replace(/[^\d ]/g, "").slice(0, 23) })} /><Ico d={I.card} size={20} /></span>
@@ -753,7 +814,7 @@ const Done = ({ paid, bio, onAgain }: { paid: Paid; bio: BioPage; onAgain: () =>
             <div className="gb-done-hero" style={{ background: "#FDEBDF", padding: m ? "22px 16px 60px" : "30px 40px 84px" }}>
                 <svg className="gb-rays" viewBox="0 0 800 800" aria-hidden="true" style={{ top: m ? -160 : -150 }}>{Array.from({ length: 18 }, (_, i) => <path key={i} d="M400 400 L 380 -400 L 420 -400 Z" transform={`rotate(${i * 20} 400 400)`} fill="#fff" opacity=".35" />)}</svg>
                 <div className="rg-confetti" aria-hidden="true">{Array.from({ length: 24 }, (_, i) => <i key={i} style={{ "--x": `${(i * 37) % 100}%`, "--d": `${(i % 8) * 0.11}s`, "--r": `${(i * 47) % 360}deg` } as CSSProperties} />)}</div>
-                <OgLogo size={22} />
+                <span className="gb-done-logo"><OgLogo size={20} /></span>
                 <div className="gb-medal gb-burst" style={{ width: m ? 112 : 138, height: m ? 112 : 138 }}><span><span>LEVEL</span><b className="gb-h" style={{ fontSize: m ? 46 : 58 }}>{lvl}</b></span><em>{LEVELS[lvl - 1][1]}</em></div>
                 <h1 className="gb-h" style={{ fontSize: m ? 32 : 52 }}>Level {lvl} unlocked!</h1>
                 <p style={{ fontSize: m ? 16 : 18 }}>Jazakallah khair{paid.first ? `, ${paid.first}` : ""}. Your {short(q.gifts)} for {bio.name} is {nights.length ? "scheduled" : "on its way"}.</p>
