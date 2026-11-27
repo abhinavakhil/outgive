@@ -182,7 +182,8 @@
 .s-outgive .bp-journey li.done i { border-color: #2F3A22; background: #2F3A22; } .s-outgive .bp-journey li.done:not(:last-child)::before { background: #D2DBA0; }
 .s-outgive .bp-btn { background: #fff; box-shadow: 0 0 0 1px rgba(25,25,25,.06), 0 6px 14px -8px rgba(25,25,25,.2); font-weight: 500; }
 .s-outgive .bp-btn:hover { background: #FAFAF8; transform: translateY(-2px); }
-.s-outgive .bp-give { background: var(--c); color: var(--on-c) !important; box-shadow: 0 10px 22px -10px rgba(233,99,42,.6); }
+.s-outgive .bp-give { background: #D2DBA0; color: #191919 !important; box-shadow: 0 10px 22px -10px rgba(110,125,60,.55); }
+.s-outgive .bp-give:hover { background: #C5CF9A; }
 .s-outgive .bp-link { color: #191919; }
 
 .bp-tools { position: fixed; top: 14px; right: 14px; z-index: 30; display: flex; gap: 8px; }

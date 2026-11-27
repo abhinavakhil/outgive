@@ -153,7 +153,7 @@ export const LandingV2 = () => {
                                         <div role="group" aria-label="Choose an amount" style={{ display: "flex", gap: 6 }}>
                                             {AMOUNTS.map((v) => <button key={v} type="button" aria-pressed={v === amount} onClick={() => setAmount(v)} style={{ minWidth: 54, minHeight: 44, padding: "0 12px", borderRadius: 999, fontSize: 15, fontWeight: 500, textAlign: "center", background: v === amount ? "#191919" : "rgba(255,255,255,.75)", color: v === amount ? "#fff" : "#191919", transition: "background .2s, color .2s" }}>£{v}</button>)}
                                         </div>
-                                        <button type="button" onClick={() => { setGave((g) => g + amount); setJustGave(true); }} className="v2-btn" style={{ background: "#F0783C", color: "#191919", minHeight: 44, padding: "0 22px", fontWeight: 600, boxShadow: "0 10px 20px -8px rgba(233,99,42,.8)" }}>Give £{amount}</button>
+                                        <button type="button" onClick={() => { setGave((g) => g + amount); setJustGave(true); }} className="v2-btn" style={{ background: "#D2DBA0", color: "#191919", minHeight: 44, padding: "0 22px", fontWeight: 600, boxShadow: "0 10px 22px -10px rgba(110,125,60,.55)" }}>Give £{amount}</button>
                                     </div>
                                 </div>
                             </div>
@@ -274,7 +274,7 @@ export const LandingV2 = () => {
                                         <p style={{ fontSize: 40, letterSpacing: "-0.06em", fontWeight: 500, lineHeight: 1 }}>£50</p>
                                         <div style={{ display: "flex", gap: 4 }}>{AMOUNTS.map((v) => <span key={v} className={v === 50 ? "v2-chip v2-chip-on" : "v2-chip"} style={T.pill}>£{v}</span>)}</div>
                                         <p style={{ fontSize: 11, display: "flex", alignItems: "center", gap: 6 }}><span aria-hidden="true" style={{ width: 12, height: 12, borderRadius: 4, background: "#191919" }} />Add Gift Aid</p>
-                                        <div style={{ borderRadius: 999, background: "#F0783C", textAlign: "center", fontSize: 13, fontWeight: 600, padding: 10 }}>Give £50</div>
+                                        <div style={{ borderRadius: 999, background: "#D2DBA0", color: "#191919", textAlign: "center", fontSize: 13, fontWeight: 600, padding: 10 }}>Give £50</div>
                                     </div>
                                 </div>
                             </div>
@@ -339,7 +339,7 @@ export const LandingV2 = () => {
                                     <p style={{ fontSize: 56, letterSpacing: "-0.06em", fontWeight: 500, lineHeight: 1 }}>£50</p>
                                     <div className="v2-row" style={{ background: "#EEF2D6", borderRadius: 10, padding: "11px 12px", fontSize: 14 }}><span>Gift Aid added</span><strong style={{ fontWeight: 600 }}>+ £12.50</strong></div>
                                     <p style={{ display: "flex", flexWrap: "wrap", gap: 6 }}><span className="v2-chip v2-chip-on">Apple Pay</span><span className="v2-chip">Card</span><span className="v2-chip">PayPal</span></p>
-                                    <p style={{ background: "#F0783C", borderRadius: 999, textAlign: "center", padding: 13, fontSize: 14, fontWeight: 600 }}>Give £50</p>
+                                    <p style={{ background: "#D2DBA0", color: "#191919", borderRadius: 999, textAlign: "center", padding: 13, fontSize: 14, fontWeight: 600 }}>Give £50</p>
                                 </StepCard>}
                                 {step === 3 && <StepCard size={14}>
                                     <div className="v2-row"><span style={{ fontWeight: 500, fontSize: 16 }}>Night 27 race</span><span className="v2-lbl"><Live /></span></div>

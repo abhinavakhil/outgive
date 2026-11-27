@@ -132,7 +132,7 @@
     --background-color-ink: var(--color-brand-600); --text-color-ink-inverse: #ffffff; --background-color-ink-inverse: #ffffff; --ring-color-ink: var(--color-brand-600); --border-color-ink: var(--color-brand-600);
     --color-raised: var(--ts-raised); --color-raised-hover: var(--ts-raised-hover); --color-tint-1: var(--ts-tint-1); --color-tint-2: var(--ts-tint-2); --color-tint-3: var(--ts-tint-3);
     --color-field: var(--ts-field); --color-field-hover: var(--ts-field-hover); --color-hairline: var(--ts-border);
-    --color-cta: var(--color-pop-300); --color-cta-hover: var(--color-pop-400); --color-cta-ink: #191919; --color-cta-blue: var(--ts-cta-text);
+    --color-cta: #D2DBA0; --color-cta-hover: #C5CF9A; --color-cta-ink: #191919; --color-cta-blue: var(--ts-cta-text);
     --shadow-edge: var(--ts-edge); --shadow-lift: var(--ts-lift);
     --shadow-press: 0 3px 0 rgb(0 0 0 / 0.15);
     --color-paper: var(--ts-paper); --color-prose: var(--ts-prose); --shadow-soft: var(--ts-soft);

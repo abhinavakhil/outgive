@@ -2,6 +2,7 @@ import { type FC, type ReactNode, useEffect, useRef, useState } from "react";
 import { AnimatePresence, MotionConfig, motion, useMotionValue, useSpring } from "motion/react";
 import { ArrowRight, BarChart01, Check, CodeBrowser, CreditCard01, Gift01, Globe01, HeartHand, Lock01, QrCode01, Repeat01, Target04, Trophy01, Tv01, Users01, Zap } from "@untitledui/icons";
 import { cx } from "@/shared/utils/cx";
+import { postForm } from "@/shared/ui";
 import { Logo } from "./Logo";
 
 /** The coming-soon page: Outgive's crowdfunding platform, before launch. Also the screen a signed-out visitor sees on any page that is not open yet. */
@@ -57,11 +58,6 @@ const Nav = () => (
     </header>
 );
 
-/**
- * The Google Form the waitlist posts to. From the form's "Get pre-filled link": `action` is the form URL with /viewform swapped for /formResponse,
- * and each field is its `entry.<number>` name. `role` can stay empty if the form has no such question.
- */
-const FORM = { action: "", email: "", role: "" };
 
 /** Email plus who you are, sent to the Google Form. */
 const Waitlist = () => {
@@ -71,11 +67,10 @@ const Waitlist = () => {
     const [error, setError] = useState("");
     const submit = async () => {
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return setError("That email doesn't look right.");
-        if (!FORM.action) return setError("The waitlist isn't connected yet. Try again soon.");
+
         setState("busy"); setError("");
-        const body = new URLSearchParams({ [FORM.email]: email.trim(), ...(FORM.role ? { [FORM.role]: role === "charity" ? "Charity" : "Fundraiser" } : {}) });
-        // Google Forms sends no CORS headers, so the response is opaque: a network failure is the only error we can see.
-        try { await fetch(FORM.action, { method: "POST", mode: "no-cors", body }); setState("done"); } catch { setError("Couldn't reach the waitlist. Check your connection and try again."); setState("idle"); }
+        // The waitlist shares the demo form (DEMO_FORM). Its required questions get "Waitlist" markers so these rows are easy to spot.
+        try { await postForm({ name: "Waitlist sign-up", email: email.trim(), organisation: "Waitlist", type: role === "charity" ? "Charity" : "Other", country: "Not given", message: `Joined the waitlist as a ${role}.` }); setState("done"); } catch { setError("Couldn't reach the waitlist. Check your connection and try again."); setState("idle"); }
     };
     return (
         <div id="join" className="relative flex w-full max-w-xl scroll-mt-24 flex-col items-center gap-3">
@@ -89,7 +84,7 @@ const Waitlist = () => {
                 ) : (
                     <motion.form key="form" exit={{ scale: 0.95, opacity: 0 }} onSubmit={(e) => { e.preventDefault(); submit(); }} className="flex w-full flex-col gap-2 rounded-[30px] bg-white/12 p-2 ring-1 ring-white/25 backdrop-blur-sm ring-inset sm:flex-row">
                         <input type="email" aria-label="Email address" aria-invalid={!!error} autoComplete="email" placeholder="you@yourcharity.org" value={email} onChange={(e) => { setEmail(e.target.value); setError(""); }} className="h-13 w-full min-w-0 rounded-full sm:flex-1 bg-white px-5 text-md text-neutral-900 outline-none placeholder:text-neutral-400 focus-visible:ring-4 focus-visible:ring-pop-300/60" />
-                        <button type="submit" disabled={state === "busy"} className="group inline-flex h-13 cursor-pointer items-center justify-center gap-2 rounded-full bg-pop-300 px-6 text-md font-bold whitespace-nowrap text-brand-950 shadow-[0_4px_0_rgb(0_0_0/0.18)] outline-white transition hover:-translate-y-0.5 hover:bg-pop-400 focus-visible:outline-2 focus-visible:outline-offset-2 active:translate-y-0 disabled:opacity-70">{state === "busy" ? "Joining…" : <>Join the waitlist<ArrowRight className="size-4 transition group-hover:translate-x-0.5" /></>}</button>
+                        <button type="submit" disabled={state === "busy"} className="group inline-flex h-13 cursor-pointer items-center justify-center gap-2 rounded-full bg-cta px-6 text-md font-bold whitespace-nowrap text-brand-950 shadow-[0_4px_0_rgb(0_0_0/0.18)] outline-white transition hover:-translate-y-0.5 hover:bg-cta-hover focus-visible:outline-2 focus-visible:outline-offset-2 active:translate-y-0 disabled:opacity-70">{state === "busy" ? "Joining…" : <>Join the waitlist<ArrowRight className="size-4 transition group-hover:translate-x-0.5" /></>}</button>
                     </motion.form>
                 )}
             </AnimatePresence>
@@ -348,7 +343,7 @@ export const ComingSoonGate = () => {
                 <h1 className={cx(IN, "text-[48px] leading-none font-extrabold tracking-[-0.04em] delay-100 md:text-[80px]")}>Coming <span className="bubble inline-block -rotate-3 text-brand-600">soon.</span></h1>
                 <p className={cx(IN, "max-w-md text-lg text-white/85 delay-200")}>This part of Outgive isn't open yet. Join the waitlist and we'll let you in first.</p>
                 <div className={cx(IN, "flex flex-wrap justify-center gap-2 delay-300")}>
-                    <a href="/#join" className="inline-flex h-12 items-center gap-2 rounded-full bg-pop-300 px-6 font-bold text-brand-950 shadow-[0_4px_0_rgb(0_0_0/0.18)] outline-white transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2">Join the waitlist<ArrowRight className="size-4" /></a>
+                    <a href="/#join" className="inline-flex h-12 items-center gap-2 rounded-full bg-cta px-6 font-bold text-brand-950 shadow-[0_4px_0_rgb(0_0_0/0.18)] outline-white transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2">Join the waitlist<ArrowRight className="size-4" /></a>
                 </div>
             </main>
         </div>

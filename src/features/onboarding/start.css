@@ -155,9 +155,9 @@ select.st-in { appearance: none; padding-right: 44px; background-image: url("dat
 /* the way forward */
 .st-go { display: flex; align-items: center; gap: 10px; margin-top: 36px; }
 .st-cta { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 58px; padding: 0 30px; border: 0; border-radius: 999px; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; flex: 1;
-    background: #F0783C; color: #191919; box-shadow: 0 10px 22px -10px rgba(240,120,60,0.7); transition: transform .2s var(--ease), box-shadow .2s var(--ease), filter .2s var(--ease); }
+    background: #D2DBA0; color: #191919; box-shadow: 0 10px 22px -10px rgba(110,125,60,.55); transition: transform .2s var(--ease), box-shadow .2s var(--ease), filter .2s var(--ease); }
 .st-cta svg { transition: transform .25s var(--ease); }
-.st-cta:hover { background: #E0662A; transform: translateY(-1px); box-shadow: 0 12px 24px -10px rgba(240,120,60,0.75); }
+.st-cta:hover { background: #C5CF9A; transform: translateY(-1px); }
 .st-cta:hover svg { transform: translateX(3px); }
 .st-cta:active { transform: translateY(0) scale(0.99); }
 .st-cta:focus-visible, .st-back:focus-visible { outline: 3px solid var(--orchid); outline-offset: 3px; }

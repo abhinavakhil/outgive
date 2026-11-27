@@ -14,7 +14,7 @@ import { LEGAL, SITE, setMeta } from "@/shared/lib/seo";
 
 // The homepage's look (features/launch/ComingSoon): royal blue page, white type, pink main button, white cards, Fredoka for amounts.
 const ring = "outline-white focus-visible:outline-2 focus-visible:outline-offset-2";
-const pink = cx("group inline-flex h-13 cursor-pointer items-center gap-2 rounded-full bg-pop-300 px-6 text-md font-bold whitespace-nowrap text-brand-950 shadow-[0_4px_0_rgb(0_0_0/0.18)] transition hover:-translate-y-0.5 hover:bg-pop-400 active:translate-y-0", ring);
+const pink = cx("group inline-flex h-13 cursor-pointer items-center gap-2 rounded-full bg-cta px-6 text-md font-bold whitespace-nowrap text-brand-950 shadow-[0_4px_0_rgb(0_0_0/0.18)] transition hover:-translate-y-0.5 hover:bg-cta-hover active:translate-y-0", ring);
 const white = cx("inline-flex h-11 cursor-pointer items-center justify-center gap-1.5 rounded-full bg-white px-5 text-sm font-semibold whitespace-nowrap text-brand-700 shadow-[0_3px_0_rgb(0_0_0/0.15)] transition hover:-translate-y-0.5", ring);
 const h2 = "m-0 text-[26px] leading-tight font-extrabold tracking-[-0.035em] text-white";
 /** Classic layout: sections sit straight on the blue, divided by a hairline, no cards. */
