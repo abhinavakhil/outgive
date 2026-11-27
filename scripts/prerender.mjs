@@ -10,10 +10,13 @@ const vite = await createServer({ server: { middlewareMode: true }, appType: "cu
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 
 try {
-    const { pages, site } = await vite.ssrLoadModule("/src/app/prerender.tsx");
+    const { pages, site, primeCms } = await vite.ssrLoadModule("/src/app/prerender.tsx");
+    // Posts written in Sanity are prerendered too; if Sanity is unreachable the build still ships, and the browser loads them.
+    await primeCms().then((p) => console.log(`sanity: ${p.length} posts`), (e) => console.warn(`sanity: skipped (${e.message})`));
     const built = pages();
     for (const p of built) {
         const url = site.url + (p.path === "/" ? "/" : p.path);
+        const abs = (img) => (/^https?:/.test(img) ? img : site.url + img).replace(/&/g, "&amp;");
         const head = [
             `<link rel="canonical" href="${url}" />`,
             `<meta property="og:url" content="${url}" />`,
@@ -28,8 +31,8 @@ try {
             .replace(/(<meta name="twitter:title" content=")[^"]*"/, `$1${esc(p.title)}"`)
             .replace(/(<meta name="twitter:description" content=")[^"]*"/, `$1${esc(p.description)}"`)
             // Each page carries its own share card.
-            .replace(/(<meta property="og:image" content=")[^"]*"/, `$1${site.url}${p.image}"`)
-            .replace(/(<meta name="twitter:image" content=")[^"]*"/, `$1${site.url}${p.image}"`)
+            .replace(/(<meta property="og:image" content=")[^"]*"/, `$1${abs(p.image)}"`)
+            .replace(/(<meta name="twitter:image" content=")[^"]*"/, `$1${abs(p.image)}"`)
             .replace(/(<meta property="og:image:alt" content=")[^"]*"/, `$1${esc(p.imageAlt)}"`)
             .replace(/(<meta name="twitter:image:alt" content=")[^"]*"/, `$1${esc(p.imageAlt)}"`)
             .replace('<meta name="robots" content="index, follow" />', `<meta name="robots" content="${p.noindex ? "noindex" : "index, follow"}" />`)

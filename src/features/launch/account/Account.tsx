@@ -24,7 +24,7 @@ const Frame = ({ children, back = "/ramadhan" }: { children: ReactNode; back?: s
     <div className="gb ac">
         <header className="gb-top">
             <a className="gb-back" href={back} aria-label="Back"><ArrowLeft size={18} weight="bold" aria-hidden="true" /></a>
-            <OgLogo size={24} />
+            <a href="/" aria-label="Outgive home" className="og-home"><OgLogo size={24} /></a>
             <span style={{ flex: 1 }} />
             <span className="gb-secure"><LockSimple size={14} weight="fill" aria-hidden="true" />Secure</span>
         </header>
@@ -96,7 +96,7 @@ export const SignInPanel = ({ next, title = "Sign in to Outgive", sub = "Your gi
 const AuthShell = ({ children }: { children: ReactNode }) => (
     <div className="gb ac-auth">
         <div className="ac-side">
-            <header className="ac-bar"><OgLogo size={24} /></header>
+            <header className="ac-bar"><a href="/" aria-label="Outgive home" className="og-home"><OgLogo size={24} /></a></header>
             <main className="ac-center">{children}</main>
             <p className="ac-foot"><LockSimple size={13} weight="fill" aria-hidden="true" />Secure sign-in. We never sell or share your details.</p>
         </div>

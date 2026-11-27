@@ -1,129 +1,199 @@
-import { useEffect } from "react";
-import { ArrowLeft, ArrowRight, CheckCircle } from "@untitledui/icons";
-import { SitePage } from "@/shared/ui";
+import { useEffect, useState } from "react";
+import { Check, LinkSimple, LinkedinLogo, XLogo } from "@phosphor-icons/react";
+import { Loading, OgMark, SitePage } from "@/shared/ui";
 import { SITE, metaFor, setMeta } from "@/shared/lib/seo";
 import { DEFAULT_BRAND } from "@/shared/domain/model";
-import { AUDIENCES, POSTS, type Post, docTitle } from "../posts";
+import { AUDIENCES, POSTS, type Audience, type Post, docTitle } from "../posts";
+import { CMS_ON, mergePosts, useCmsPosts } from "../cms";
+import "./blog.css";
 
-/** The blog: an index at /blog and one article per /blog/<slug>. Rendered without the app's data, so it is plain links throughout. */
+/**
+ * The blog: an index at /blog and one article per /blog/<slug>. Posts come from code (posts/) and from Sanity (cms.tsx).
+ * Deliberately plain: type, hairlines and white space. Images appear only when a Sanity post has a real cover.
+ * Layout from Mobbin's editorial references (Quartz, The New York Times): the latest post large beside a headline column, then the archive.
+ */
 
-export const dateOf = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
-const label = (p: Post) => AUDIENCES.find(([a]) => a === p.audience)![1];
+export const dateOf = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+const label = (a: Audience) => AUDIENCES.find(([x]) => x === a)![1];
 const JOIN = "#demo";
 
-const Card = ({ post }: { post: Post }) => (
-    <a href={`/blog/${post.slug}`} className="group flex flex-col gap-3 rounded-2xl bg-primary p-6 ring-1 ring-secondary transition ring-inset hover:-translate-y-0.5 hover:shadow-lg hover:ring-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
-        <span className="text-xs font-semibold tracking-wide text-brand-secondary uppercase">{label(post)}</span>
-        <h3 className="text-lg leading-snug font-semibold text-primary text-balance">{post.title}</h3>
-        <p className="line-clamp-3 text-sm text-tertiary">{post.description}</p>
-        <span className="mt-auto flex items-center gap-1 pt-2 text-sm font-semibold text-brand-secondary">Read the guide<ArrowRight className="size-4 transition group-hover:translate-x-0.5" /></span>
-    </a>
+const Meta = ({ post, who }: { post: Post; who?: boolean }) => (
+    <p className="bl-meta">{who && <>{label(post.audience)}<span aria-hidden="true">·</span></>}<time dateTime={post.published}>{dateOf(post.published)}</time><span aria-hidden="true">·</span>{post.minutes} min read</p>
 );
+const Cover = ({ post }: { post: Post }) => post.cover ? <img className="bl-cover" src={`${post.cover}?w=1400&auto=format`} alt={post.coverAlt ?? ""} /> : null;
 
 const Cta = () => (
-    <aside className="flex flex-col items-start gap-4 rounded-[36px] p-8 text-white md:p-12" style={{ background: "linear-gradient(170deg, #3A4829 0%, #27311B 100%)" }}>
-        <h2 className="text-2xl font-bold tracking-tight text-balance md:text-3xl">Raising money for a cause?</h2>
-        <p className="max-w-xl text-white/85">Outgive is crowdfunding built for charities and the people who raise for them: live leaderboards, team races and big-screen giving moments. It's free for charities, and gifts are paid straight to the charity's own Stripe account.</p>
-        <a href={JOIN} className="inline-flex h-11 items-center gap-2 rounded-full bg-[#D2DBA0] px-5 font-semibold text-[#191919] transition hover:-translate-y-0.5">Book a demo<ArrowRight className="size-4" /></a>
+    <aside className="bl-cta">
+        <p><b>Raising money for a cause?</b> Outgive gives charities donation pages, team fundraising and live leaderboards, free.</p>
+        <a href={JOIN} className="bl-btn">Book a demo</a>
     </aside>
 );
 
-const Index = () => (
-    <>
-        <section className="py-16 md:py-24">
-            <p className="text-sm font-semibold tracking-wide text-brand-secondary uppercase">The Outgive blog</p>
-            <h1 className="mt-3 max-w-3xl text-4xl font-bold tracking-tight text-primary text-balance md:text-6xl">Fundraising guides for charities, fundraisers and donors</h1>
-            <p className="mt-5 max-w-2xl text-lg text-tertiary">Practical answers with the sources linked: what platforms really cost, how to plan GivingTuesday, how to start and grow a fundraiser, and how to give safely and tax-smart in the US and Europe.</p>
-        </section>
-        <div className="flex flex-col gap-14">
-            {AUDIENCES.map(([a, title]) => (
-                <section key={a} aria-labelledby={`for-${a}`}>
-                    <h2 id={`for-${a}`} className="mb-5 text-xl font-semibold text-primary">{title}</h2>
-                    <div className="grid gap-5 md:grid-cols-2">{POSTS.filter((p) => p.audience === a).map((p) => <Card key={p.slug} post={p} />)}</div>
-                </section>
-            ))}
-        </div>
-        <div className="mt-20"><Cta /></div>
-    </>
-);
-
-const Article = ({ post }: { post: Post }) => {
-    const related = [...POSTS.filter((p) => p !== post && p.audience === post.audience), ...POSTS.filter((p) => p.audience !== post.audience)].slice(0, 2);
+const Index = ({ posts }: { posts: Post[] }) => {
+    const [only, setOnly] = useState<Audience | null>(null);
+    const [lead, ...next] = posts;
+    const list = posts.filter((p) => !only || p.audience === only);
     return (
         <>
-            <article className="mx-auto max-w-3xl pt-10 md:pt-16">
-                <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-tertiary">
-                    <a href="/blog" className="inline-flex items-center gap-1 hover:text-primary"><ArrowLeft className="size-4" />Blog</a><span aria-hidden="true">/</span><span>{label(post)}</span>
-                </nav>
-                <h1 className="mt-5 text-3xl leading-tight font-bold tracking-tight text-primary text-balance md:text-5xl">{post.title}</h1>
-                <p className="mt-4 text-sm text-tertiary">
-                    By the {SITE.name} team · Updated <time dateTime={post.updated}>{dateOf(post.updated)}</time> · {post.minutes} min read
-                </p>
+            <header className="bl-hero">
+                <h1>Blog</h1>
+                <p>Practical, sourced guides for charities, fundraisers and donors.</p>
+            </header>
 
-                <div className="mt-8 rounded-2xl bg-brand-primary p-6 ring-1 ring-brand ring-inset">
-                    <p className="text-xs font-semibold tracking-wide text-brand-secondary uppercase">The short answer</p>
-                    <p className="mt-2 text-lg text-primary">{post.answer}</p>
-                </div>
+            {lead && (
+                <section className="bl-top" aria-label="Latest">
+                    <a href={`/blog/${lead.slug}`} className="bl-lead">
+                        <Cover post={lead} />
+                        <Meta post={lead} who />
+                        <h2>{lead.title}</h2>
+                        <p>{lead.description}</p>
+                    </a>
+                    {!!next.length && (
+                        <ol className="bl-next">{next.slice(0, 4).map((p) => (
+                            <li key={p.slug}><a href={`/blog/${p.slug}`}><Meta post={p} who /><b>{p.title}</b></a></li>
+                        ))}</ol>
+                    )}
+                </section>
+            )}
 
-                <div className="mt-6 rounded-2xl bg-secondary p-6">
-                    <h2 className="text-md font-semibold text-primary">Key takeaways</h2>
-                    <ul className="mt-3 flex flex-col gap-2.5">
-                        {post.takeaways.map((t) => <li key={t} className="flex gap-2.5 text-tertiary"><CheckCircle aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-brand-secondary" /><span>{t}</span></li>)}
-                    </ul>
-                </div>
-
-                <div className="prose mt-10 max-w-none prose-headings:tracking-tight prose-headings:text-balance prose-a:text-brand-secondary prose-a:underline prose-a:underline-offset-2 prose-strong:text-primary">
-                    {post.body}
-                </div>
-
-                <section aria-labelledby="faq" className="mt-14">
-                    <h2 id="faq" className="text-2xl font-bold tracking-tight text-primary">Frequently asked questions</h2>
-                    <div className="mt-5 divide-y divide-secondary rounded-2xl ring-1 ring-secondary ring-inset">
-                        {post.faq.map(([q, a]) => (
-                            <details key={q} className="group px-5 py-4 [&_summary::-webkit-details-marker]:hidden">
-                                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-primary">{q}<span aria-hidden="true" className="text-xl text-tertiary transition group-open:rotate-45">+</span></summary>
-                                <p className="mt-3 text-tertiary">{a}</p>
-                            </details>
-                        ))}
+            <section className="bl-all" aria-labelledby="all">
+                <div className="bl-all-head">
+                    <h2 id="all">All posts</h2>
+                    <div className="bl-tabs" role="group" aria-label="Filter posts">
+                        <button type="button" aria-pressed={!only} onClick={() => setOnly(null)}>All</button>
+                        {AUDIENCES.map(([a, t]) => <button key={a} type="button" aria-pressed={only === a} onClick={() => setOnly(a)}>{t}</button>)}
                     </div>
-                </section>
-
-                <section aria-labelledby="sources" className="mt-14">
-                    <h2 id="sources" className="text-lg font-semibold text-primary">Sources</h2>
-                    <p className="mt-1 text-sm text-tertiary">Checked on {dateOf(post.updated)}. Fees and rules change, so confirm on the source before you rely on a figure.</p>
-                    <ol className="mt-3 list-decimal space-y-1.5 pl-5 text-sm text-tertiary">
-                        {post.sources.map(([name, url]) => <li key={url}><a href={url} rel="noopener" target="_blank" className="underline underline-offset-2 hover:text-primary">{name}</a></li>)}
-                    </ol>
-                </section>
-
-                <div className="mt-16"><Cta /></div>
-            </article>
-
-            <section aria-labelledby="more" className="mx-auto mt-16 max-w-3xl">
-                <h2 id="more" className="mb-5 text-xl font-semibold text-primary">Keep reading</h2>
-                <div className="grid gap-5 md:grid-cols-2">{related.map((p) => <Card key={p.slug} post={p} />)}</div>
+                </div>
+                <ul className="bl-list">{list.map((p) => (
+                    <li key={p.slug}><a href={`/blog/${p.slug}`}>
+                        <span><b>{p.title}</b><span className="bl-desc">{p.description}</span></span>
+                        <Meta post={p} who />
+                    </a></li>
+                ))}</ul>
             </section>
+
+            <Cta />
+        </>
+    );
+};
+
+const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+/** "On this page": the body's h2s, read after it renders (posts in code and in Sanity both just write h2s), with the one in view marked. */
+const useContents = (key: string) => {
+    const [items, setItems] = useState<[string, string][]>([]);
+    const [active, setActive] = useState("");
+    useEffect(() => {
+        const hs = [...document.querySelectorAll<HTMLHeadingElement>(".bl-article h2")];
+        hs.forEach((h) => { h.id ||= slugify(h.textContent ?? ""); });
+        setItems(hs.map((h) => [h.id, h.textContent ?? ""]));
+        const io = new IntersectionObserver((es) => { const e = es.find((x) => x.isIntersecting); if (e) setActive(e.target.id); }, { rootMargin: "0px 0px -70% 0px" });
+        hs.forEach((h) => io.observe(h));
+        return () => io.disconnect();
+    }, [key]);
+    return [items, active] as const;
+};
+
+/** Copy link, LinkedIn and X: the three places charity people share a guide. */
+const Share = ({ post }: { post: Post }) => {
+    const [copied, setCopied] = useState(false);
+    const url = `${SITE.url}/blog/${post.slug}`;
+    const copy = async () => { try { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { /* clipboard blocked */ } };
+    return (
+        <div className="bl-share">
+            <button type="button" onClick={copy}>{copied ? <Check size={16} weight="bold" aria-hidden="true" /> : <LinkSimple size={16} weight="bold" aria-hidden="true" />}{copied ? "Copied" : "Copy link"}</button>
+            <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`} target="_blank" rel="noopener" aria-label="Share on LinkedIn"><LinkedinLogo size={18} weight="fill" aria-hidden="true" /></a>
+            <a href={`https://x.com/intent/post?url=${encodeURIComponent(url)}&text=${encodeURIComponent(post.title)}`} target="_blank" rel="noopener" aria-label="Share on X"><XLogo size={16} weight="bold" aria-hidden="true" /></a>
+        </div>
+    );
+};
+
+/** An article, after Quartz and The New York Times: a centred header with the summary and a byline row, then the text in one centred column with the contents in the left margin. */
+const Article = ({ post, posts }: { post: Post; posts: Post[] }) => {
+    const related = [...posts.filter((p) => p !== post && p.audience === post.audience), ...posts.filter((p) => p !== post && p.audience !== post.audience)].slice(0, 3);
+    const [contents, active] = useContents(post.slug);
+    return (
+        <>
+            <header className="bl-head">
+                <p className="bl-crumb"><a href="/blog">Blog</a><span aria-hidden="true">/</span>{label(post.audience)}</p>
+                <h1>{post.title}</h1>
+                {post.description && <p className="bl-dek">{post.description}</p>}
+                <div className="bl-byline">
+                    <span className="bl-by">
+                        <span className="bl-avatar" aria-hidden="true"><OgMark size={11} tone="dark" /></span>
+                        <span><b>{post.author ?? `${SITE.name} team`}</b><span>Updated <time dateTime={post.updated}>{dateOf(post.updated)}</time> · {post.minutes} min read</span></span>
+                    </span>
+                    <Share post={post} />
+                </div>
+                <Cover post={post} />
+            </header>
+
+            <div className="bl-page">
+                {contents.length > 2 ? (
+                    <nav aria-label="On this page" className="bl-toc">
+                        <p>On this page</p>
+                        <ol>{contents.map(([id, t]) => <li key={id}><a href={`#${id}`} aria-current={active === id ? "location" : undefined}>{t}</a></li>)}</ol>
+                    </nav>
+                ) : <span />}
+
+                <article className="bl-article">
+                    {post.answer && <p className="bl-answer">{post.answer}</p>}
+                    {!!post.takeaways.length && (
+                        <section className="bl-takeaways" aria-labelledby="takeaways">
+                            <h2 id="takeaways">Key takeaways</h2>
+                            <ul>{post.takeaways.map((t) => <li key={t}>{t}</li>)}</ul>
+                        </section>
+                    )}
+
+                    <div className="bl-prose prose max-w-none">{post.body}</div>
+
+                    {!!post.faq.length && (
+                        <section aria-labelledby="faq" className="bl-faq">
+                            <h2 id="faq">Questions</h2>
+                            {post.faq.map(([q, a]) => <details key={q}><summary>{q}</summary><p>{a}</p></details>)}
+                        </section>
+                    )}
+
+                    {!!post.sources.length && (
+                        <section aria-labelledby="sources" className="bl-sources">
+                            <h2 id="sources">Sources</h2>
+                            <ol>{post.sources.map(([name, url]) => <li key={url}><a href={url} rel="noopener" target="_blank">{name}</a></li>)}</ol>
+                            <p>Checked {dateOf(post.updated)}. Fees and rules change, so confirm on the source before relying on a figure.</p>
+                        </section>
+                    )}
+                </article>
+            </div>
+
+            {!!related.length && (
+                <section aria-labelledby="more" className="bl-more">
+                    <h2 id="more">Keep reading</h2>
+                    <ul className="bl-list">{related.map((p) => <li key={p.slug}><a href={`/blog/${p.slug}`}><span><b>{p.title}</b></span><Meta post={p} who /></a></li>)}</ul>
+                </section>
+            )}
+            <Cta />
         </>
     );
 };
 
 const Missing = () => (
-    <section className="py-24 text-center">
-        <h1 className="text-3xl font-bold text-primary">This post doesn't exist</h1>
-        <p className="mt-3 text-tertiary">It may have moved. Everything we've published is on the blog.</p>
-        <a href="/blog" className="mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-brand-solid px-5 font-semibold text-white">Go to the blog<ArrowRight className="size-4" /></a>
+    <section className="bl-missing">
+        <h1>This post doesn't exist</h1>
+        <p>It may have moved. Everything we've published is on the blog.</p>
+        <a href="/blog" className="bl-btn">Go to the blog</a>
     </section>
 );
 
 export const Blog = ({ slug }: { slug?: string }) => {
-    const post = slug ? POSTS.find((p) => p.slug === slug) : undefined;
+    const cms = useCmsPosts();
+    const posts = mergePosts(cms, POSTS);
+    const post = slug ? posts.find((p) => p.slug === slug) : undefined;
+    const waiting = !!slug && !post && CMS_ON && cms === null;
     useEffect(() => {
+        if (waiting) return;
         if (!slug) return setMeta(...metaFor("blog", DEFAULT_BRAND));
         if (post) return setMeta(docTitle(post), post.description);
         setMeta("Post not found | Outgive", "This post does not exist. Read the Outgive blog.");
         document.querySelector('meta[name="robots"]')?.setAttribute("content", "noindex");
-    }, [slug, post]);
-    return (
-        <SitePage narrow={false}>{!slug ? <Index /> : post ? <Article post={post} /> : <Missing />}</SitePage>
-    );
+    }, [slug, post, waiting]);
+    return <SitePage narrow={false}>{!slug ? <Index posts={posts} /> : post ? <Article post={post} posts={posts} /> : waiting ? <Loading /> : <Missing />}</SitePage>;
 };

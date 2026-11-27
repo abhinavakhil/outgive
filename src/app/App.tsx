@@ -21,7 +21,7 @@ const orgOf = (v: View) => ("org" in v ? v.org : null);
  * shows "Coming soon" and is kept out of search. Set VITE_ALL_PAGES=true to open everything again (local work on other screens).
  */
 const ALL_PAGES = import.meta.env.VITE_ALL_PAGES === "true";
-const isOpen = (v: View) => ALL_PAGES || v.name === "landing" || v.name === "ramadhan" || v.name === "ramadhan-give" || v.name === "ramadhan-login" || v.name === "ramadhan-account" || v.name === "ramadhan-team" || (v.name === "board" && v.org === DEMO_SLUG && location.pathname.startsWith("/leaderboard"));
+const isOpen = (v: View) => ALL_PAGES || v.name === "landing" || v.name === "blog" || v.name === "post" || v.name === "ramadhan" || v.name === "ramadhan-give" || v.name === "ramadhan-login" || v.name === "ramadhan-account" || v.name === "ramadhan-team" || (v.name === "board" && v.org === DEMO_SLUG && location.pathname.startsWith("/leaderboard"));
 
 const LOCAL = import.meta.env.VITE_LAUNCHED !== "false" || import.meta.env.DEV || /^(localhost|127\.0\.0\.1|\[::1\]|10\.|192\.168\.)/.test(window.location.hostname);
 

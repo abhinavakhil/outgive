@@ -129,7 +129,7 @@ export const RamadanGive = () => {
                 <>
                     <header className="gb-top gb-menu-top">
                         <button type="button" className="gb-back" onClick={leave} aria-label="Back"><Ico d={I.back} size={18} /></button>
-                        <OgLogo size={24} />
+                        <a href="/" aria-label="Outgive home" className="og-home"><OgLogo size={24} /></a>
                         <span style={{ flex: 1 }} />
                         <span className="gb-dots" aria-label="Choosing causes, before step 1 of 3"><i className="on now" /><i /><i /></span>
                         <span className="gb-secure"><Ico d={I.lock} size={14} fill />Secure</span>
@@ -143,7 +143,7 @@ export const RamadanGive = () => {
                 <div className="gb" key={page}>
                     <header className="gb-top">
                         <button type="button" className="gb-back" onClick={leave} aria-label="Back"><Ico d={I.back} size={18} /></button>
-                        <OgLogo size={24} />
+                        <a href="/" aria-label="Outgive home" className="og-home"><OgLogo size={24} /></a>
                         <span style={{ flex: 1 }} />
                         <span className="gb-dots" aria-label={`Step ${page === "amount" ? 1 : 2} of 3`}>{[0, 1, 2].map((i) => <i key={i} className={cx(i <= (page === "amount" ? 0 : 1) && "on", i === (page === "amount" ? 0 : 1) && "now")} />)}</span>
                         <span className="gb-secure"><Ico d={I.lock} size={14} fill />Secure</span>
@@ -814,7 +814,7 @@ const Done = ({ paid, bio, onAgain }: { paid: Paid; bio: BioPage; onAgain: () =>
             <div className="gb-done-hero" style={{ background: "#FDEBDF", padding: m ? "22px 16px 60px" : "30px 40px 84px" }}>
                 <svg className="gb-rays" viewBox="0 0 800 800" aria-hidden="true" style={{ top: m ? -160 : -150 }}>{Array.from({ length: 18 }, (_, i) => <path key={i} d="M400 400 L 380 -400 L 420 -400 Z" transform={`rotate(${i * 20} 400 400)`} fill="#fff" opacity=".35" />)}</svg>
                 <div className="rg-confetti" aria-hidden="true">{Array.from({ length: 24 }, (_, i) => <i key={i} style={{ "--x": `${(i * 37) % 100}%`, "--d": `${(i % 8) * 0.11}s`, "--r": `${(i * 47) % 360}deg` } as CSSProperties} />)}</div>
-                <span className="gb-done-logo"><OgLogo size={20} /></span>
+                <a href="/" aria-label="Outgive home" className="gb-done-logo"><OgLogo size={20} /></a>
                 <div className="gb-medal gb-burst" style={{ width: m ? 112 : 138, height: m ? 112 : 138 }}><span><span>LEVEL</span><b className="gb-h" style={{ fontSize: m ? 46 : 58 }}>{lvl}</b></span><em>{LEVELS[lvl - 1][1]}</em></div>
                 <h1 className="gb-h" style={{ fontSize: m ? 32 : 52 }}>Level {lvl} unlocked!</h1>
                 <p style={{ fontSize: m ? 16 : 18 }}>Jazakallah khair{paid.first ? `, ${paid.first}` : ""}. Your {short(q.gifts)} for {bio.name} is {nights.length ? "scheduled" : "on its way"}.</p>
