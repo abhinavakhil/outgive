@@ -8,7 +8,9 @@ html.ck-preview::-webkit-scrollbar, html.ck-preview *::-webkit-scrollbar { displ
     --ck-font: "Outfit", Urbanist, "Avenir Next", "Segoe UI", system-ui, sans-serif;
     --ck-ink: #191919; --ck-ink-2: #444444; --ck-muted: #666666; --ck-faint: #8F8F8F;
     --ck-line: #E6E6E6; --ck-line-2: #EEEEEE; --ck-sep: #EEEEEE; --ck-field: #FFFFFF; --ck-track: #E0DDD6;
-    --ck-accent: #F0783C; --ck-accent-strong: #C24A14; --ck-accent-soft: #FDEBDF; --ck-link: #191919;
+    /* Buttons are never orange: --ck-accent is the sage fill of the main action, -strong the ink of a selected control, -soft its
+       white ground. Orange lives on in --ck-coral-* for progress, the dial and highlights. */
+    --ck-accent: #D2DBA0; --ck-accent-strong: #191919; --ck-accent-soft: #FFFFFF; --ck-link: #191919; --ck-focus: #7B3FD6;
     --ck-tint: #F4F3F0; --ck-seg: #F4F3F0;
     --ck-green: #2F3A22; --ck-green-ink: #4B5530; --ck-green-soft: #EEF2D6; --ck-mint: #D2DBA0;
     --ck-gold-soft: #fdf6dd; --ck-gold-ink: #6b5408; --ck-coral-soft: #FDEBDF; --ck-coral-ink: #C24A14;
@@ -20,7 +22,7 @@ html.ck-preview::-webkit-scrollbar, html.ck-preview *::-webkit-scrollbar { displ
 }
 .ck button { font-family: inherit; font-size: inherit; cursor: pointer; }
 .ck button:disabled { cursor: not-allowed; }
-.ck button:focus-visible, .ck input:focus-visible { outline: 3px solid var(--ck-accent-strong); outline-offset: 2px; }
+.ck button:focus-visible, .ck input:focus-visible { outline: 3px solid var(--ck-focus); outline-offset: 2px; }
 
 .ck-in {
     font: inherit; font-size: 16px; font-weight: 600; color: var(--ck-ink); background: #fff;
@@ -31,7 +33,7 @@ html.ck-preview::-webkit-scrollbar, html.ck-preview *::-webkit-scrollbar { displ
 }
 .ck-in::placeholder { color: #a6a2b8; font-weight: 500; opacity: 1; }
 .ck-in:hover { border-color: #d3c8ea; }
-.ck-in:focus { border-color: var(--ck-accent-strong); outline: none; box-shadow: 0 0 0 4px rgb(180 95 214 / 0.14); }
+.ck-in:focus { border-color: var(--ck-focus); outline: none; box-shadow: 0 0 0 4px rgb(180 95 214 / 0.14); }
 .ck-in[aria-invalid="true"] { border-color: var(--ck-err); box-shadow: 0 0 0 4px rgb(179 38 30 / 0.08); }
 .ck-in:-webkit-autofill { -webkit-box-shadow: 0 0 0 40px #fff inset; -webkit-text-fill-color: var(--ck-ink); }
 .ck-check { width: 22px; height: 22px; flex: none; margin: 0; accent-color: var(--ck-accent-strong); cursor: pointer; }
@@ -39,7 +41,7 @@ html.ck-preview::-webkit-scrollbar, html.ck-preview *::-webkit-scrollbar { displ
 .ck-hint { font-size: 12.5px; font-weight: 600; color: var(--ck-muted); }
 /* A group of fields that reads as one control: shared border, hairline dividers. */
 .ck-group { border: 1.5px solid #e6e0f2; border-radius: 16px; background: #fff; overflow: hidden; box-shadow: 0 1px 2px rgb(26 20 64 / 0.04); transition: border-color 0.15s ease, box-shadow 0.15s ease; }
-.ck-group:focus-within { border-color: var(--ck-accent-strong); box-shadow: 0 0 0 4px rgb(180 95 214 / 0.14); }
+.ck-group:focus-within { border-color: var(--ck-focus); box-shadow: 0 0 0 4px rgb(180 95 214 / 0.14); }
 .ck-group .ck-in { border: 0; border-radius: 0; box-shadow: none; height: 54px; }
 .ck .ck-group input.ck-in:focus-visible, .ck-group .ck-in:focus { outline: none; box-shadow: none; background: #fcfaff; }
 .ck-group .ck-in[aria-invalid="true"] { background: #fff6f5; box-shadow: none; }
@@ -51,8 +53,8 @@ html.ck-preview::-webkit-scrollbar, html.ck-preview *::-webkit-scrollbar { displ
 .ck-face-back { transform: rotateY(180deg); }
 
 .ck-cta { transition: transform 0.12s ease, box-shadow 0.12s ease; }
-.ck-cta:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 16px 30px rgb(150 70 190 / 0.36) !important; }
-.ck-soft:hover { background: #f7f3fd !important; }
+.ck-cta:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 16px 30px rgb(75 85 48 / 0.4) !important; }
+.ck-soft:not([aria-pressed="true"]):hover { background: #F4F3F0 !important; }
 .ck-row:hover { background: #fbf9fe !important; }
 .ck-pill { display: inline-flex; align-items: center; gap: 0.14em; vertical-align: baseline; border-radius: 0.3em; padding: 0 0.3em 0.06em; margin: 0 0.04em; line-height: 1.22; letter-spacing: inherit; transition: transform 0.12s ease; }
 .ck-pill:hover { transform: translateY(-2px); }
@@ -79,4 +81,79 @@ html.ck-preview::-webkit-scrollbar, html.ck-preview *::-webkit-scrollbar { displ
 .ck-line { position: absolute; left: 0; height: 6px; border-radius: 999px; animation: ck-line 0.55s linear infinite; }
 .ck-dot { animation: ck-pulse 0.9s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .ck .ck-fly { animation: none !important; transform: none; } .ck .ck-fly2, .ck .ck-fly3, .ck .ck-line, .ck .ck-trail { display: none; } }
+}
+
+/* The short layouts (Short.tsx): Ten nights, Compact, Kiosk. Outgive design system: white ground, #F4F3F0 surface, ink, hairlines,
+   soft card shadows, Outfit 500 set tight. Buttons are green #D2DBA0, black or white only; orange is an accent, never a button. */
+@layer components {
+.cs { --cs-card: 0 0 0 1px rgba(25,25,25,.06), 0 2px 4px rgba(25,25,25,.04), 0 28px 56px -20px rgba(25,25,25,.22); --cs-hair: inset 0 0 0 1px rgba(25,25,25,.1);
+    min-height: 100dvh; display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 0 16px 32px; background: #fff; font-weight: 400; box-sizing: border-box; }
+.cs-compact { min-height: 0; padding: 0; background: transparent; }
+.cs-kiosk { background: linear-gradient(180deg, #FDEBDF, #fff 420px); }
+.cs-dark { background: #191919; color: #F2F2F2; }
+.cs-head { width: 100%; max-width: 1040px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 18px; }
+.cs-tag { display: inline-flex; align-items: center; gap: 6px; min-height: 28px; padding: 0 12px; border-radius: 999px; background: #F4F3F0; color: #191919; font-size: 13px; font-weight: 500; white-space: nowrap; }
+.cs-tag-live { background: #D2DBA0; } .cs-tag-live i { width: 7px; height: 7px; border-radius: 99px; background: #3E9A55; }
+.cs-tag-ok { align-self: flex-start; background: #EEF2D6; color: #4B5530; }
+.cs-intro { width: 100%; max-width: 520px; display: flex; flex-direction: column; gap: 8px; padding-top: 18px; }
+.cs-kiosk .cs-intro { max-width: 760px; }
+.cs-eyebrow { font-size: 14px; color: #666; } .cs-dark .cs-eyebrow { color: #A8A8A8; }
+.cs-h1 { margin: 0; font-size: clamp(34px, 8vw, 48px); line-height: 1.02; letter-spacing: -0.045em; font-weight: 500; text-wrap: balance; }
+.cs-h1-sm { font-size: clamp(30px, 7vw, 40px); }
+.cs-meter { height: 6px; border-radius: 99px; background: #F4F3F0; overflow: hidden; margin-top: 6px; } .cs-meter i { display: block; height: 100%; border-radius: 99px; background: #F0783C; }
+.cs-dark .cs-meter { background: #333; } .cs-dark .cs-meter i { background: #D2DBA0; }
+.cs-meta { display: flex; justify-content: space-between; font-size: 13px; color: #666; } .cs-dark .cs-meta { color: #C5CF9A; }
+.cs-card { width: 100%; max-width: 520px; box-sizing: border-box; padding: 22px; border-radius: 24px; background: #fff; color: #191919; box-shadow: var(--cs-card); }
+.cs-compact .cs-card { max-width: none; box-shadow: var(--cs-hair); }
+.cs-kiosk .cs-card { max-width: 760px; padding: 32px; }
+.cs-stack { display: flex; flex-direction: column; gap: 18px; }
+.cs-field { display: flex; flex-direction: column; gap: 10px; }
+.cs-lbl { font-size: 13px; color: #666; }
+.cs-note { font-size: 13.5px; color: #666; }
+.cs-sub { margin: 0; font-size: 16px; line-height: 1.5; color: #444; }
+.cs-amounts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.cs-amounts > button { min-height: 52px; border: 0; border-radius: 14px; background: #fff; box-shadow: var(--cs-hair); font-size: 17px; font-weight: 500; color: #191919; font-variant-numeric: tabular-nums; transition: box-shadow .15s; }
+.cs-amounts > button:hover { box-shadow: inset 0 0 0 1.5px #191919; }
+.cs-amounts > button[aria-pressed="true"] { background: #191919; color: #fff; box-shadow: none; }
+.cs-other { grid-column: 1 / -1; }
+.cs-other .ck-in { border-radius: 14px; border: 0; box-shadow: var(--cs-hair); font-weight: 500 !important; }
+.cs-seg { position: relative; display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); padding: 4px; border-radius: 14px; background: #F4F3F0; isolation: isolate; }
+.cs-seg::before { content: ""; position: absolute; z-index: -1; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 8px) / var(--n)); border-radius: 10px; background: #fff; box-shadow: 0 0 0 1px rgba(25,25,25,.06), 0 6px 14px -8px rgba(25,25,25,.2); transform: translateX(calc(var(--i) * 100%)); transition: transform .28s cubic-bezier(.2,.8,.2,1); }
+.cs-seg button { min-width: 0; height: 44px; padding: 0 4px; border: 0; border-radius: 10px; background: none; color: #666; font-size: 14.5px; font-weight: 500; white-space: nowrap; transition: color .18s; }
+.cs-seg button[aria-pressed="true"], .cs-seg button:hover { color: #191919; }
+.cs-addon { border-radius: 16px; background: #fff; box-shadow: var(--cs-hair); transition: box-shadow .15s; }
+.cs-addon.on { box-shadow: inset 0 0 0 1.5px #191919; }
+.cs-addon > button { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; padding: 10px 14px; border: 0; border-radius: 16px; background: none; text-align: left; color: #191919; }
+.cs-addon-t { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; } .cs-addon-t b { font-size: 15px; font-weight: 500; } .cs-addon-t span { font-size: 13px; color: #666; line-height: 1.35; }
+.cs-addon-p { font-size: 14.5px; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cs-addon-x { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 14px 12px; font-size: 14px; color: #666; }
+.cs-lines { margin: 0; display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border-radius: 16px; background: #F4F3F0; }
+.cs-lines > div { display: flex; justify-content: space-between; gap: 12px; font-size: 14.5px; } .cs-lines dt { color: #444; } .cs-lines dd { margin: 0; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cs-lines .cs-boost dt, .cs-lines .cs-boost dd { color: #4B5530; }
+.cs-lines .cs-total { margin-top: 4px; padding-top: 8px; border-top: 1px solid rgba(25,25,25,.1); font-size: 17px; font-weight: 500; }
+.cs-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 0 22px; border: 0; border-radius: 999px; font-size: 16.5px; font-weight: 500; letter-spacing: -0.01em; transition: background .15s, box-shadow .15s; }
+.cs-btn:disabled { opacity: .6; }
+.cs-green { background: #D2DBA0; color: #191919; } .cs-green:hover:not(:disabled) { background: #C8D292; }
+.cs-black { background: #191919; color: #fff; } .cs-black:hover:not(:disabled) { background: #000; }
+.cs-white { background: #fff; color: #191919; box-shadow: var(--cs-hair); } .cs-white:hover:not(:disabled) { box-shadow: inset 0 0 0 1.5px #191919; }
+.cs-row { display: flex; flex-wrap: wrap; gap: 10px; } .cs-grow { flex: 1 1 200px; }
+.cs-grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 12px; }
+.cs-sum { display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 16px; border-radius: 16px; background: #F4F3F0; }
+.cs-sum > span { display: flex; flex-direction: column; flex: 1; min-width: 0; font-size: 13px; color: #666; } .cs-sum b { font-size: 15px; font-weight: 500; color: #191919; }
+.cs-sum strong { font-size: 20px; font-weight: 500; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.cs-link { min-height: 44px; padding: 0 8px; border: 0; background: none; font-size: 14px; font-weight: 500; color: #191919; text-decoration: underline; text-underline-offset: 3px; }
+.cs-next { padding: 16px; border-radius: 20px; background: #F4F3F0; }
+.cs-foot { max-width: 520px; margin: 0; text-align: center; font-size: 13px; color: #666; } .cs-dark .cs-foot { color: #A8A8A8; }
+.cs .ck-label { font-weight: 500; color: #444; }
+.cs .ck-in { font-weight: 500; border-color: #E6E6E6; }
+.cs-kiosk .cs-amounts > button { min-height: 76px; font-size: 24px; border-radius: 18px; }
+.cs-kiosk .cs-btn { min-height: 68px; font-size: 19px; }
+.cs-kiosk .cs-seg button { height: 56px; font-size: 16px; }
+.cs-kiosk .cs-h1 { font-size: clamp(40px, 6vw, 60px); }
+.cs-check { display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: 14px; color: #444; cursor: pointer; }
+.cs-check input { width: 20px; height: 20px; margin: 0; accent-color: #191919; flex: none; }
+/* The thank-you's one ask (parts NextStep) in the design system's weights: pill buttons, no lifted shadow. */
+.cs [data-ck-next] strong { font-weight: 500; letter-spacing: -0.02em; }
+.cs [data-ck-next] button, .cs [data-ck-next] a { min-height: 52px; border-radius: 999px; font-size: 15.5px; font-weight: 500; box-shadow: none !important; transform: none !important; }
+@media (max-width: 420px) { .cs-card { padding: 18px; } .cs-amounts > button { font-size: 16px; } .cs-seg button { font-size: 13px; } }
 }

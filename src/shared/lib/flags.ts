@@ -7,7 +7,7 @@
  * ponytail: build-time default only; move to GrowthBook or Unleash (both open source) for remote switching or percentage splits.
  */
 export const FLAGS = {
-    checkout_layout: { values: ["hero", "pledge", "ticket"], fallback: "hero" },
+    checkout_layout: { values: ["hero", "pledge", "ticket", "nights", "compact", "kiosk"], fallback: "hero" },
     /** Which amounts the checkout offers (features/checkout/presets.ts): the campaign's own, scaled and anchored, or anchored one step up. */
     checkout_presets: { values: ["control", "smart", "ask-up"], fallback: "smart" },
 } as const;

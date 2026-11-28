@@ -1,0 +1,42 @@
+/* The donor's impact report and opt-out page. Outgive tokens (v2.css): white ground, surface #F4F3F0, ink #191919, lilac/sage/peach
+   pastels, Outfit 500 set tight, hairlines and soft card shadows. Buttons: green #D2DBA0, ink or white only. Orange is only the moon dot. */
+.ir { --ink: #191919; --muted: #666666; --surface: #F4F3F0;
+    --card: 0 0 0 1px rgba(25,25,25,.06), 0 2px 4px rgba(25,25,25,.04), 0 28px 56px -20px rgba(25,25,25,.22);
+    min-height: 100dvh; background: #fff; color: var(--ink); font-family: "Outfit", ui-sans-serif, system-ui, sans-serif; font-size: 16px; line-height: 1.5; }
+.ir :focus-visible { outline: 2px solid #7B3FD6; outline-offset: 2px; }
+.ir-top { display: flex; align-items: center; gap: 10px; max-width: 760px; margin: 0 auto; padding: 18px 16px; }
+.ir-logo { width: 36px; height: 36px; border-radius: 10px; object-fit: cover; box-shadow: inset 0 0 0 1px rgba(25,25,25,.08); }
+.ir-mono { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: #DCCBF3; color: #4A3A66; font-weight: 600; }
+.ir-org { font-weight: 500; letter-spacing: -.01em; }
+.ir-main { display: flex; flex-direction: column; gap: 16px; max-width: 760px; margin: 0 auto; padding: 8px 16px 48px; }
+.ir-h { margin: 0; font-weight: 500; letter-spacing: -.045em; line-height: 1.04; }
+.ir-big { font-size: clamp(38px, 9vw, 64px); }
+.ir-mid { font-size: clamp(24px, 5vw, 30px); }
+.ir-sc { font-family: "Playwrite US Trad", "Snell Roundhand", cursive; font-weight: 300; letter-spacing: 0; font-size: .62em; white-space: nowrap; }
+.ir-sub { margin: 0; color: #444; font-size: 17px; }
+.ir-hero { display: flex; flex-direction: column; gap: 12px; padding: 20px 0 8px; }
+.ir-kicker { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 14px; font-weight: 500; color: var(--muted); }
+.ir-moon { width: 10px; height: 10px; border-radius: 999px; background: #F0783C; }
+.ir-units { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 0; padding: 0; list-style: none; }
+@media (min-width: 640px) { .ir-units { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); } }
+.ir-unit { display: flex; flex-direction: column; gap: 4px; padding: 20px; border-radius: 24px; }
+.ir-unit.lilac { background: #DCCBF3; } .ir-unit.sage { background: #EEF2D6; } .ir-unit.peach { background: #FDEBDF; }
+.ir-count { font-size: clamp(48px, 12vw, 64px); font-weight: 500; letter-spacing: -.05em; line-height: 1; font-variant-numeric: tabular-nums; }
+.ir-label { font-size: 17px; font-weight: 500; letter-spacing: -.01em; }
+.ir-fund { margin-top: 6px; font-size: 13px; color: rgba(25,25,25,.62); }
+.ir-fnote { font-size: 13px; color: rgba(25,25,25,.62); }
+.ir-plain { margin: 0; font-size: 14px; color: var(--muted); }
+.ir-card { padding: 24px; border-radius: 24px; background: #fff; box-shadow: var(--card); }
+.ir-thanks { background: var(--surface); box-shadow: none; }
+.ir-thanks p { margin: 0; font-size: 17px; }
+.ir-thanks .ir-sign { margin-top: 12px; font-size: 15px; color: var(--muted); }
+.ir-next, .ir-note { display: flex; flex-direction: column; gap: 12px; }
+.ir-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+.ir-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 22px; border: 0; border-radius: 999px; font: inherit; font-weight: 600; text-decoration: none; cursor: pointer; transition: background .15s ease; }
+.ir-btn.green { background: #D2DBA0; color: #191919; } .ir-btn.green:hover { background: #C8D292; }
+.ir-btn.ink { background: #191919; color: #fff; } .ir-btn.ink:hover { background: #333; }
+.ir-btn.white { background: #fff; color: #191919; box-shadow: inset 0 0 0 1px #DDDDDD; } .ir-btn.white:hover { background: var(--surface); }
+.ir-btn:disabled { opacity: .6; cursor: default; }
+@media (max-width: 479px) { .ir-btn { flex: 1 1 100%; } }
+.ir-foot { margin: 8px 0 0; font-size: 13px; color: var(--muted); }
+.ir-err { margin: 0; color: #B42318; font-size: 14px; }

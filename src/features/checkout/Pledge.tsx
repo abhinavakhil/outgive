@@ -1,12 +1,12 @@
 /** Layout 2, "Pledge": the gift reads as one sentence with tappable words; the card beside it holds the detail for each step. */
 import type { ReactNode } from "react";
 import { cx } from "@/shared/utils/cx";
-import { FREQS, FREQ_LABEL, impactFor } from "./model";
-import { AfterButtons, AmountInput, Details, Dial, Err, ExpressGiftAid, Extras, GIFT_AID_DECLARATION, Later, Lines, Logo, Mandate, NextStep, NoPayments, Nudge, PayFields, PayState, Presets, Seg, Tribute, TrustPanel, Verified, Wallets, cta, dark, endCopy, matchInfo, payLabel, soft } from "./parts";
+import { FREQ_LABEL, impactFor } from "./model";
+import { DafPanel, EmployerMatch, PledgeLater, AfterButtons, AmountInput, Details, Dial, Err, ExpressGiftAid, Extras, GIFT_AID_DECLARATION, Later, Lines, Logo, Mandate, NextStep, NoPayments, Nudge, PayFields, PayState, Presets, Seg, Tribute, TrustPanel, Verified, Wallets, cta, dark, endCopy, matchInfo, payLabel, soft } from "./parts";
 import type { Ck } from "./useCheckout";
 
 const Caret = () => <svg width="0.32em" height="0.32em" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6l5 5 5-5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>;
-const pillFill = "border-0 bg-(--ck-accent) font-extrabold text-(--ck-ink) shadow-[0_8px_20px_rgba(150,70,190,0.26)]";
+const pillFill = "border-0 bg-(--ck-accent) font-extrabold text-(--ck-ink) shadow-[0_8px_20px_rgba(75,85,48,0.26)]";
 const pillLine = "border-[1.5px] border-(--ck-line) bg-white text-(--ck-ink) shadow-[0_6px_16px_rgba(40,20,90,0.10)]";
 const Pill = ({ onClick, label, className, children, pressed }: { onClick?: () => void; label?: string; className: string; children: ReactNode; pressed?: boolean }) =>
     onClick ? <button type="button" onClick={onClick} aria-label={label} aria-pressed={pressed} className={cx("ck-pill", className)}>{children}</button> : <span className={cx("ck-pill", className)}>{children}</span>;
@@ -27,7 +27,7 @@ export const Pledge = ({ ck, brand, onShare, onStart }: { ck: Ck; brand: string;
     const crumbs: [string, number][] = [];
     if (step >= 1 && !done) crumbs.push([`${f(s.amount)} ${FREQ_LABEL[s.freq].sentence}`, 0]);
     if (step >= 2 && !done) crumbs.push([(c.giftAid ? (s.ga ? "Gift Aid on" : "No Gift Aid") : "Extras") + (Object.values(s.picks).some(Boolean) ? ", extras added" : ""), 1]);
-    if (step >= 3 && !done) crumbs.push([s.first.trim() ? `Receipt for ${s.first.trim()}` : "Details added", 2]);
+    if (step >= 3 && !done && !ck.detailsOnPay) crumbs.push([s.first.trim() ? `Receipt for ${s.first.trim()}` : "Details added", 2]);
     const chips: [string, string, string][] = [];
     if (q.giftAid) chips.push([`Gift Aid adds ${f(q.giftAid)}`, "#FDF1C4", "#5E4A0C"]);
     if (q.match) chips.push([`${matchInfo(ck).who || "A sponsor"} matches ${f(q.match)}`, "#FDE7E1", "#8A3524"]);
@@ -39,9 +39,9 @@ export const Pledge = ({ ck, brand, onShare, onStart }: { ck: Ck; brand: string;
                 <Logo name={brand} />
                 <div className="order-last flex w-full items-center gap-3.5 sm:order-none sm:w-auto sm:flex-[0_1_380px]">
                     <span className="text-[14px] font-extrabold whitespace-nowrap">{f(c.raised)} <span className="font-semibold text-(--ck-muted)">of {f(c.goal)}</span></span>
-                    <div className="h-2 flex-1 rounded-full bg-[#EFE4EC]" role="progressbar" aria-label="Raised so far" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}><div className="h-full rounded-full bg-linear-to-r from-[#E7B4F7] to-(--ck-accent-strong)" style={{ width: `${Math.min(100, pct)}%` }} /></div>
+                    <div className="h-2 flex-1 rounded-full bg-[#EFE4EC]" role="progressbar" aria-label="Raised so far" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}><div className="h-full rounded-full bg-linear-to-r from-[#E7B4F7] to-(--ck-coral-ink)" style={{ width: `${Math.min(100, pct)}%` }} /></div>
                 </div>
-                <span className="rounded-[10px] border border-(--ck-line) bg-white px-3 py-[7px] text-[12px] font-extrabold tracking-[0.5px] text-(--ck-link) shadow-[0_2px_6px_rgba(40,20,90,0.08)]">{done ? (ck.pending ? "Payment on its way" : "Payment confirmed") : `Step ${step + 1} of 4`}</span>
+                <span className="rounded-[10px] border border-(--ck-line) bg-white px-3 py-[7px] text-[12px] font-extrabold tracking-[0.5px] text-(--ck-link) shadow-[0_2px_6px_rgba(40,20,90,0.08)]">{done ? (ck.pending ? "Payment on its way" : "Payment confirmed") : `Step ${ck.flow.indexOf(step) + 1} of ${ck.flow.length - 1}`}</span>
             </header>
 
             <div className="grid flex-1 content-center items-center gap-x-14 gap-y-7 lg:grid-cols-[minmax(0,1fr)_minmax(0,470px)]">
@@ -56,9 +56,9 @@ export const Pledge = ({ ck, brand, onShare, onStart }: { ck: Ck; brand: string;
                         ))}
                     </div>
                     <div key={step} className="ck-fade">
-                        {step === 0 && <h1 className={cx(h, "lg:text-[64px]")}>I’ll give <Pill onClick={() => ck.setAmount(nextAmount, "pill")} label={`Amount ${f(s.amount)}, tap to step up`} className={pillFill}>{f(s.amount)}</Pill> <Pill onClick={() => ck.setFreq(FREQS[(FREQS.indexOf(s.freq) + 1) % 3])} label={`How often: ${FREQ_LABEL[s.freq].sentence}, tap to change`} className={pillLine}>{FREQ_LABEL[s.freq].sentence}<Caret /></Pill> to {lower(c.title)}.</h1>}
+                        {step === 0 && <h1 className={cx(h, "lg:text-[64px]")}>I’ll give <Pill onClick={() => ck.setAmount(nextAmount, "pill")} label={`Amount ${f(s.amount)}, tap to step up`} className={pillFill}>{f(s.amount)}</Pill> <Pill onClick={() => ck.setFreq(ck.freqs[(ck.freqs.indexOf(s.freq) + 1) % ck.freqs.length])} label={`How often: ${FREQ_LABEL[s.freq].sentence}, tap to change`} className={pillLine}>{FREQ_LABEL[s.freq].sentence}<Caret /></Pill> to {lower(c.title)}.</h1>}
                         {step === 1 && (c.giftAid
-                            ? <h1 className={h}>Make it <Pill onClick={() => ck.setGa(!s.ga)} pressed={s.ga} label="Gift Aid, tap to switch" className={cx("font-extrabold text-(--ck-ink) shadow-[0_6px_16px_rgba(140,100,10,0.16)]", s.ga ? "border-0 bg-[#F8E5A6]" : "border-2 border-dashed border-[#C99A12] bg-white")}>{f(q.total + ck.gaAdds)}</Pill> with Gift Aid{funds.length ? <>, and send it to <Pill onClick={() => ck.setFund(funds[(fundIdx + 1) % funds.length][0])} label="Where it goes, tap to change" className={pillLine}>{funds[fundIdx][2]}<Caret /></Pill></> : null}.</h1>
+                            ? <h1 className={h}>Make it <Pill onClick={() => ck.setGa(!s.ga)} pressed={s.ga} label="Gift Aid, tap to switch" className={cx("font-extrabold text-(--ck-ink) shadow-[0_6px_16px_rgba(75,85,48,0.18)]", s.ga ? "border-0 bg-(--ck-accent)" : "border-2 border-dashed border-(--ck-ink) bg-white")}>{f(q.total + ck.gaAdds)}</Pill> with Gift Aid{funds.length ? <>, and send it to <Pill onClick={() => ck.setFund(funds[(fundIdx + 1) % funds.length][0])} label="Where it goes, tap to change" className={pillLine}>{funds[fundIdx][2]}<Caret /></Pill></> : null}.</h1>
                             : <h1 className={h}>Send it to <Pill onClick={() => funds.length && ck.setFund(funds[(fundIdx + 1) % funds.length][0])} className={pillLine}>{funds[fundIdx]?.[2] ?? "wherever it’s needed most"}<Caret /></Pill>, with any extras you like.</h1>)}
                         {step === 2 && <h1 className={h}>I’m <Pill className={cx(pillLine, !s.first.trim() && "text-(--ck-faint)!")}>{s.first.trim() || "your name"}</Pill>, and my receipt goes to <Pill className={cx(pillLine, "break-all", !s.email.trim() && "text-(--ck-faint)!")}>{s.email.trim() || "your email"}</Pill>.</h1>}
                         {step === 3 && <h1 className={h}>I’ll pay <Pill className={pillFill}>{f(q.total)}</Pill> {ck.method === "bank" ? "with my" : "by"} <Pill onClick={() => ck.setMethod(ck.methods[(mi + 1) % ck.methods.length])} label="Payment method, tap to change" className={pillLine}>{word}<Caret /></Pill>{recurring ? ` ${FREQ_LABEL[s.freq].sentence}` : ""}.</h1>}
@@ -85,12 +85,13 @@ export const Pledge = ({ ck, brand, onShare, onStart }: { ck: Ck; brand: string;
                         </div>}
                         {step === 2 && <div className="ck-fade flex flex-col gap-3.5"><strong className="text-[20px] font-extrabold tracking-[-0.3px]">Your details</strong><Details ck={ck} address="flat" /></div>}
                         {step === 3 && <div className="ck-fade flex flex-col gap-3.5">
+                            {ck.detailsOnPay && !s.express && <Details ck={ck} address="flat" />}
                             <NoPayments ck={ck} />
                             <ExpressGiftAid ck={ck} />
                             {ck.methods.length > 1 && <div data-ck-methods><Seg label="Payment method" options={ck.methods.map((m) => [m, { card: "Card", dd: "Direct Debit", bank: "Bank", wallet: "Wallet" }[m as string] ?? m])} value={ck.method} onPick={ck.setMethod} track="bg-(--ck-seg)" /></div>}
                             <PayFields ck={ck} preview />
                             {ck.method === "wallet" && <><Wallets ck={ck} /><span className="text-[14px] text-(--ck-muted)">One tap. Your wallet fills in the payment details for you.</span></>}
-                            <Mandate ck={ck} /><Later ck={ck} /><PayState ck={ck} /><TrustPanel ck={ck} />
+                            <Mandate ck={ck} /><Later ck={ck} /><PledgeLater ck={ck} /><DafPanel ck={ck} /><PayState ck={ck} /><TrustPanel ck={ck} />
                         </div>}
                         {done && <div className="ck-fade flex flex-col gap-3">
                             <strong className="text-[20px] font-extrabold tracking-[-0.3px]">{ck.pending ? "Your gift" : "Your receipt"}</strong>
@@ -98,6 +99,7 @@ export const Pledge = ({ ck, brand, onShare, onStart }: { ck: Ck; brand: string;
                             <div className="flex items-baseline justify-between border-t-[1.5px] border-dashed border-(--ck-line) pt-3.5"><span className="text-[16px] font-extrabold">{end.total}</span><strong className="text-[34px] font-extrabold tracking-[-1px]">{f(q.total)}</strong></div>
                             <Later ck={ck} manage />
                             <TrustPanel ck={ck} />
+                            <EmployerMatch ck={ck} />
                             {!ck.pending && <button type="button" onClick={() => window.print()} className={cx(soft, "min-h-[52px] text-[15px] font-extrabold")}>Download receipt (PDF)</button>}
                             {ck.nextUp && <div className="mt-1.5 flex flex-col rounded-[22px] bg-(--ck-tint) p-[18px]"><NextStep ck={ck} onShare={onShare} onStart={onStart} /></div>}
                         </div>}

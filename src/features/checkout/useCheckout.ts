@@ -1,15 +1,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { type TrackData, track as umami } from "@/shared/lib/analytics";
+import { type Ads, type GiftTags, funnelStep, giftTags, trackDonation } from "@/shared/attribution";
 import { db, isDemo } from "@/shared/lib/db";
 import { flag } from "@/shared/lib/flags";
-import { type CheckoutCampaign, EMAIL, FREQS, type Freq, METHOD_NAME, type Method, UK_POSTCODE, allows, clampAmount, methodsFor, money, payProblem, quote, suggestMonthly, trustClaims } from "./model";
+import { type CheckoutCampaign, EMAIL, FREQS, type Freq, METHOD_NAME, type Method, UK_POSTCODE, MAX, MIN, allows, clampAmount, countOf, round2, methodsFor, money, payProblem, quote, suggestMonthly, trustClaims } from "./model";
 import { type NextKind, monthlyNudge, nextAction } from "./next-action";
 import { type PayOrder, type PayResult, type PaymentProvider, STILL_CONFIRMING, createAttempts, demoPayments, hostPayments, livePayments, mapError, methodOf, returnedPayment, settle, takePayment } from "./payments";
 import { type PresetVariant, presetsFor } from "./presets";
 import { type Draft, clearDraft, fromDraft, fromServer, keepDraft, loadDraft, recoveryRequest, resumeId, saveDraft } from "./recovery";
 import { STRIPE_KEY, type StripeFieldsHandle } from "./StripeFields";
+import { BANK_FROM, type Layout, SHORT, isUs, nightsOpen, roundGap, shownAddons } from "./us";
 
-export type Layout = "hero" | "pledge" | "ticket";
+export type { Layout };
+/** Add-ons that are extras (lines on the gift), by the extra's id. */
+const EXTRA_ADDON: Record<string, string> = { alfitr: "alfitr", fidya: "fidya", tribute: "dedication" };
 /** Step names, as they appear in analytics events (checkout_step_boost …). */
 export const STEPS = ["amount", "boost", "details", "pay", "done"] as const;
 
@@ -20,6 +24,16 @@ export interface Order {
     fund?: string; extras: string[]; method: Method; paidWith: string;
     donor: { first: string; last: string; email: string; anonymous: boolean; updates: boolean; postcode?: string; address?: string };
     tribute?: { name: string; email: string };
+    /** Every line charged, with the fund it is credited to, so the receipt keeps Zakat exact and each add-on on its own line. */
+    lines?: { key: string; label: string; value: number; fund: string }[];
+    /** The ten nights: double on the odd nights. */
+    odd?: boolean;
+    /** Where the gift came from (the embed's source, UTM tags), kept in the gift's details. */
+    source?: Record<string, string>;
+    /** Revenue attribution (src/shared/attribution.ts giftTags): sent as `tags` on the pay function's start. */
+    tags?: GiftTags;
+    /** The A/B test variant this donor saw, kept on the gift so results count it. */
+    experiment?: { id: string; variant: string };
 }
 export interface CheckoutProps {
     campaign: CheckoutCampaign;
@@ -42,6 +56,12 @@ export interface CheckoutProps {
     /** Buttons on the thank-you screen. */
     onShare?: () => void;
     onStartFundraiser?: () => void;
+    /** Where this checkout is hosted (the embed's source: { qr: "table-6" }, UTM tags), kept on every gift it takes. */
+    source?: Record<string, string>;
+    /** The A/B test variant chosen for this session (Checkout does it from campaign.experiment). */
+    experiment?: { id: string; variant: string };
+    /** "Pledge now, pay by a date": records the pledge (the pledges API) and resolves; throw with words for the donor. Simulated when left out. */
+    onPledge?: (p: { amount: number; currency: string; fund: string; due: string; donor: { name: string; email: string } }) => Promise<void>;
 }
 
 /**
@@ -62,15 +82,19 @@ const DECLINED = "ck_declined";
 const INFLIGHT = "ck_inflight";
 const declineFor = (k: string) => session.set(DECLINED, [...new Set([...session.get<string[]>(DECLINED, []), k])]);
 /** A change of frequency keeps an amount the donor chose themselves; a default or a tapped button is re-picked for the new frequency. */
-const OWN_AMOUNT = ["typed", "dial", "resumed", "nudge", "upsell"];
+const OWN_AMOUNT = ["typed", "dial", "resumed", "nudge", "upsell", "link", "fund"];
 const NOT_DONE = "That payment wasn’t completed, so nothing was taken. You can try again or choose another way to pay.";
 const top = () => { try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch { /* jsdom */ } };
 
 const fresh = (c: CheckoutCampaign, variant: PresetVariant, freq: Freq = "once") => {
-    const amount = presetsFor({ campaign: c, freq, variant }).selected, said = session.get<string[]>(DECLINED, []);
+    const amount = presetsFor({ campaign: presetsOf(c, c.funds?.[0]?.[0] ?? "", freq), freq, variant }).selected, said = session.get<string[]>(DECLINED, []);
     return {
         step: 0, amount, amountText: String(amount), amountSource: "default",
-        freq, picks: {} as Record<string, boolean>, fund: c.funds?.[0]?.[0] ?? "", ga: !!c.giftAid,
+        // Fee cover is pre-ticked only when the charity turned that on; nothing else that costs money ever is.
+        freq, picks: (c.coverDefault ? { cover: true } : {}) as Record<string, boolean>, fund: c.funds?.[0]?.[0] ?? "", ga: !!c.giftAid,
+        counts: {} as Record<string, number>, odd: false, round: 0, daf: false, pledgeBy: "", pledged: false,
+        /** The fraud guard asked for a Turnstile check; receiptUrl: the PDF receipt-send made for a paid gift. */
+        challenge: false, receiptUrl: "",
         anon: false, updates: false, recover: false, method: "card" as Method, bank: "", mandate: false, express: false,
         first: "", last: "", email: "", postcode: "", address: "", tributeName: "", tributeEmail: "",
         card: "", exp: "", cvc: "", holder: "", ddName: "", sort: "", acct: "", errField: "",
@@ -86,16 +110,42 @@ export type CheckoutState = ReturnType<typeof fresh>;
 
 const restore = (d: Draft) => {
     const r = fromDraft(d), amount = clampAmount(r.amount);
-    return { ...r, amount, amountText: String(amount), freq: (FREQS as string[]).includes(r.freq) ? (r.freq as Freq) : ("once" as Freq) };
+    return { ...r, amount, amountText: String(amount), freq: ([...FREQS, "weekly", "nights"] as string[]).includes(r.freq) ? (r.freq as Freq) : ("once" as Freq) };
 };
-const init = (c: CheckoutCampaign, variant: PresetVariant, live: boolean): CheckoutState => {
-    const base = fresh(c, variant);
+/**
+ * The screens a layout walks through (step numbers as in STEPS). UK: amount, Gift Aid and extras, details, payment, thank you.
+ * US: no Gift Aid step to explain, so the details sit on the payment screen (four screens). The short layouts put the add-ons on
+ * the gift screen too: gift, payment, thank you.
+ */
+/** A night's gift is small and repeats: its own buttons. Zakat runs larger (fundPresets). */
+export const NIGHT_PRESETS = [5, 10, 25, 50];
+const presetsOf = (c: CheckoutCampaign, fund: string, freq: Freq) => ({ presets: freq === "nights" ? NIGHT_PRESETS : c.fundPresets?.[fund] ?? c.presets });
+export const flowFor = (c: CheckoutCampaign, layout: Layout) => (SHORT.includes(layout) ? [0, 3, 4] : isUs(c) ? [0, 1, 3, 4] : [0, 1, 2, 3, 4]);
+/** The last screen of the flow at or before `step`. */
+const onFlow = (flow: number[], step: number) => [...flow].reverse().find((n) => n <= step) ?? 0;
+/** An amount kept to the cent, between MIN and MAX. */
+const exact = (v: unknown) => Math.max(MIN, Math.min(MAX, round2(Number(v) || MIN)));
+/**
+ * A link that says what to give: ?amount=1234.56&fund=zakat (the zakat calculator's "Give $X as Zakat"). The amount is decimal
+ * major units, kept to the cent; the fund only when the campaign offers it.
+ */
+export const fromLink = (c: CheckoutCampaign, search = window.location.search): Partial<CheckoutState> => {
+    const q = new URLSearchParams(search), a = Number(q.get("amount")), fund = q.get("fund") ?? "";
+    return {
+        ...(c.funds?.some(([id]) => id === fund) ? { fund } : {}),
+        ...(a >= MIN && a <= MAX ? { amount: exact(a), amountText: String(exact(a)), amountSource: "link" } : {}),
+    };
+};
+const init = (c: CheckoutCampaign, layout: Layout, variant: PresetVariant, live: boolean): CheckoutState => {
+    const base = { ...fresh(c, variant, layout === "nights" && nightsOpen(c) ? "nights" : "once"), ...fromLink(c) };
     if (live && new URLSearchParams(window.location.search).has("ck_pay")) {
         const snap = session.get<{ campaign: string; s: Partial<CheckoutState> } | null>(INFLIGHT, null);
         return snap?.campaign === c.id ? { ...base, ...snap.s, step: 3, pay: "authorized" } : { ...base, step: 3, pay: "authorized", bare: true };
     }
     const id = resumeId(), d = loadDraft(c.id, id);
-    return d ? { ...base, ...restore(d), resumed: id ? "link" : "browser" } : base;
+    if (!d) return base;
+    const r = restore(d);
+    return { ...base, ...r, ...fromLink(c), step: onFlow(flowFor(c, layout), r.step), resumed: id ? "link" : "browser" };
 };
 /** The recovery rpcs. /checkout renders before the app opens its database, so this opens it on demand; recovery is a nicety and fails silently. */
 const rpc = <T = unknown>(name: string, args: Record<string, unknown>) => db().then((d) => d.rpc<T>(name, args)).catch(() => null);
@@ -105,15 +155,34 @@ export const useCheckout = (p: CheckoutProps) => {
     const { campaign: c, layout, onPay, track = umami, addOn } = p;
     const [variant] = useState(() => flag("checkout_presets"));
     const live = !isDemo && !!STRIPE_KEY && !onPay && !p.payments ? p.live ?? null : null;
-    const [s, setS] = useState(() => init(c, variant, !!live));
+    const [s, setS] = useState(() => init(c, layout, variant, !!live));
     const set = useCallback((x: Partial<CheckoutState>) => setS((o) => ({ ...o, ...x })), []);
-    const q = useMemo(() => quote(s, c), [s, c]);
+    const us = isUs(c), flow = flowFor(c, layout), detailsOnPay = !flow.includes(2);
+    /** The host's source plus any utm_* tags on this address, kept on the gift. */
+    const [sourceTags] = useState(() => {
+        const t: Record<string, string> = { ...p.source };
+        new URLSearchParams(window.location.search).forEach((v, k) => { if (/^utm_[a-z]+$/.test(k) && v) t[k] = v.slice(0, 80); });
+        return Object.keys(t).length ? t : null;
+    });
+    // Which add-ons are on the gift screen (at most three), then the quote over only the extras the donor can see.
+    const q0 = useMemo(() => quote(s, c), [s, c]);
+    const m0 = c.match && "status" in c.match ? c.match : null;
+    const gap = us ? roundGap(c, q0.total - s.round) : 0;
+    const onScreen = us ? shownAddons(c.addons, { total: q0.total, layout, matchLive: !!m0 && (q0.matchReason === null || q0.matchReason === "below-min"), roundGap: gap, fund: s.fund }) : [];
+    const extras = useMemo(() => (c.extras ?? []).filter((x) => !us || x.price === "fee" || (onScreen as string[]).includes(EXTRA_ADDON[x.id] ?? x.id)), [c, us, onScreen.join()]); // eslint-disable-line react-hooks/exhaustive-deps
+    const view = useMemo(() => (us ? { ...c, extras } : c), [c, us, extras]);
+    const q = useMemo(() => (us ? quote({ ...s, round: onScreen.includes("roundup") ? s.round : 0 }, view) : q0), [us, s, view, q0, onScreen.includes("roundup")]); // eslint-disable-line react-hooks/exhaustive-deps
     const f = useCallback((n: number) => money(n, c.currency, c.locale), [c.currency, c.locale]);
-    const recurring = s.freq !== "once";
-    const presets = useMemo(() => presetsFor({ campaign: c, freq: s.freq, variant }).amounts, [c, s.freq, variant]);
+    const recurring = s.freq === "monthly" || s.freq === "yearly" || s.freq === "weekly", nights = s.freq === "nights";
+    const presetCampaign = useMemo(() => presetsOf(c, s.fund, s.freq), [c, s.fund, s.freq]);
+    const presets = useMemo(() => presetsFor({ campaign: presetCampaign, freq: s.freq, variant }).amounts, [presetCampaign, s.freq, variant]);
+    /** How often the donor can give: the ten nights only on a US campaign with that add-on, while a night is still to come. */
+    const freqs: Freq[] = us ? ["once", "monthly", ...(c.weekly ? ["weekly" as const] : []), ...(nightsOpen(c) ? ["nights" as const] : [])] : FREQS;
+    /** A fund priced per person or day (Zakat al-Fitr, Fidya): the amount is price × count, set with a stepper. */
+    const perUnit = c.perUnitFunds?.[s.fund];
     // Live, Apple Pay and Google Pay are offered inside Stripe's own card fields, so our simulated wallet buttons go.
-    const wallets = allows(c.payments, "wallets") && !live, paypal = allows(c.payments, "paypal");
-    const methods = methodsFor(s.freq, layout, c.payments).filter((m) => !live || (m !== "apple" && (m !== "wallet" || paypal)));
+    const wallets = allows(c.payments, "wallets") && !live, paypal = allows(c.payments, "paypal") && !us;
+    const methods = methodsFor(s.freq, layout, c.payments, us ? { bank: !!c.addons?.includes("bank") && q.total >= BANK_FROM } : undefined).filter((m) => !live || (m !== "apple" && (m !== "wallet" || paypal)));
     const method: Method = methods.includes(s.method) ? s.method : methods.includes("card") ? "card" : methods[0] ?? "card";
     /** Anything to pay with at all: a method in the list, or the express wallets / PayPal. */
     const canPay = methods.length > 0 || wallets || paypal;
@@ -129,8 +198,10 @@ export const useCheckout = (p: CheckoutProps) => {
     const [attempts] = useState(() => createAttempts());
     /** True from the pay click to the result, so a second click before the next render cannot start a second run. */
     const running = useRef(false);
+    /** A Turnstile token for the next start only (the guard checks it once). */
+    const challengeToken = useRef("");
 
-    const base = (): TrackData => ({ layout, campaign: c.id, amount: s.amount, freq: s.freq, preset_variant: variant, ...(s.step >= 3 ? { method } : {}) });
+    const base = (): TrackData => ({ layout, campaign: c.id, amount: s.amount, freq: s.freq, preset_variant: variant, ...(us ? { region: "US", fund: s.fund } : {}), ...(s.step >= 3 ? { method } : {}) });
     const ev = (name: string, data?: TrackData) => track(name, { ...base(), ...data });
     /** Exposure events are sent once per ask, however often it re-renders. */
     const shown = useRef(new Set<string>());
@@ -141,6 +212,7 @@ export const useCheckout = (p: CheckoutProps) => {
     stepRef.current = s.step;
     useEffect(() => {
         track("checkout_view", { layout, campaign: c.id, preset_variant: variant });
+        funnelStep(live?.org_id ?? "", "visit", layout); funnelStep(live?.org_id ?? "", "checkout_started", layout);
         if (s.resumed) expose("resumed", "checkout_resumed", { source: s.resumed, step: STEPS[s.step] });
         const leave = () => { if (stepRef.current < 4) track("checkout_abandon", { layout, campaign: c.id, preset_variant: variant, step: STEPS[stepRef.current] }); };
         window.addEventListener("pagehide", leave);
@@ -185,7 +257,9 @@ export const useCheckout = (p: CheckoutProps) => {
         top();
     };
 
-    const fail = (step: number, field: string, err: string) => { set({ step, err, errField: field, issue: null }); ev("checkout_invalid", { step: STEPS[step], field }); return false; };
+    // Every add-on's take-up is measured: one exposure per add-on per gift screen (checkout_addon_shown), then each toggle (checkout_extra, checkout_addon).
+    useEffect(() => { if (s.step === 0 || s.step === 1) for (const id of [...onScreen, ...(extras.some((x) => x.price === "fee") ? ["cover"] : [])]) expose(`addon:${id}`, "checkout_addon_shown", { id }); }, [onScreen.join(), s.step]); // eslint-disable-line react-hooks/exhaustive-deps
+    const fail = (step: number, field: string, err: string) => { const at = onFlow(flow, step); set({ step: at, err, errField: field, issue: null }); ev("checkout_invalid", { step: STEPS[at], field }); return false; };
     /** Checks the current step before moving on; says what is missing in plain words. */
     const details = (): [string, string] | null => {
         const needFull = c.giftAid && s.ga;
@@ -212,6 +286,17 @@ export const useCheckout = (p: CheckoutProps) => {
         fund: s.fund || undefined, extras: Object.keys(s.picks).filter((k) => s.picks[k]), method, paidWith: label,
         donor: { first: s.first.trim(), last: s.last.trim(), email: s.email.trim(), anonymous: s.anon, updates: s.updates, ...(c.giftAid && s.ga ? { postcode: s.postcode.trim().toUpperCase(), address: s.address.trim() } : {}) },
         ...(s.picks.tribute ? { tribute: { name: s.tributeName.trim(), email: s.tributeEmail.trim() } } : {}),
+        lines: q.lines.map((l) => ({ key: l.key, label: l.label, value: l.value, fund: l.key === "gift" ? s.fund : l.key === "fee" ? "fees" : (c.extras?.find((x) => x.id === l.key)?.fund ?? (l.key === "round" ? "general" : s.fund)) })),
+        ...(nights ? { odd: s.odd } : {}),
+        ...(sourceTags ? { source: sourceTags } : {}),
+        ...(p.experiment ? { experiment: p.experiment } : {}),
+        // Add-ons by key in cents (0 for a dedication), and which were offered, for revenue tracking.
+        tags: giftTags({
+            layout, campaign: c.id, rhythm: (s.freq === "nights" ? "nightly" : s.freq) as NonNullable<GiftTags["rhythm"]>, // "weekly" too, for Jumu'ah gifts
+            addons: { ...Object.fromEntries(q.lines.filter((l) => l.key !== "gift").map((l) => [l.key === "fee" ? "cover" : l.key === "round" ? "roundup" : l.key, Math.round(l.value * 100)])), ...(s.picks.tribute ? { dedication: 0 } : {}) },
+            addons_shown: [...onScreen, ...(extras.some((x) => x.price === "fee") ? ["cover"] : [])],
+            consent: { updates: s.updates, recover: s.recover },
+        }),
     });
     const facts = (o: Order): TrackData => ({ method: methodOf(o), total: o.total, giftaid: o.giftAid ? 1 : 0, extras: o.extras.length });
     const take = (order: PayOrder, onAuthorized?: () => void) => takePayment(provider, order, attempts.keyFor(order), onAuthorized)
@@ -225,6 +310,13 @@ export const useCheckout = (p: CheckoutProps) => {
             const paid = r.status === "succeeded";
             set({ pay: paid ? "succeeded" : "processing", step: 4, err: "", errField: "", issue: null });
             ev(paid ? "checkout_paid" : "checkout_pending", fx);
+            // Embedded on another site: tell the host page (embed/v1.js passes it on as onPaid). No personal details.
+            if (paid) funnelStep(live?.org_id ?? "", "paid", layout);
+            // A bare donation event (value and currency only) for the charity's own ads, when it opted in (revenue_ads is null otherwise).
+            if (live?.org_id && paid && !nights) void db().then((d) => d.rpc<Ads>("revenue_ads", { org: live.org_id })).then((ads) => trackDonation(ads, Math.round(q.total * 100), c.currency)).catch(() => {});
+            // The PDF receipt (receipt-send, by the compliance work); a nicety, so a failure leaves the print button.
+            if (live && paid && r.id) void db().then((d) => d.fn<{ pdf_url?: string }>("receipt-send", { donation_id: r.id })).then((x) => { if (x?.pdf_url) set({ receiptUrl: x.pdf_url }); }).catch(() => {});
+            if (window.parent !== window) window.parent.postMessage({ type: "outgive:paid", status: paid ? "succeeded" : "processing", total: q.total, currency: c.currency, freq: s.freq, fund: s.fund }, "*");
             endDraft(); top();
         } else if (r.status === "processing") {
             // Not an answer yet. The attempt stays open, so checking again resumes the same payment instead of starting another.
@@ -232,7 +324,7 @@ export const useCheckout = (p: CheckoutProps) => {
             ev("checkout_pay_unconfirmed", fx);
         } else {
             const e = r.error ?? { ...mapError({}), message: NOT_DONE, suggestAlternative: true }; // requires_action: the donor came back without approving
-            set({ pay: "idle", step: 3, err: e.message, errField: "", issue: { confirming: false, retryable: e.retryable, alt: e.suggestAlternative } });
+            set({ pay: "idle", step: 3, err: e.message, errField: "", issue: { confirming: false, retryable: e.retryable && e.code !== "challenge_required", alt: e.suggestAlternative }, challenge: e.code === "challenge_required" });
             ev("checkout_pay_failed", { method: fx.method, reason: e.code });
         }
     };
@@ -256,16 +348,18 @@ export const useCheckout = (p: CheckoutProps) => {
             const d = giftAidAddress();
             if (d) return fail(3, d[0], d[1]);
         }
-        if (recurring && !s.mandate) return fail(3, "mandate", "Switch on the authorisation to start your regular gift.");
+        if ((recurring || nights) && !s.mandate) return fail(3, "mandate", nights ? "Switch on the authorisation to schedule your nightly gifts." : "Switch on the authorisation to start your regular gift.");
         running.current = true;
         if (stripe) {
             const bad = fields.current ? await fields.current.submit() : notReady();
             if (bad) { running.current = false; return fail(3, "card", bad.message); }
         }
-        const order: PayOrder = { ...orderFor(label), ...(!live && !express && method === "card" ? { demoCard: s.card } : {}) };
+        const order: PayOrder = { ...orderFor(label), ...(!live && !express && method === "card" ? { demoCard: s.card } : {}), ...(challengeToken.current ? { challengeToken: challengeToken.current } : {}) };
+        challengeToken.current = "";
         const fx = facts(order);
         set({ pay: "pending", err: "", errField: "", issue: null, paidWith: label, step: 3 });
         ev("checkout_pay_start", fx);
+        funnelStep(live?.org_id ?? "", "payment_attempted", layout);
         if (live) session.set(INFLIGHT, { campaign: c.id, s: { amount: s.amount, amountText: s.amountText, freq: s.freq, picks: s.picks, fund: s.fund, ga: s.ga, first: s.first, last: s.last, email: s.email, method, paidWith: label, express: s.express, mandate: s.mandate } });
         land(await take(order, () => set({ pay: "authorized" })), fx);
     };
@@ -284,7 +378,7 @@ export const useCheckout = (p: CheckoutProps) => {
     // ---------------------------------------------------------------- asks: the monthly nudge, and one next action after paying
     const nudge = s.step === 1 ? monthlyNudge({ amount: s.amount, freq: s.freq, declined: s.nudgeDeclined }) : null;
     const nextUp = s.step === 4 && !s.nextClosed && !s.bare
-        ? nextAction({ campaign: c, gift: { amount: s.amount, freq: s.freq }, donor: { declined: [...s.declined, ...(p.onStartFundraiser ? [] : ["fundraiser" as const])] }, addOn, recommended: p.recommended })
+        ? nextAction({ campaign: c, gift: { amount: s.amount, freq: s.freq === "nights" ? "once" : s.freq }, donor: { declined: [...s.declined, ...(p.onStartFundraiser ? [] : ["fundraiser" as const]), ...(us && !c.addons?.includes("monthly") ? ["monthly" as const] : [])] }, addOn, recommended: p.recommended })
         : null;
     useEffect(() => { if (nudge) expose("nudge", "checkout_nudge_shown", { suggest: nudge.amount }); }, [!!nudge]); // eslint-disable-line react-hooks/exhaustive-deps
     useEffect(() => { if (nextUp) expose(`next:${nextUp.kind}`, "checkout_next_shown", { kind: nextUp.kind }); }, [nextUp?.kind]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -313,31 +407,74 @@ export const useCheckout = (p: CheckoutProps) => {
     };
 
     const again = (x: Partial<CheckoutState>, freq: Freq = "once") => { endDraft(); shown.current.clear(); setS({ ...fresh(c, variant, freq), first: s.first, last: s.last, email: s.email, ...x }); top(); };
-    const next = () => { if (!valid()) return; if (s.step === 0) ev("checkout_amount", { source: s.amountSource }); if (s.step < 3) go(s.step + 1); else void pay(); };
+    const next = () => { if (!valid()) return; if (s.step === 0) { ev("checkout_amount", { source: s.amountSource }); funnelStep(live?.org_id ?? "", "amount_chosen", layout); } if (s.step < 3) go(flow[flow.indexOf(s.step) + 1] ?? 3); else void pay(); };
+
+    /**
+     * "Pledge now, pay by a date": no payment now. The pledge goes to the pledges API (via onPledge), which emails a pay link and
+     * reminds the donor before the date. Needs a name and an email, like any gift.
+     */
+    const pledgeLater = async () => {
+        if (busy || running.current) return;
+        const d = details();
+        if (d) return fail(3, d[0], d[1]);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(s.pledgeBy)) return fail(3, "pledgeBy", "Choose the date you will pay by.");
+        running.current = true;
+        set({ pay: "pending", err: "" });
+        ev("checkout_addon", { id: "pledge", on: 1 });
+        try {
+            const save = p.onPledge ?? (live?.org_id
+                ? (x: Parameters<NonNullable<CheckoutProps["onPledge"]>>[0]) => db().then((d) => d.rpc("checkout_pledge_create", { org: live.org_id, p: { ...x, amount_cents: Math.round(x.amount * 100), donor_name: x.donor.name, donor_email: x.donor.email, due_date: x.due } })).then(() => undefined)
+                : () => new Promise<void>((r) => setTimeout(r, 900))); // the demo: nothing is saved
+            await save({ amount: q.total, currency: c.currency, fund: s.fund, due: s.pledgeBy, donor: { name: `${s.first.trim()} ${s.last.trim()}`.trim(), email: s.email.trim() } });
+            set({ pay: "idle", pledged: true, step: 4 }); ev("checkout_pledged", { total: q.total }); endDraft(); top();
+        } catch (e) { set({ pay: "idle", err: (e as Error)?.message || "We couldn’t save your pledge. Try again." }); }
+        running.current = false;
+    };
 
     return {
         s, set, q, f, c, layout, recurring, methods, method, busy, canPay, presets, variant, live, fields, wallets, paypal, addOn, recommended: p.recommended,
         /** The payment is on its way (Direct Debit, pay by bank): the end screen says so instead of "paid". */
-        pending: s.pay === "processing",
+        pending: s.pay === "processing" || s.pledged,
         /** Gift Aid this gift would attract, whether or not it is switched on. */
         gaAdds: s.ga ? q.giftAid : quote({ ...s, ga: true }, c).giftAid,
         /** Shown only when the organisation is verified. */
         trust: trustClaims(c.trust),
-        next, back: () => go(Math.max(0, s.step - 1)), go, pay,
+        next, back: () => go(flow[Math.max(0, flow.indexOf(s.step) - 1)] ?? 0), go, pay,
+        us, flow, detailsOnPay, nights, freqs, perUnit, extras, view, addons: onScreen, roundGap: gap, pledgeLater,
         /** After a failure: the same button again. A retryable failure, or an unconfirmed payment, resumes the same attempt. */
         retry: () => pay(s.paidWith || undefined),
+        /** Turnstile passed: the same payment again (same attempt key), with the token. */
+        passChallenge: (token: string) => { challengeToken.current = token; set({ challenge: false }); void pay(s.paidWith || undefined); },
         setAmount: (v: unknown, source: string) => { const a = clampAmount(v); set({ amount: a, amountText: String(a), amountSource: source }); },
-        typeAmount: (raw: string) => { const t = raw.replace(/[^0-9]/g, "").slice(0, 5), n = Number(t); set(n >= 2 && n <= 10000 ? { amountText: t, amount: n, amountSource: "typed" } : { amountText: t }); },
-        blurAmount: () => { const a = clampAmount(s.amountText); set({ amount: a, amountText: String(a) }); },
+        // Cents are kept (a Zakat amount from the calculator is exact to the cent); whole amounts stay whole.
+        typeAmount: (raw: string) => { const t = (raw.replace(/[^0-9.]/g, "").match(/^\d{0,5}(\.\d{0,2})?/)?.[0] ?? ""), n = Number(t); set(n >= MIN && n <= MAX ? { amountText: t, amount: round2(n), amountSource: "typed" } : { amountText: t }); },
+        blurAmount: () => { const a = exact(s.amountText); set({ amount: a, amountText: String(a) }); },
         setFreq: (freq: Freq) => {
-            const a = presetsFor({ campaign: c, freq, variant }).selected;
+            const a = presetsFor({ campaign: presetsOf(c, s.fund, freq), freq, variant }).selected;
             set({ freq, mandate: false, nudgeFrom: 0, ...(OWN_AMOUNT.includes(s.amountSource) ? {} : { amount: a, amountText: String(a), amountSource: "default" }) });
             ev("checkout_freq", { freq });
         },
         setGa: (ga: boolean) => { set({ ga, err: "", errField: "" }); ev("checkout_giftaid", { on: ga ? 1 : 0 }); },
         toggleExtra: (id: string) => { const on = !s.picks[id]; set({ picks: { ...s.picks, [id]: on } }); ev("checkout_extra", { id, on: on ? 1 : 0 }); },
         setMethod: (m: Method) => { set({ method: m, err: "", issue: null }); ev("checkout_method", { method: m }); },
-        setFund: (fund: string) => { set({ fund }); ev("checkout_fund", { fund }); },
+        setFund: (fund: string) => {
+            const u = c.perUnitFunds?.[fund], n = Math.max(1, s.counts[fund] ?? 1);
+            // A per-unit fund sets the amount itself; leaving one goes back to the buttons for the new fund.
+            const amount = u ? u.price * n : perUnit ? presetsFor({ campaign: { presets: c.fundPresets?.[fund] ?? c.presets }, freq: s.freq, variant }).selected : 0;
+            set({ fund, ...(amount ? { amount, amountText: String(amount), amountSource: u ? "fund" : "default" } : {}), ...(u && s.freq === "nights" ? { freq: "once" as Freq } : {}) });
+            ev("checkout_fund", { fund });
+        },
+        /** People for Zakat al-Fitr, days for Fidya: on the add-on (an extra's id) or on the fund itself. */
+        setCount: (id: string, n: number) => {
+            const u = c.perUnitFunds?.[id], x = c.extras?.find((e) => e.id === id), max = u?.max ?? x?.unit?.max ?? 1, v = Math.max(1, Math.min(max, Math.round(n)));
+            set({ counts: { ...s.counts, [id]: v }, ...(u && s.fund === id ? { amount: u.price * v, amountText: String(u.price * v), amountSource: "fund" } : {}) });
+            ev("checkout_count", { id, n: v });
+        },
+        countOf: (id: string) => { const x = c.extras?.find((e) => e.id === id); return x ? countOf(x, s.counts) : Math.max(1, s.counts[id] ?? 1); },
+        setOdd: (odd: boolean) => { set({ odd, mandate: false }); ev("checkout_addon", { id: "nights_odd", on: odd ? 1 : 0 }); },
+        /** Round up: adds the gap as its own line (to the appeal, never into a Zakat amount). Tap again to take it off. */
+        toggleRound: () => { const on = !s.round; set({ round: on ? gap : 0 }); ev("checkout_addon", { id: "roundup", on: on ? 1 : 0, value: gap }); },
+        toggleDaf: () => { set({ daf: !s.daf }); ev("checkout_addon", { id: "daf", on: s.daf ? 0 : 1 }); },
         /**
          * The fast path: straight to payment with a wallet, skipping the optional boost step and the details form.
          * Gift Aid is then asked on the payment step, and counts only if the donor says yes there (or already chose it on the boost step).

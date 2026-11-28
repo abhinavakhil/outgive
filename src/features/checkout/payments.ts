@@ -13,7 +13,7 @@ import { toMinor } from "@/shared/lib/money";
 import type { Order } from "./useCheckout";
 
 export type PayStatus = "succeeded" | "processing" | "requires_action" | "failed";
-export type PayCode = "card_declined" | "insufficient_funds" | "expired_card" | "authentication_required" | "network" | "not_configured" | "unknown";
+export type PayCode = "card_declined" | "insufficient_funds" | "expired_card" | "authentication_required" | "network" | "not_configured" | "amount_too_small" | "blocked" | "challenge_required" | "unknown";
 export interface PayError {
     code: PayCode;
     /** For the donor, in plain words. */
@@ -38,7 +38,7 @@ export interface PayResult {
     error?: PayError;
 }
 /** The order, plus the card typed into the demo's own card form. Only the simulated provider reads `demoCard`. */
-export type PayOrder = Order & { demoCard?: string };
+export type PayOrder = Order & { demoCard?: string; /** A Cloudflare Turnstile token, after the fraud guard asked for a challenge. */ challengeToken?: string };
 
 export interface PaymentProvider {
     /** Begins (or resumes) the payment for this attempt. Never throws: a failure is a result. The same key never charges twice. */
@@ -57,6 +57,10 @@ const COPY: Record<PayCode, [message: string, retryable: boolean, suggestAlterna
     authentication_required: ["Your bank needs you to approve this payment. Nothing has been taken yet. Try again and approve it with your bank.", true, false],
     network: ["We couldn’t reach the payment service. Check your connection and try again. You won’t be charged twice.", true, false],
     not_configured: ["That way of paying isn’t available. Choose another way to pay.", false, true],
+    // The fraud guard in the pay function (_shared/fraud): a minimum gift, a block, or a check that the donor is a person.
+    amount_too_small: ["That gift is below this charity’s minimum. Choose a larger amount.", false, false],
+    blocked: ["We couldn’t take this payment right now, so nothing was taken. Please try again later, or give another way.", false, true],
+    challenge_required: ["Please confirm you’re a person, then we’ll take your gift. Nothing has been taken yet.", true, false],
     unknown: ["The payment didn’t go through. Try again. You won’t be charged twice.", true, false],
 };
 const OFFLINE = /failed to (fetch|send)|network ?error|load failed/i;
@@ -69,12 +73,13 @@ export const mapError = (raw: unknown): PayError => {
         : c === "expired_card" ? "expired_card"
         : c === "authentication_required" || c === "payment_intent_authentication_failure" ? "authentication_required"
         : c === "not_configured" ? "not_configured"
+        : c === "amount_too_small" || c === "blocked" || c === "challenge_required" ? c
         : c === "network" || e.type === "api_connection_error" || OFFLINE.test(said) ? "network"
         : c === "card_declined" || e.type === "card_error" || e.decline_code ? "card_declined"
         : "unknown";
     const [message, retryable, suggestAlternative] = COPY[code];
     // Our own server and Stripe.js already speak to the donor; keep what they said when we have no better words.
-    const own = (code === "unknown" || code === "not_configured") && said && said.length <= 160 ? said : message;
+    const own = (code === "unknown" || code === "not_configured" || code === "amount_too_small") && said && said.length <= 160 ? said : message;
     return { code, message: own, retryable: retryable && c !== "canceled", suggestAlternative };
 };
 const failed = (id: string, raw: unknown): PayResult => { const error = mapError(raw); return { status: "failed", id, error, message: error.message }; };
@@ -192,6 +197,12 @@ export const livePayments = (fn: Fn, target: { org_id?: string; page_id?: string
             attempt_key: attemptKey, ...target, method: methodOf(o), freq: o.freq, currency: o.currency,
             amount_cents: toMinor(o.amount, o.currency), extras_cents: toMinor(o.total - o.recur, o.currency), cover_cents: toMinor(o.recur - o.amount, o.currency),
             donor_name: `${o.donor.first} ${o.donor.last}`.trim(), donor_email: o.donor.email || undefined, anonymous: o.donor.anonymous, dedication: o.tribute?.name ?? "", cause: o.fund ?? "",
+            ...(o.fund ? { fund: o.fund } : {}),
+            ...(o.challengeToken ? { challenge_token: o.challengeToken } : {}),
+            ...(o.tags ? { tags: o.tags } : {}),
+            // The ten nights: the per-night gift is amount_cents; the server works out the nights, units and each night's fee itself.
+            ...(o.freq === "nights" ? { odd: !!o.odd, cover_nights: o.extras.includes("cover") } : {}),
+            ...(o.lines || o.source || o.experiment ? { details: { ...(o.lines ? { lines: o.lines.map((l) => ({ key: l.key, label: l.label, cents: toMinor(l.value, o.currency), fund: l.fund })) } : {}), ...(o.source ? { source: o.source } : {}), ...(o.experiment ? { experiment: o.experiment.id, variant: o.experiment.variant } : {}) } } : {}),
         }),
         confirm: p.confirm,
         status: p.status,

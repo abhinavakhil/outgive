@@ -1,5 +1,5 @@
 import { assertEquals, assertMatch } from "jsr:@std/assert@1";
-import { fromIntent, fromPayPal, type StartInput, totals, validate } from "./logic.ts";
+import { fromIntent, fromPayPal, pmTypes, type StartInput, totals, validate } from "./logic.ts";
 
 const ok: StartInput = { action: "start", attempt_key: "a".repeat(32), page_id: "p", method: "card", amount_cents: 2500, currency: "gbp" };
 const ID = "00000000-0000-4000-8000-000000000001";
@@ -51,4 +51,22 @@ Deno.test("Gift Aid needs the donor's house and postcode", () => {
     const b = { action: "start", attempt_key: "k".repeat(20), org_id: "o", method: "card", currency: "GBP", amount_cents: 1000, gift_aid: true } as StartInput;
     assertEquals(validate(b), "Gift Aid needs a house name or number and a postcode");
     assertEquals(validate({ ...b, details: { house: "12", postcode: "E1 6AN" } }), null);
+});
+
+Deno.test("a pledge pay link needs a valid token and no page, and pays once", () => {
+    const pl: StartInput = { action: "start", attempt_key: "a".repeat(32), pledge_token: "ab".repeat(32), method: "card", amount_cents: 2500, currency: "usd" };
+    assertEquals(validate(pl), null);
+    assertMatch(validate({ ...pl, pledge_token: "guess" })!, /pledge link/);
+    assertMatch(validate({ ...pl, freq: "monthly" })!, /one-off/);
+    assertMatch(validate({ ...pl, page_id: "p" })!, /one-off/);
+});
+
+Deno.test("US: bank is ACH in dollars, and the ten nights need dollars and an email", () => {
+    assertEquals(pmTypes("bank", "usd"), ["us_bank_account"]);
+    assertEquals(pmTypes("bank", "GBP"), ["pay_by_bank"]);
+    assertEquals(pmTypes("wallet", "USD"), ["card"]);
+    const n = { ...ok, currency: "USD", freq: "nights", donor_email: "a@b.co" } as StartInput;
+    assertEquals(validate(n), null);
+    assertMatch(validate({ ...n, currency: "GBP" })!, /US gifts/);
+    assertMatch(validate({ ...n, donor_email: undefined })!, /email/);
 });

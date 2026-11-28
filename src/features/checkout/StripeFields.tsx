@@ -16,8 +16,8 @@ export const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string 
 /** The slice of Stripe.js used here. */
 interface StripeElement { mount: (el: HTMLElement) => void; destroy: () => void; on: (event: "change" | "loaderror", cb: (e: { complete?: boolean }) => void) => void }
 interface StripeElements { create: (type: "payment", options?: Record<string, unknown>) => StripeElement; update: (options: Record<string, unknown>) => void; submit: () => Promise<{ error?: unknown }> }
-interface StripeJs { elements: (options: Record<string, unknown>) => StripeElements; confirmPayment: (options: Record<string, unknown>) => Promise<{ error?: unknown }> }
-type StripeFactory = (key: string) => StripeJs;
+interface StripeJs { elements: (options: Record<string, unknown>) => StripeElements; confirmPayment: (options: Record<string, unknown>) => Promise<{ error?: unknown }>; confirmSetup: (options: Record<string, unknown>) => Promise<{ error?: unknown }> }
+type StripeFactory = (key: string, options?: { stripeAccount?: string }) => StripeJs;
 
 let loading: Promise<StripeFactory> | null = null;
 const loadStripe = () => (loading ??= new Promise<StripeFactory>((resolve, reject) => {
@@ -30,8 +30,9 @@ const loadStripe = () => (loading ??= new Promise<StripeFactory>((resolve, rejec
     document.head.appendChild(s);
 }));
 
-/** Must match the pay function's PM_TYPES (supabase/functions/pay/logic.ts), or Stripe refuses the confirmation. */
+/** Must match the pay function's pmTypes (supabase/functions/pay/logic.ts), or Stripe refuses the confirmation. "bank" is ACH in dollars. */
 const PM_TYPES = { card: ["card"], wallet: ["card"], dd: ["bacs_debit"], bank: ["pay_by_bank"] };
+const pmTypes = (method: keyof typeof PM_TYPES, currency: string) => (method === "bank" && currency.toUpperCase() === "USD" ? ["us_bank_account"] : PM_TYPES[method]);
 
 export interface StripeFieldsHandle extends Confirmer {
     /** Checks the fields before the payment starts; an error for the donor, or null when they are complete. Call it first thing in the pay click. */
@@ -46,6 +47,10 @@ export interface StripeFieldsProps {
     method: keyof typeof PM_TYPES;
     /** The charity's connected account (org.stripe_account_id): the charge is made on its behalf, so the fields must say so too. */
     onBehalfOf?: string | null;
+    /** Direct charges (US): the payment is made on the charity's own account, so Stripe.js runs as that account. Use instead of onBehalfOf. */
+    stripeAccount?: string | null;
+    /** Save the payment method for later charges, nothing taken now (the last-ten-nights schedule). confirm() then confirms a SetupIntent. */
+    setup?: boolean;
     /** True once every field is filled in. */
     onChange?: (complete: boolean) => void;
     /** Stripe Appearance API options, to match the checkout's look. */
@@ -53,14 +58,14 @@ export interface StripeFieldsProps {
     publishableKey?: string;
 }
 
-export const StripeFields = ({ ref, total, currency, recurring, method, onBehalfOf, onChange, appearance, publishableKey = STRIPE_KEY }: StripeFieldsProps) => {
+export const StripeFields = ({ ref, total, currency, recurring, method, onBehalfOf, stripeAccount, setup, onChange, appearance, publishableKey = STRIPE_KEY }: StripeFieldsProps) => {
     const box = useRef<HTMLDivElement>(null);
     const live = useRef<{ stripe: StripeJs; elements: StripeElements } | null>(null);
     const changed = useRef(onChange); changed.current = onChange;
     const [problem, setProblem] = useState("");
     // Minor units, as Stripe counts them; the server does the same sum from the same order.
     const amount = Math.round(total * (/^(JPY|KRW|VND|CLP|ISK|HUF|TWD|UGX|XAF|XOF)$/i.test(currency) ? 1 : 100));
-    const options = { mode: recurring ? "subscription" : "payment", amount, currency: currency.toLowerCase() };
+    const options = setup ? { mode: "setup", currency: currency.toLowerCase(), setupFutureUsage: "off_session" } : { mode: recurring ? "subscription" : "payment", amount, currency: currency.toLowerCase() };
     const latest = useRef(options); latest.current = options;
 
     useEffect(() => {
@@ -69,8 +74,10 @@ export const StripeFields = ({ ref, total, currency, recurring, method, onBehalf
         if (!publishableKey) { setProblem("Card payments are not set up yet."); return; }
         loadStripe().then((Stripe) => {
             if (gone || !box.current) return;
-            const stripe = Stripe(publishableKey);
-            const elements = stripe.elements({ ...latest.current, paymentMethodTypes: PM_TYPES[method], ...(onBehalfOf ? { onBehalfOf } : {}), ...(appearance ? { appearance } : {}) });
+            // Dollar gifts are direct charges on the charity's own account (the pay function's isDirect), so Stripe.js runs as that account.
+            const as = stripeAccount ?? (currency.toUpperCase() === "USD" ? onBehalfOf : null);
+            const stripe = Stripe(publishableKey, as ? { stripeAccount: as } : undefined);
+            const elements = stripe.elements({ ...latest.current, paymentMethodTypes: pmTypes(method, currency), ...(onBehalfOf && !as ? { onBehalfOf } : {}), ...(appearance ? { appearance } : {}) });
             el = elements.create("payment");
             el.on("change", (e) => changed.current?.(!!e.complete));
             el.on("loaderror", () => setProblem(mapError({ code: "network" }).message));
@@ -78,9 +85,9 @@ export const StripeFields = ({ ref, total, currency, recurring, method, onBehalf
             live.current = { stripe, elements };
         }).catch((e) => { if (!gone) setProblem(mapError(e).message); });
         return () => { gone = true; live.current = null; el?.destroy(); changed.current?.(false); };
-    }, [publishableKey, method, onBehalfOf]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [publishableKey, method, onBehalfOf, stripeAccount, setup]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    useEffect(() => { live.current?.elements.update(options); }, [options.mode, options.amount, options.currency]); // eslint-disable-line react-hooks/exhaustive-deps
+    useEffect(() => { live.current?.elements.update(options); }, [options.mode, "amount" in options ? options.amount : 0, options.currency]); // eslint-disable-line react-hooks/exhaustive-deps
 
     useImperativeHandle(ref, () => ({
         submit: async () => {
@@ -91,7 +98,8 @@ export const StripeFields = ({ ref, total, currency, recurring, method, onBehalf
         confirm: async (clientSecret, returnUrl) => {
             if (!live.current) return { error: { message: "The card form isn’t ready yet. Try again in a moment." } };
             // Cards finish in the page (3-D Secure opens in Stripe's own modal); only methods that need the bank's site redirect.
-            return live.current.stripe.confirmPayment({ elements: live.current.elements, clientSecret, confirmParams: { return_url: returnUrl }, redirect: "if_required" });
+            const go = { elements: live.current.elements, clientSecret, confirmParams: { return_url: returnUrl }, redirect: "if_required" };
+            return clientSecret.startsWith("seti_") ? live.current.stripe.confirmSetup(go) : live.current.stripe.confirmPayment(go);
         },
     }), []);
 

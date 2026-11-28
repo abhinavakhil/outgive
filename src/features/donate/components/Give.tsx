@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowRight, Heart } from "@untitledui/icons";
+import { ArrowRight, CalendarDate, Heart } from "@untitledui/icons";
 import { DonateDialog } from "@/features/donate/components/dialogs";
 import { ShareDialog, BrandMark } from "@/shared/ui";
 import { useApp } from "@/shared/lib/app-context";
@@ -9,6 +9,7 @@ import type { PageRef } from "@/shared/lib/route";
 import type { LiveItem } from "@/shared/domain/types";
 import { useCountUp, useLive } from "@/features/live";
 import { cx } from "@/shared/utils/cx";
+import { PledgeLater } from "./PledgeLater";
 
 /**
  * The phone screen behind the QR code on a live screen. One thumb-reach list: pick what to fund (the impact items the presenter set),
@@ -19,6 +20,7 @@ export const Give = ({ pageRef }: { pageRef?: PageRef }) => {
     const { bundle, recent, state, totalUsd, goalUsd, items, fundedToday } = useLive(pageRef);
     const [gift, setGift] = useState<{ usd: number; cause?: string } | null>(null);
     const [share, setShare] = useState(false);
+    const [pledge, setPledge] = useState(false);
     const shown = useCountUp(totalUsd);
     const pct = goalUsd > 0 ? Math.min(100, (totalUsd / goalUsd) * 100) : 0;
     const title = bundle ? bundle.page.title : brand.tagline;
@@ -48,6 +50,7 @@ export const Give = ({ pageRef }: { pageRef?: PageRef }) => {
                     <ul className="flex flex-col gap-2">
                         {items.map((it) => <li key={it.label}><ItemButton item={it} count={fundedToday[it.label] ?? 0} onPress={() => setGift({ usd: it.usd, cause: it.label })} money={money} /></li>)}
                         <li><button type="button" onClick={() => setGift({ usd: anyAmount })} className="flex w-full cursor-pointer items-center gap-4 rounded-2xl bg-raised px-4 py-4 text-left shadow-edge outline-focus-ring transition duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-raised-hover focus-visible:outline-2"><span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-ink text-ink-inverse"><Heart className="size-5" /></span><span className="min-w-0 flex-1"><span className="block font-semibold text-ink">Give any amount</span><span className="block text-sm text-ink-3">Once or monthly, from <span className="font-semibold tabular-nums">{money(1)}</span></span></span><ArrowRight className="size-5 shrink-0 text-ink-3" /></button></li>
+                        <li><button type="button" onClick={() => setPledge(true)} className="flex w-full cursor-pointer items-center gap-4 rounded-2xl bg-raised px-4 py-4 text-left shadow-edge outline-focus-ring transition duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-raised-hover focus-visible:outline-2"><span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[#D2DBA0] text-[#191919]"><CalendarDate className="size-5" /></span><span className="min-w-0 flex-1"><span className="block font-semibold text-ink">Pledge now, pay later</span><span className="block text-sm text-ink-3">Promise tonight, pay within 1 week to 3 months</span></span><ArrowRight className="size-5 shrink-0 text-ink-3" /></button></li>
                     </ul>
                 </section>
 
@@ -72,6 +75,7 @@ export const Give = ({ pageRef }: { pageRef?: PageRef }) => {
             </main>
 
             <DonateDialog target={{ org, page: bundle?.page ?? null, title, gifts: bundle?.page.gifts ?? [25, 50, 100, 250], tickets: bundle?.tickets, cause: gift?.cause }} isOpen={gift !== null} initial={gift?.usd ?? anyAmount} onClose={() => setGift(null)} onShare={() => { setGift(null); setShare(true); }} />
+            <PledgeLater open={pledge} onClose={() => setPledge(false)} orgSlug={org.slug} gifts={bundle?.page.gifts?.length ? bundle.page.gifts : [100, 250, 500, 1000]} money={money} />
             <ShareDialog isOpen={share} onClose={() => setShare(false)} title={title} url={pageUrl} />
         </div>
     );

@@ -21,7 +21,10 @@ const orgOf = (v: View) => ("org" in v ? v.org : null);
  * shows "Coming soon" and is kept out of search. Set VITE_ALL_PAGES=true to open everything again (local work on other screens).
  */
 const ALL_PAGES = import.meta.env.VITE_ALL_PAGES === "true";
-const isOpen = (v: View) => ALL_PAGES || v.name === "landing" || v.name === "blog" || v.name === "post" || v.name === "ramadhan" || v.name === "ramadhan-give" || v.name === "ramadhan-login" || v.name === "ramadhan-account" || v.name === "ramadhan-team" || (v.name === "board" && v.org === DEMO_SLUG && location.pathname.startsWith("/leaderboard"));
+const isOpen = (v: View) => ALL_PAGES || v.name === "landing" || v.name === "blog" || v.name === "post" || v.name === "ramadhan" || v.name === "ramadhan-give" || v.name === "ramadhan-login" || v.name === "ramadhan-account" || v.name === "ramadhan-team" || v.name === "pledge" || v.name === "host" || v.name === "impact-report" || v.name === "unsubscribe" || (v.name === "board" && v.org === DEMO_SLUG && location.pathname.startsWith("/leaderboard"))
+    // The charity back office is signed-in only and still being built: open in local dev, behind the gate on the live site.
+    || v.name === "zakat-calculator" || v.name === "zakat-embed"
+    || (v.name === "engage" && import.meta.env.DEV);
 
 const LOCAL = import.meta.env.VITE_LAUNCHED !== "false" || import.meta.env.DEV || /^(localhost|127\.0\.0\.1|\[::1\]|10\.|192\.168\.)/.test(window.location.hostname);
 
@@ -125,7 +128,7 @@ export const App = () => {
     useEffect(() => {
         // A blog post (from its article, in the blog's chunk) and a real campaign page set their own title.
         if (view.name !== "post" && view.name !== "checkout" && !(view.name === "page" && view.real)) setMeta(...metaFor(view.name, brand));
-        const noindex = !isOpen(view) || ["legacy", "checkout", "notfound", "ui", "ui-variants", "dashboard", "admin", "landing-b", "v2", "ramadan", "ramadhan-edit", "ramadhan-give", "ramadhan-login", "ramadhan-account", "ramadhan-team", "thanks", "login", "overlay", "embed"].includes(view.name) || (view.name === "board" && !!view.skin) || (LEGAL_DRAFT && (view.name === "terms" || view.name === "privacy"));
+        const noindex = !isOpen(view) || ["legacy", "checkout", "notfound", "ui", "ui-variants", "dashboard", "admin", "landing-b", "v2", "ramadan", "ramadhan-edit", "ramadhan-give", "ramadhan-login", "ramadhan-account", "ramadhan-team", "pledge", "host", "impact-report", "unsubscribe", "engage", "thanks", "login", "overlay", "embed", "zakat-embed"].includes(view.name) || (view.name === "board" && !!view.skin) || (LEGAL_DRAFT && (view.name === "terms" || view.name === "privacy"));
         document.querySelector('meta[name="robots"]')?.setAttribute("content", noindex ? "noindex" : "index, follow");
         let canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
         if (!canonical) { canonical = document.createElement("link"); canonical.rel = "canonical"; document.head.appendChild(canonical); }
@@ -138,7 +141,7 @@ export const App = () => {
     if (view.name === "ramadan") return <Ramadan />;
     if (view.name === "legacy") return <ComingSoon />;
     // The blog needs no data either. While its chunk loads, the prerendered article stays on screen instead of a blank page.
-    if (view.name === "blog" || view.name === "post") return <Suspense fallback={<div className="contents" dangerouslySetInnerHTML={{ __html: PRERENDERED }} />}>{screenFor(view)}</Suspense>;
+    if (view.name === "blog" || view.name === "post" || view.name === "zakat-calculator" || view.name === "zakat-embed") return <Suspense fallback={<div className="contents" dangerouslySetInnerHTML={{ __html: PRERENDERED }} />}>{screenFor(view)}</Suspense>;
     if (!LOCAL) return <ComingSoonGate />;
     // The checkout brings its own data and look, so it does not wait for the demo database.
     if (view.name === "checkout" && !view.org) return <Suspense fallback={<Splash text="Loading" />}>{screenFor(view)}</Suspense>;

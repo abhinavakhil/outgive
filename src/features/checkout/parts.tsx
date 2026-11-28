@@ -1,12 +1,13 @@
 /** Pieces every checkout layout shares: the dial, amount buttons, switches, form fields, payment panels and receipt lines. */
-import { type InputHTMLAttributes, type ReactNode, useRef, useState } from "react";
+import { Fragment, type InputHTMLAttributes, type ReactNode, useEffect, useRef, useState } from "react";
 import { cx } from "@/shared/utils/cx";
 import { OgLogo, OgMark } from "@/shared/ui";
-import { type Brand, FREQS, FREQ_LABEL, METHOD_NAME, type Method, type QuoteLine, type Tone, accountOk, cardBrand, cardLength, dialAmount, dialRatio, expiryOk, formatCard, luhn, matchEnds, ratioAt, sortCodeOk, sponsorName } from "./model";
+import { type Brand, FREQ_LABEL, METHOD_NAME, type Method, type QuoteLine, type Tone, accountOk, cardBrand, cardLength, dialAmount, dialRatio, expiryOk, formatCard, luhn, matchEnds, methodName, ratioAt, sortCodeOk, sponsorName } from "./model";
+import { dayName } from "./us";
 import { StripeFields } from "./StripeFields";
 import type { Ck } from "./useCheckout";
 
-export const cta = "ck-cta min-h-[60px] rounded-[18px] border-0 bg-(--ck-accent) px-6 text-[18px] font-extrabold text-(--ck-ink) shadow-[0_12px_24px_rgba(150,70,190,0.28)] disabled:opacity-75";
+export const cta = "ck-cta min-h-[60px] rounded-[18px] border-0 bg-(--ck-accent) px-6 text-[18px] font-extrabold text-(--ck-ink) shadow-[0_12px_24px_rgba(75,85,48,0.28)] disabled:opacity-75";
 export const soft = "ck-soft min-h-[60px] rounded-[18px] border-[1.5px] border-(--ck-line) bg-white px-6 text-[16px] font-bold text-(--ck-ink)";
 export const dark = "min-h-[56px] rounded-[18px] border-0 bg-(--ck-ink) px-5 text-[16px] font-bold text-white disabled:opacity-75";
 export const TONE: Record<Tone, [string, string]> = { violet: ["#EFE9FB", "#4F2FC0"], coral: ["#FDE7E1", "#8A3524"], green: ["#DDF4E8", "#14704A"], gold: ["#FDF1C4", "#6B5408"] };
@@ -26,14 +27,14 @@ export const TrustPanel = ({ ck, className }: { ck: Ck; className?: string }) =>
     if (!t) return null;
     const rows = [
         t.legalName && ["Charity", t.legalName],
-        t.registration && ["Registered", `No. ${t.registration.regNo}, ${t.registration.regulator}`],
+        t.registration && (ck.us ? ["EIN", `${t.registration.regNo}, a 501(c)(3) public charity`] : ["Registered", `No. ${t.registration.regNo}, ${t.registration.regulator}`]),
         t.fund && ["Your gift goes to", `${t.fund.name}${t.fund.restricted ? ", and is used only for that" : ""}`],
     ].filter((r): r is [string, string] => !!r);
     return (
         <div data-ck-trust className={cx("flex flex-col gap-2 rounded-[18px] border-[1.5px] border-(--ck-line-2) bg-white px-4 py-3.5 text-left text-[13.5px] leading-snug", className)}>
             <span className="flex flex-wrap items-center gap-2"><span className={cx(chip, "bg-(--ck-mint) text-(--ck-green-ink)")}>Verified</span><span className="font-bold text-(--ck-muted)">Checked on {longDay(t.verifiedAt, ck.c.locale)}</span></span>
             <dl className="m-0 flex flex-col gap-1.5">{rows.map(([k, v]) => <div key={k} className="flex flex-wrap gap-x-2"><dt className="font-bold text-(--ck-muted)">{k}</dt><dd className="m-0 font-extrabold [overflow-wrap:anywhere]">{v}</dd></div>)}</dl>
-            {t.taxReceipts && <span className="text-(--ck-ink-2)">Your receipt can be used to claim tax relief.</span>}
+            {t.taxReceipts && <span className="text-(--ck-ink-2)">{ck.us ? "Your gift is tax-deductible to the extent allowed by law. Your receipt shows the EIN." : "Your receipt can be used to claim tax relief."}</span>}
         </div>
     );
 };
@@ -67,7 +68,7 @@ export const Dial = ({ ck, size = 350, ground = "rgba(255,255,255,0.7)" }: { ck:
             onKeyDown={(e) => { const d = { ArrowUp: 5, ArrowRight: 5, ArrowDown: -5, ArrowLeft: -5, PageUp: 50, PageDown: -50 }[e.key]; if (d) { e.preventDefault(); ck.setAmount(s.amount + d, "dial"); } }}
         >
             <div className="pointer-events-none absolute inset-0 rounded-full" style={{ background: ground }} />
-            <div className="ck-ring pointer-events-none absolute inset-0 rounded-full" style={{ background: `conic-gradient(#EFC6FA 0deg, var(--ck-accent-strong) ${deg}deg, #E7DFF6 ${deg}deg 360deg)` }} />
+            <div className="ck-ring pointer-events-none absolute inset-0 rounded-full" style={{ background: `conic-gradient(#EFC6FA 0deg, var(--ck-coral-ink) ${deg}deg, #E7DFF6 ${deg}deg 360deg)` }} />
             <div className="ck-ticks pointer-events-none absolute inset-0 rounded-full" />
             <div className="pointer-events-none absolute inset-[19%] rounded-full bg-white shadow-[0_16px_36px_rgba(90,60,170,0.20)]" />
             <div className="pointer-events-none absolute -mt-[21px] -ml-[21px] size-[42px] rounded-full border-[5px] border-(--ck-accent-strong) bg-white shadow-[0_6px_16px_rgba(120,50,170,0.35)]" style={{ left: `${50 + 45 * Math.sin(th)}%`, top: `${50 - 45 * Math.cos(th)}%` }} />
@@ -87,7 +88,7 @@ export const Presets = ({ ck, filled = true, className }: { ck: Ck; filled?: boo
             return (
                 <button key={v} type="button" aria-pressed={on} onClick={() => ck.setAmount(v, "preset")}
                     className={cx("ck-soft min-h-14 flex-[1_1_72px] rounded-2xl border-[1.5px] text-[18px] font-extrabold text-(--ck-ink)", className)}
-                    style={{ borderColor: on ? "var(--ck-accent-strong)" : "var(--ck-line)", background: on && filled ? "var(--ck-accent)" : on ? "var(--ck-accent-soft)" : "#fff", boxShadow: on ? "0 8px 18px rgba(150,70,190,0.26)" : "0 2px 6px rgba(40,20,90,0.06)" }}>
+                    style={{ borderColor: on ? "var(--ck-accent-strong)" : "var(--ck-line)", background: on && filled ? "var(--ck-ink)" : "#fff", color: on && filled ? "#fff" : undefined, boxShadow: on ? "0 8px 18px rgba(75,85,48,0.26)" : "0 2px 6px rgba(40,20,90,0.06)" }}>
                     {ck.f(v)}
                 </button>
             );
@@ -99,7 +100,7 @@ export const AmountInput = ({ ck, className, label = "Other amount" }: { ck: Ck;
     return (
         <label className={cx("relative block", className)}>
             <span aria-hidden="true" className="absolute top-1/2 left-4 -translate-y-1/2 text-[17px] font-extrabold text-(--ck-muted)">{sym}</span>
-            <input className="ck-in bg-white! pl-8! text-[18px]! font-extrabold!" inputMode="numeric" aria-label={`${label} in ${ck.c.currency}`} placeholder="Other"
+            <input className="ck-in bg-white! pl-8! text-[18px]! font-extrabold!" inputMode="decimal" aria-label={`${label} in ${ck.c.currency}`} placeholder="Other"
                 value={ck.s.amountText} onChange={(e) => ck.typeAmount(e.target.value)} onBlur={ck.blurAmount} aria-invalid={ck.s.step === 0 && !!ck.s.err} />
         </label>
     );
@@ -114,7 +115,7 @@ export const Seg = <T extends string>({ label, options, value, onPick, className
         })}
     </div>
 );
-export const FreqSeg = ({ ck, className, track }: { ck: Ck; className?: string; track?: string }) => <Seg label="How often" options={FREQS.map((x) => [x, FREQ_LABEL[x].short])} value={ck.s.freq} onPick={ck.setFreq} className={className} track={track} />;
+export const FreqSeg = ({ ck, className, track }: { ck: Ck; className?: string; track?: string }) => <Seg label="How often" options={ck.freqs.map((x) => [x, FREQ_LABEL[x].short])} value={ck.s.freq} onPick={ck.setFreq} className={className} track={track} />;
 
 /** Line icons for fields, 24px stroke paths. */
 export const FIELD_ICON = {
@@ -148,14 +149,15 @@ const errOn = (ck: Ck, field: RegExp) => !!ck.s.err && field.test(ck.s.err);
 
 export const Extras = ({ ck, grid }: { ck: Ck; grid?: boolean }) => (
     <div className={grid ? "grid grid-cols-[repeat(auto-fit,minmax(min(270px,100%),1fr))] gap-3" : "flex flex-col overflow-hidden rounded-3xl border-[1.5px] border-(--ck-line-2)"}>
-        {(ck.c.extras ?? []).map((x, i) => {
+        {ck.extras.map((x, i) => {
             const on = !!ck.s.picks[x.id], [tile, ink] = TONE[x.tone];
             // Every price says whether it is charged once or with each payment: only a covered fee repeats on a regular gift.
-            const cost = x.price === "fee" ? ck.q.fee : x.price, price = cost ? `+${ck.f(cost)}` : "Free";
+            const cost = x.price === "fee" ? ck.q.fee : x.price * (x.unit ? ck.countOf(x.id) : 1), price = cost ? `+${ck.f(cost)}` : "Free";
             const when = !cost ? "" : x.price === "fee" && ck.recurring ? FREQ_LABEL[ck.s.freq].every : "one-time";
             const inline = <span className="text-[14px] font-extrabold text-(--ck-link)">{price}{when && <span className="font-bold text-(--ck-muted)"> {when}</span>}</span>;
             return (
-                <button key={x.id} type="button" aria-pressed={on} onClick={() => ck.toggleExtra(x.id)}
+                <Fragment key={x.id}>
+                <button type="button" aria-pressed={on} onClick={() => ck.toggleExtra(x.id)}
                     className={cx("ck-row flex items-center gap-3.5 border-0 text-left text-(--ck-ink)", grid ? "min-h-[72px] rounded-[20px] border-[1.5px]! px-4 py-3" : "min-h-[72px] px-4 py-2.5")}
                     style={grid ? { borderColor: on ? "var(--ck-accent-strong)" : "var(--ck-line)", background: on ? "var(--ck-accent-soft)" : "#fff" } : { borderTop: i ? "1.5px solid var(--ck-sep)" : 0, background: on ? "#FCF7FF" : "#fff" }}>
                     <span aria-hidden="true" className="flex size-[46px] flex-none items-center justify-center rounded-[14px]" style={{ background: tile }}><svg width="24" height="24" viewBox="0 0 24 24"><path d={x.icon} fill="none" stroke={ink} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
@@ -163,10 +165,23 @@ export const Extras = ({ ck, grid }: { ck: Ck; grid?: boolean }) => (
                     {!grid && <span className="hidden flex-none flex-col items-end sm:flex"><strong className="text-[15px] font-extrabold whitespace-nowrap text-(--ck-link)">{price}</strong>{when && <span className="text-[12px] font-bold whitespace-nowrap text-(--ck-muted)">{when}</span>}</span>}
                     <Switch on={on} />
                 </button>
+                {on && x.unit && <div className="flex items-center justify-between gap-3 px-4 pb-3" style={{ background: grid ? undefined : "#FCF7FF" }}><span className="text-[14px] font-semibold text-(--ck-muted)">{ck.f(x.price as number)} × {x.unit.many}</span><Stepper value={ck.countOf(x.id)} max={x.unit.max} label={x.unit.many} onChange={(n) => ck.setCount(x.id, n)} /></div>}
+                </Fragment>
             );
         })}
     </div>
 );
+/** − n +, for people or days. 44px targets. */
+export const Stepper = ({ value, onChange, label, max, min = 1, big }: { value: number; onChange: (n: number) => void; label: string; max: number; min?: number; big?: boolean }) => {
+    const b = cx("flex flex-none items-center justify-center rounded-full border-0 bg-white text-(--ck-ink) shadow-[inset_0_0_0_1.5px_var(--ck-line)] disabled:opacity-40", big ? "size-14 text-[26px]" : "size-11 text-[20px]");
+    return (
+        <span role="group" aria-label={label} className="flex items-center gap-2">
+            <button type="button" className={b} disabled={value <= min} onClick={() => onChange(value - 1)} aria-label={`Fewer ${label}`}>−</button>
+            <output aria-live="polite" className={cx("min-w-8 text-center font-medium tabular-nums", big ? "text-[28px]" : "text-[18px]")}>{value}</output>
+            <button type="button" className={b} disabled={value >= max} onClick={() => onChange(value + 1)} aria-label={`More ${label}`}>+</button>
+        </span>
+    );
+};
 export const Tribute = ({ ck }: { ck: Ck }) => ck.s.picks.tribute ? (
     <div className="ck-fade grid grid-cols-[repeat(auto-fit,minmax(min(210px,100%),1fr))] gap-3">
         <Field label="Dedicated to" icon={FIELD_ICON.heart} placeholder="Their name" value={ck.s.tributeName} onChange={(e) => ck.set({ tributeName: e.target.value })} />
@@ -270,7 +285,7 @@ export const Details = ({ ck, address = "gold", prefsRow }: { ck: Ck; address?: 
             <div className="grid grid-cols-[repeat(auto-fit,minmax(min(210px,100%),1fr))] gap-3.5">
                 <Field label="First name" icon={FIELD_ICON.user} placeholder="Sam" autoComplete="given-name" value={s.first} onChange={(e) => set({ first: e.target.value })} invalid={errOn(ck, /first name/)} />
                 <Field label="Last name" placeholder="Taylor" autoComplete="family-name" value={s.last} onChange={(e) => set({ last: e.target.value })} invalid={errOn(ck, /last name/)} />
-                <Field label="Email" className="col-span-full" icon={FIELD_ICON.mail} hint="We’ll send your receipt here." type="email" autoComplete="email" placeholder="you@example.co.uk" value={s.email} onChange={(e) => set({ email: e.target.value })} invalid={errOn(ck, /email/)} />
+                <Field label="Email" className="col-span-full" icon={FIELD_ICON.mail} hint="We’ll send your receipt here." type="email" autoComplete="email" placeholder={ck.us ? "you@example.com" : "you@example.co.uk"} value={s.email} onChange={(e) => set({ email: e.target.value })} invalid={errOn(ck, /email/)} />
                 {/* Its own opt-in, off by default, and nothing to do with the charity's updates below. */}
                 <label className="col-span-full -mt-1.5 flex min-h-11 cursor-pointer items-center gap-3 text-[14px] leading-snug font-semibold text-(--ck-ink-2)">
                     <input type="checkbox" className="ck-check" checked={s.recover} onChange={(e) => set({ recover: e.target.checked })} />
@@ -304,7 +319,7 @@ export const CardPreview = ({ ck, flipped }: { ck: Ck; flipped?: boolean }) => {
         <div aria-hidden="true" className={cx("ck-card3d w-[300px] max-w-full", flipped && "is-flipped")}>
             <div className="relative aspect-[1.586] w-full">
                 <div className={cx(face, "flex flex-col justify-between px-5 py-[18px]")}>
-                    <div className="absolute -top-[52px] -right-[52px] size-44 rounded-full border-[26px] border-(--ck-accent) opacity-90" />
+                    <div className="absolute -top-[52px] -right-[52px] size-44 rounded-full border-[26px] border-[#F0783C] opacity-90" />
                     <div className="absolute top-[34px] right-[34px] size-44 rounded-full border-[26px] border-white/10" />
                     <div className="relative flex items-start justify-between">
                         <span className="h-[28px] w-[38px] rounded-[7px] bg-linear-135 from-[#F8E5A6] to-[#D9B45A] shadow-[inset_0_0_0_1px_rgba(120,80,10,0.25)]" />
@@ -400,7 +415,7 @@ export const BANKS = ["Barclays", "HSBC", "Lloyds", "Monzo", "NatWest", "Starlin
 export const Banks = ({ ck, note = true }: { ck: Ck; note?: boolean }) => (
     <div className="flex flex-col gap-3">
         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
-            {BANKS.map((b) => { const on = ck.s.bank === b; return <button key={b} type="button" aria-pressed={on} onClick={() => ck.set({ bank: b, errField: "", err: "" })} className="ck-soft min-h-14 rounded-2xl border-[1.5px] text-[15px] font-extrabold text-(--ck-ink)" style={{ borderColor: on ? "var(--ck-accent-strong)" : ck.s.errField === "bank" ? "var(--ck-err)" : "var(--ck-line)", background: on ? "var(--ck-accent-soft)" : "#fff" }}>{b}</button>; })}
+            {BANKS.map((b) => { const on = ck.s.bank === b; return <button key={b} type="button" aria-pressed={on} onClick={() => ck.set({ bank: b, errField: "", err: "" })} className="ck-soft min-h-14 rounded-2xl border-[1.5px] text-[15px] font-extrabold text-(--ck-ink)" style={{ borderColor: on ? "var(--ck-accent-strong)" : ck.s.errField === "bank" ? "var(--ck-err)" : "var(--ck-line)", background: on ? "var(--ck-ink)" : "#fff", color: on ? "#fff" : undefined }}>{b}</button>; })}
         </div>
         {note && <span className="text-[14px] text-(--ck-muted)">We open your banking app, you approve the amount, and you come back here for your receipt.</span>}
     </div>
@@ -417,7 +432,7 @@ export const Wallets = ({ ck, className }: { ck: Ck; className?: string }) => {
     );
 };
 /** Stripe's Appearance options, close to the checkout's own fields. */
-const STRIPE_LOOK = { theme: "stripe", variables: { fontFamily: "Urbanist, system-ui, sans-serif", colorPrimary: "#b45fd6", colorText: "#1a1440", colorDanger: "#b3261e", borderRadius: "14px" } };
+const STRIPE_LOOK = { theme: "stripe", variables: { fontFamily: "Outfit, system-ui, sans-serif", colorPrimary: "#191919", colorText: "#191919", colorDanger: "#b3261e", borderRadius: "14px" } };
 /**
  * The fields for the chosen method. Live, they are Stripe's own (the card never touches our inputs, and Stripe checks it);
  * in the demo they are our card, Direct Debit and bank forms.
@@ -425,7 +440,8 @@ const STRIPE_LOOK = { theme: "stripe", variables: { fontFamily: "Urbanist, syste
 export const PayFields = ({ ck, preview, bankNote }: { ck: Ck; preview?: boolean; bankNote?: boolean }) => {
     const m = ck.method;
     if (!ck.methods.includes(m)) return null;
-    if (ck.live && (m === "card" || m === "dd" || m === "bank")) return <StripeFields ref={ck.fields} total={ck.q.total} currency={ck.c.currency} recurring={ck.recurring} method={m} onBehalfOf={ck.live.stripeAccount} appearance={STRIPE_LOOK} />;
+    // US gifts are direct charges on the charity's own Stripe account; the nights only save the card (setup) and charge it each night.
+    if (ck.live && (m === "card" || m === "dd" || m === "bank")) return <StripeFields ref={ck.fields} total={ck.q.total} currency={ck.c.currency} recurring={ck.recurring} setup={ck.nights} method={m} {...(ck.c.currency === "USD" ? { stripeAccount: ck.live.stripeAccount } : { onBehalfOf: ck.live.stripeAccount })} appearance={STRIPE_LOOK} />;
     return m === "card" ? <CardForm ck={ck} preview={preview} /> : m === "dd" ? <DdFields ck={ck} /> : m === "bank" ? <Banks ck={ck} note={bankNote} /> : null;
 };
 /** Shown when the charity has no way to take payments switched on. */
@@ -434,11 +450,14 @@ export const NoPayments = ({ ck }: { ck: Ck }) => ck.canPay ? null : (
 );
 
 export const Mandate = ({ ck }: { ck: Ck }) => {
-    if (!ck.recurring) return null;
-    const on = ck.s.mandate;
+    if (!ck.recurring && !ck.nights) return null;
+    const on = ck.s.mandate, n = ck.q.nights?.charges;
+    const [title, text] = n?.length
+        ? [`I authorise ${ck.f(ck.q.total)} over ${n.length} nights`, `${ck.c.charity} saves this payment method and charges each night, from night ${n[0].night} (${dayName(n[0].date, ck.c.locale)}) to night ${n[n.length - 1].night}. Nothing is taken today. We email you before the first night, and every email has a one-tap cancel link.`]
+        : [`I authorise ${ck.f(ck.q.recur)} ${FREQ_LABEL[ck.s.freq].every}`, `First payment today, next on ${nextOn(ck)}. Pause or cancel any time.`];
     return (
         <button type="button" aria-pressed={on} onClick={() => ck.set({ mandate: !on, err: "" })} className="ck-row flex items-center gap-3.5 rounded-[20px] border-[1.5px] px-4 py-3.5 text-left text-(--ck-ink)" style={{ borderColor: on ? "var(--ck-accent-strong)" : errOn(ck, /authorisation/) ? "var(--ck-err)" : "var(--ck-line)", background: on ? "var(--ck-accent-soft)" : "#fff" }}>
-            <span className="flex flex-1 flex-col gap-0.5"><strong className="text-[16px] font-extrabold">I authorise {ck.f(ck.q.recur)} {FREQ_LABEL[ck.s.freq].every}</strong><span className="text-[14px] leading-snug text-(--ck-muted)">First payment today, next on {nextOn(ck)}. Pause or cancel any time.</span></span>
+            <span className="flex flex-1 flex-col gap-0.5"><strong className="text-[16px] font-extrabold">{title}</strong><span className="text-[14px] leading-snug text-(--ck-muted)">{text}</span></span>
             <Switch on={on} />
         </button>
     );
@@ -450,6 +469,21 @@ export const nextOn = (ck: Ck) => (ck.q.later ? longDay(ck.q.later.next, ck.c.lo
  * What stopped the donor, announced to screen readers. A failed or unconfirmed payment also says what to do next:
  * try again (the same attempt, so never a second charge), check again, or choose another way to pay.
  */
+/** Cloudflare Turnstile, when the fraud guard asks for a check. Without VITE_TURNSTILE_SITE_KEY it says to try later. */
+const TURNSTILE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined;
+type TurnstileApi = { render: (el: HTMLElement, o: { sitekey: string; callback: (t: string) => void }) => string; remove: (id: string) => void };
+export const Challenge = ({ ck }: { ck: Ck }) => {
+    const box = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        if (!TURNSTILE_KEY || !box.current) return;
+        let id = "", gone = false;
+        const draw = () => { const t = (window as unknown as { turnstile?: TurnstileApi }).turnstile; if (!t || gone || !box.current) return; id = t.render(box.current, { sitekey: TURNSTILE_KEY, callback: (token) => ck.passChallenge(token) }); };
+        if ((window as unknown as { turnstile?: TurnstileApi }).turnstile) draw();
+        else { const s = document.createElement("script"); s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"; s.async = true; s.onload = draw; document.head.appendChild(s); }
+        return () => { gone = true; if (id) (window as unknown as { turnstile?: TurnstileApi }).turnstile?.remove(id); };
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    return TURNSTILE_KEY ? <div ref={box} /> : <p className="m-0 text-[14px] text-(--ck-ink-2)">We can’t run that check right now. Please try again in a few minutes.</p>;
+};
 export const Err = ({ ck, className }: { ck: Ck; className?: string }) => {
     const { err, issue, step } = ck.s;
     if (!err || (step === 3 && ck.s.express && addressErr(ck))) return null; // the express Gift Aid card shows that one itself
@@ -462,6 +496,7 @@ export const Err = ({ ck, className }: { ck: Ck; className?: string }) => {
     return (
         <div role="alert" className={cx("flex flex-col gap-3 rounded-[18px] border-[1.5px] p-4", issue.confirming ? "border-[#ecd98f] bg-(--ck-gold-soft)" : "border-[#f1c9c5] bg-[#fff6f5]", className)}>
             <p className={cx("m-0 text-[15px] leading-snug font-bold", issue.confirming ? "text-(--ck-gold-ink)" : "text-(--ck-err)")}>{err}</p>
+            {ck.s.challenge && <Challenge ck={ck} />}
             {(issue.retryable || (issue.alt && ck.methods.length > 1)) && (
                 <div className="flex flex-wrap gap-2.5">
                     {issue.retryable && <button type="button" onClick={ck.retry} disabled={ck.busy} className={cx(dark, "min-h-12 text-[15px]")}>{issue.confirming ? "Check again" : "Try again"}</button>}
@@ -476,7 +511,7 @@ export const PayState = ({ ck }: { ck: Ck }) => ck.busy ? <span role="status" cl
 /** On a regular gift, each line says whether it is charged again. A one-off gift has nothing to tell apart. */
 const tagOf = (ck: Ck, l: QuoteLine) => (!ck.recurring ? undefined : l.when === "recurring" ? FREQ_LABEL[ck.s.freq].line : "Today only");
 /** What is charged today, line by line. */
-export const GiftRows = ({ ck, feeLabel }: { ck: Ck; feeLabel?: string }) => <>{ck.q.today.lines.map((l) => <Row key={l.key} k={l.key === "fee" && feeLabel ? feeLabel : l.label} tag={tagOf(ck, l)} v={ck.f(l.value)} />)}</>;
+export const GiftRows = ({ ck, feeLabel }: { ck: Ck; feeLabel?: string }) => <>{(ck.nights ? ck.q.lines : ck.q.today.lines).map((l) => <Row key={l.key} k={l.key === "fee" && feeLabel ? feeLabel : l.label} tag={tagOf(ck, l)} v={ck.f(l.value)} />)}</>;
 
 /** The match, in words: who the sponsor is, until when, and whether it doubles the gift. `live` is false when there is nothing to advertise. */
 export const matchInfo = (ck: Ck) => {
@@ -510,13 +545,19 @@ export const Boosts = ({ ck, giftAid = true }: { ck: Ck; giftAid?: boolean }) =>
 export const Lines = ({ ck, paidWith }: { ck: Ck; paidWith?: boolean }) => (
     <>
         <GiftRows ck={ck} />
-        {paidWith && <Row k={ck.pending ? "Paying with" : "Paid with"} v={ck.s.paidWith || METHOD_NAME[ck.method]} />}
+        {paidWith && <Row k={ck.nights ? "Saved for each night" : ck.pending ? "Paying with" : "Paid with"} v={ck.s.paidWith || methodName(ck.method, ck.us)} />}
         <Boosts ck={ck} />
     </>
 );
 /** A regular gift's later payments: how much, how often and when the next one is (quote().later). Nothing for a one-off. */
 export const Later = ({ ck, className, manage }: { ck: Ck; className?: string; manage?: boolean }) => {
-    const l = ck.q.later;
+    const l = ck.q.later, n = ck.q.nights?.charges;
+    if (n?.length) return (
+        <div className={cx("flex flex-col gap-0.5 rounded-[14px] bg-(--ck-tint) px-3.5 py-3 text-[13.5px] leading-snug text-(--ck-ink-2)", className)}>
+            <strong className="text-[14.5px] font-extrabold text-(--ck-ink)">Nothing today. {n.length} nightly gifts from {dayName(n[0].date, ck.c.locale)}</strong>
+            <span>Night {n[0].night}: {ck.f(n[0].total)}{n.length > 1 ? `, then ${ck.f(ck.s.amount)}${ck.s.odd ? ` (${ck.f(ck.s.amount * 2)} on odd nights)` : ""} a night to night ${n[n.length - 1].night}` : ""}.{manage ? " Every reminder email has a one-tap cancel link." : ""}</span>
+        </div>
+    );
     if (!l) return null;
     return (
         <div className={cx("flex flex-col gap-0.5 rounded-[14px] bg-(--ck-tint) px-3.5 py-3 text-[13.5px] leading-snug text-(--ck-ink-2)", className)}>
@@ -534,7 +575,7 @@ export const Row = ({ k, v, boost, pending, tag }: { k: string; v: string; boost
 
 export const methodLabel = (m: Method) => METHOD_NAME[m];
 /** "Give £25 by card" style label for the pay button. */
-export const payLabel = (ck: Ck, suffix = true) => ck.busy ? "Waiting for your bank…" : `Give ${ck.f(ck.q.total)}${!suffix ? "" : ck.method === "dd" ? " by Direct Debit" : ck.method === "bank" ? " by bank" : ck.method === "card" ? " by card" : ""}`;
+export const payLabel = (ck: Ck, suffix = true) => ck.busy ? "Waiting for your bank…" : ck.nights ? `Schedule ${ck.f(ck.q.total)} over ${ck.q.nights?.charges.length ?? 10} nights` : `Give ${ck.f(ck.q.total)}${!suffix ? "" : ck.method === "dd" ? " by Direct Debit" : ck.method === "bank" ? (ck.us ? " by bank debit" : " by bank") : ck.method === "card" ? " by card" : ""}`;
 
 /**
  * Words for the end screen. Paid is only ever said for a payment the server confirmed; a Direct Debit or bank payment that is
@@ -542,7 +583,8 @@ export const payLabel = (ck: Ck, suffix = true) => ck.busy ? "Waiting for your b
  */
 export const endCopy = (ck: Ck) => {
     const { s, c, f, q } = ck, name = s.first.trim() ? `, ${s.first.trim()}` : "", who = c.beneficiary.replace(/^./, (m) => m.toUpperCase());
-    if (!ck.pending) return { chip: "Confirmed", title: `Thank you${name}.`, body: "", total: "You paid", stamp: "Paid" };
+    if (s.pledged) return { chip: "Pledged", title: `Your pledge is saved${name}.`, body: `Nothing has been taken. We’ve emailed you a link to pay ${f(q.total)} by ${dayName(s.pledgeBy, c.locale)}, and we’ll remind you before then.`, total: "Pledged", stamp: "Pledged" };
+    if (!ck.pending) return { chip: ck.nights ? "Scheduled" : "Confirmed", title: ck.us ? `JazakAllahu khayran${name}.` : `Thank you${name}.`, body: "", total: ck.nights ? "Over the nights" : "You paid", stamp: ck.nights ? "Scheduled" : "Paid" };
     const dd = ck.method === "dd";
     return {
         chip: dd ? "Direct Debit being set up" : "Waiting for your bank",
@@ -640,7 +682,7 @@ export const PayAnimation = ({ ck }: { ck: Ck }) => {
             <div className="relative flex flex-col items-center gap-3.5 text-center">
                 <strong className="text-[30px] leading-[1.05] font-bold tracking-[-1.3px] sm:text-[40px]">{pending ? `Sending ${ck.f(ck.q.total)} to ${ck.c.beneficiary}` : "Your bank is confirming"}</strong>
                 <span className="text-[16px] text-(--ck-muted) sm:text-[18px]">{pending ? "Hold tight, this takes a few seconds." : "Almost there. Please keep this page open."}</span>
-                <div aria-hidden="true" className="mt-1 flex gap-2">{[0, 0.15, 0.3].map((d) => <span key={d} className="ck-dot size-2.5 rounded-full bg-(--ck-accent-strong)" style={{ animationDelay: `${d}s` }} />)}</div>
+                <div aria-hidden="true" className="mt-1 flex gap-2">{[0, 0.15, 0.3].map((d) => <span key={d} className="ck-dot size-2.5 rounded-full bg-(--ck-coral-ink)" style={{ animationDelay: `${d}s` }} />)}</div>
             </div>
         </div>
     );
@@ -652,3 +694,130 @@ export const FLYERS: [string, ReactNode][] = [
     ["rgba(255,210,92,0),rgba(255,170,60,0.5)", svg(<><defs><radialGradient id="ckLampGlow" cx="0.5" cy="0.56" r="0.5"><stop offset="0" stopColor="#FFE48A" stopOpacity="0.85" /><stop offset="1" stopColor="#FFE48A" stopOpacity="0" /></radialGradient><radialGradient id="ckLampGlass" cx="0.5" cy="0.55" r="0.75"><stop offset="0" stopColor="#FFFBE6" /><stop offset="0.45" stopColor="#FFD25C" /><stop offset="1" stopColor="#EE7F26" /></radialGradient><linearGradient id="ckLampMetal" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#4A3A94" /><stop offset="0.5" stopColor="#2B1F5E" /><stop offset="1" stopColor="#151033" /></linearGradient></defs><circle cx="100" cy="112" r="98" fill="url(#ckLampGlow)" /><ellipse cx="100" cy="188" rx="52" ry="7" fill="#1A1440" opacity="0.14" /><path d="M72 46 Q100 2 128 46" fill="none" stroke="url(#ckLampMetal)" strokeWidth="7" strokeLinecap="round" /><path d="M58 60 L100 36 L142 60z" fill="url(#ckLampMetal)" /><rect x="54" y="56" width="92" height="13" rx="5" fill="#1A1440" /><rect x="64" y="68" width="72" height="92" rx="8" fill="url(#ckLampGlass)" /><rect x="112" y="68" width="24" height="92" fill="#C9541A" opacity="0.22" /><path d="M100 94 C114 112 112 134 100 140 C88 134 86 112 100 94z" fill="#FFFDF0" /><path d="M100 110 C106 120 105 132 100 136 C95 132 94 120 100 110z" fill="#FFC94A" /><rect x="62" y="68" width="9" height="92" fill="url(#ckLampMetal)" /><rect x="129" y="68" width="9" height="92" fill="#151033" /><rect x="96" y="68" width="7" height="92" fill="#2B1F5E" opacity="0.8" /><rect x="52" y="158" width="96" height="15" rx="6" fill="#1A1440" /><rect x="64" y="171" width="72" height="11" rx="5" fill="url(#ckLampMetal)" /><rect x="72" y="76" width="8" height="40" rx="4" fill="#fff" opacity="0.5" /></>)],
     ["rgba(217,160,240,0),rgba(180,95,214,0.5)", svg(<><defs><linearGradient id="ckBoxA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#EDC2FA" /><stop offset="1" stopColor="#A94FD0" /></linearGradient><linearGradient id="ckBoxB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#F8E0FE" /><stop offset="1" stopColor="#C77BE6" /></linearGradient><linearGradient id="ckBoxC" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#FFF3B8" /><stop offset="1" stopColor="#E0A52E" /></linearGradient></defs><ellipse cx="100" cy="186" rx="68" ry="8" fill="#1A1440" opacity="0.13" /><rect x="38" y="94" width="124" height="86" rx="12" fill="url(#ckBoxA)" /><path d="M122 94h28a12 12 0 0112 12v62a12 12 0 01-12 12h-28z" fill="#6E2A96" opacity="0.28" /><rect x="38" y="100" width="124" height="10" fill="#6E2A96" opacity="0.25" /><rect x="86" y="94" width="28" height="86" fill="url(#ckBoxC)" /><rect x="30" y="70" width="140" height="32" rx="10" fill="url(#ckBoxB)" /><rect x="86" y="70" width="28" height="32" fill="url(#ckBoxC)" /><path d="M100 72 C82 34 40 36 48 60 C54 76 84 74 100 72z" fill="url(#ckBoxC)" /><path d="M100 72 C118 34 160 36 152 60 C146 76 116 74 100 72z" fill="#E9B84A" /><path d="M92 66 C82 48 62 46 62 56 C62 64 80 66 92 66z" fill="#FFF8E0" opacity="0.75" /><circle cx="100" cy="70" r="11" fill="#D4901A" /><circle cx="97" cy="67" r="5" fill="#FFF3B8" opacity="0.8" /><rect x="40" y="76" width="34" height="7" rx="3.5" fill="#fff" opacity="0.65" /></>)],
 ];
+
+// ---------------------------------------------------------------- the US checkout's pieces (us.ts): funds, add-ons, DAF, employer match
+const pill = "min-h-11 rounded-full border-0 px-4 text-[15px] font-medium transition-colors";
+const pillOn = (on: boolean) => (on ? "bg-(--ck-ink) text-white" : "bg-white text-(--ck-ink) shadow-[inset_0_0_0_1px_rgba(25,25,25,0.12)] hover:shadow-[inset_0_0_0_1.5px_var(--ck-ink)]");
+const isPlaceholder = (v: string) => /^\s*(\[.*\])?\s*$/.test(v);
+/** Where the gift goes: one fund on every gift. Zakat al-Fitr and Fidya turn the amount into a per-person or per-day count. */
+export const FundChips = ({ ck }: { ck: Ck }) => !ck.c.funds?.length ? null : (
+    <div role="group" aria-label="Fund" className="flex flex-wrap gap-2">
+        {ck.c.funds.map(([id, label]) => <button key={id} type="button" aria-pressed={ck.s.fund === id} onClick={() => ck.setFund(id)} className={cx(pill, pillOn(ck.s.fund === id))}>{label}</button>)}
+    </div>
+);
+/** The amount for a per-unit fund: $15 × people (Zakat al-Fitr) or × days (Fidya). */
+export const UnitAmount = ({ ck, big }: { ck: Ck; big?: boolean }) => {
+    const u = ck.perUnit;
+    if (!u) return null;
+    return (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] bg-(--ck-tint) px-4 py-3">
+            <span className="flex flex-col"><strong className="text-[16px] font-medium">{ck.f(u.price)} × {u.many}</strong><span className="text-[13.5px] text-(--ck-muted)">{ck.s.fund === "fidya" ? "Each fast missed and not made up" : "Everyone in your household, children too"}</span></span>
+            <Stepper value={ck.countOf(ck.s.fund)} max={u.max} label={u.many} big={big} onChange={(n) => ck.setCount(ck.s.fund, n)} />
+        </div>
+    );
+};
+/** Give double on the odd nights (21, 23, 25, 27, 29), with the nights laid out and the odd ones marked. */
+export const NightsPanel = ({ ck, onDark }: { ck: Ck; onDark?: boolean }) => {
+    const n = ck.q.nights?.charges;
+    if (!ck.nights || !n) return null;
+    return (
+        <div className="flex flex-col gap-3">
+            <button type="button" aria-pressed={ck.s.odd} onClick={() => ck.setOdd(!ck.s.odd)} className={cx("flex min-h-14 items-center gap-3 rounded-[18px] border-0 px-4 py-2 text-left", onDark ? "bg-white/8 text-white" : "bg-white text-(--ck-ink) shadow-[inset_0_0_0_1px_rgba(25,25,25,0.1)]")}>
+                <span className="flex flex-1 flex-col"><strong className="text-[15.5px] font-medium">Give double on the odd nights</strong><span className={cx("text-[13px]", onDark ? "text-white/60" : "text-(--ck-muted)")}>Nights 21, 23, 25, 27 and 29, when Laylat al-Qadr is sought</span></span>
+                <Switch on={ck.s.odd} green />
+            </button>
+            <ol aria-label="Your nights" className="m-0 grid list-none grid-cols-5 gap-1.5 p-0">
+                {n.map((x) => (
+                    <li key={x.night} className={cx("flex flex-col items-center rounded-[12px] py-2 text-center", onDark ? "bg-white/6" : "bg-(--ck-tint)")}>
+                        <span className={cx("text-[11px]", onDark ? "text-white/55" : "text-(--ck-muted)")}>Night</span>
+                        <strong className="text-[17px] font-medium tabular-nums">{x.night}</strong>
+                        <span className="mt-0.5 text-[11.5px] tabular-nums" style={{ color: x.units > 1 ? (onDark ? "#F5A36F" : "var(--ck-coral-ink)") : undefined }}>{ck.f(x.total)}</span>
+                    </li>
+                ))}
+            </ol>
+        </div>
+    );
+};
+/** The add-ons that are not lines with a switch: the match banner, round up, and the bank-debit note. Their exposure is measured in useCheckout. */
+export const AddonCards = ({ ck }: { ck: Ck }) => {
+    const m = matchInfo(ck), left = ck.c.match && "remaining" in ck.c.match ? ck.c.match.remaining : 0;
+    return (
+        <>
+            {ck.addons.includes("match") && m.live && (
+                <div className="flex items-center gap-3 rounded-[18px] bg-(--ck-coral-soft) px-4 py-3">
+                    <span className="flex-none rounded-full bg-[#F0783C] px-2.5 py-1 text-[12px] font-medium text-white">Match</span>
+                    <span className="text-[14.5px] leading-snug"><strong className="font-medium">{m.doubled ? "Every gift doubled" : "Gifts matched"} until {m.until}.</strong> {ck.f(left)} of the match is left.</span>
+                </div>
+            )}
+            {ck.addons.includes("roundup") && ck.roundGap > 0 && (
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] bg-white px-4 py-3 shadow-[inset_0_0_0_1px_rgba(25,25,25,0.1)]">
+                    <span className="min-w-0 flex-[1_1_180px] text-[14.5px] leading-snug">{ck.f(ck.roundGap)} more closes {ck.c.milestone?.label || "the next milestone"}.</span>
+                    <button type="button" aria-pressed={ck.s.round > 0} onClick={ck.toggleRound} className={cx(pill, pillOn(ck.s.round > 0))}>{ck.s.round > 0 ? `Added ${ck.f(ck.s.round)}` : `Add ${ck.f(ck.roundGap)}`}</button>
+                </div>
+            )}
+            {ck.addons.includes("bank") && <p className="m-0 rounded-[18px] bg-(--ck-tint) px-4 py-3 text-[14px] leading-snug text-(--ck-ink-2)">Giving {ck.f(ck.q.total)}? Bank debit costs {ck.c.charity} far less in fees than a card. You can choose it when you pay.</p>}
+        </>
+    );
+};
+/** Copies text, and says so for a moment. */
+const Copy = ({ text, label }: { text: string; label: string }) => {
+    const [done, setDone] = useState(false);
+    return <button type="button" onClick={() => { void navigator.clipboard?.writeText(text).then(() => { setDone(true); setTimeout(() => setDone(false), 1600); }).catch(() => {}); }} className={cx(pill, pillOn(false), "min-h-10 text-[14px]")}>{done ? "Copied" : label}</button>;
+};
+/** "Give from my donor-advised fund": what the DAF sponsor needs, with no integration. On the payment screen of a US checkout. */
+export const DafPanel = ({ ck }: { ck: Ck }) => {
+    const t = ck.c.trust, ein = t?.regNo ?? "";
+    if (!ck.us || isPlaceholder(ein)) return null;
+    const who = t?.legalName || ck.c.charity;
+    return (
+        <div className="flex flex-col rounded-[18px] bg-white shadow-[inset_0_0_0_1px_rgba(25,25,25,0.1)]">
+            <button type="button" aria-expanded={ck.s.daf} onClick={ck.toggleDaf} className="flex min-h-14 items-center justify-between gap-3 rounded-[18px] border-0 bg-transparent px-4 py-2 text-left text-(--ck-ink)">
+                <span className="flex flex-col"><strong className="text-[15.5px] font-medium">Give from my donor-advised fund</strong><span className="text-[13px] text-(--ck-muted)">Fidelity Charitable, Schwab, NPT, a community foundation</span></span>
+                <span aria-hidden="true" className="text-[22px] leading-none transition-transform" style={{ transform: ck.s.daf ? "rotate(45deg)" : "none" }}>+</span>
+            </button>
+            {ck.s.daf && (
+                <div className="ck-fade flex flex-col gap-3 border-t border-(--ck-line-2) px-4 pt-3 pb-4 text-[14px] leading-snug">
+                    <p className="m-0 text-(--ck-ink-2)">Recommend a grant in your DAF account with these details. The grant comes from your fund, so you don’t pay here, and your DAF sponsor sends your receipt.</p>
+                    <dl className="m-0 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1.5">
+                        <dt className="text-(--ck-muted)">Legal name</dt><dd className="m-0 font-medium">{who}</dd>
+                        <dt className="text-(--ck-muted)">EIN</dt><dd className="m-0 font-medium tabular-nums">{ein}</dd>
+                        {ck.c.daf?.address && <><dt className="text-(--ck-muted)">Address</dt><dd className="m-0 font-medium">{ck.c.daf.address}</dd></>}
+                        <dt className="text-(--ck-muted)">Purpose</dt><dd className="m-0 font-medium">{ck.c.funds?.find(([id]) => id === ck.s.fund)?.[1] ?? "General support"}</dd>
+                    </dl>
+                    {ck.c.daf?.note && <p className="m-0 text-(--ck-muted)">{ck.c.daf.note}</p>}
+                    <span className="flex flex-wrap gap-2"><Copy text={ein} label="Copy EIN" /><Copy text={`${who}, EIN ${ein}${ck.c.daf?.address ? `, ${ck.c.daf.address}` : ""}`} label="Copy all details" /></span>
+                </div>
+            )}
+        </div>
+    );
+};
+/** On a US thank-you: many employers match gifts. What to send HR, with no paid lookup service. */
+export const EmployerMatch = ({ ck }: { ck: Ck }) => {
+    const ein = ck.c.trust?.regNo ?? "";
+    if (!ck.us || ck.s.pledged || isPlaceholder(ein)) return null;
+    const text = `${ck.c.trust?.legalName || ck.c.charity}, EIN ${ein}. Gift of ${ck.f(ck.q.total)} on ${new Date().toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}.`;
+    return (
+        <div data-ck-employer className="flex flex-col gap-3 rounded-[20px] bg-(--ck-tint) p-4 text-left">
+            <span className="flex flex-col gap-1"><strong className="text-[17px] font-medium tracking-[-0.2px]">Does your employer match gifts?</strong><span className="text-[14px] leading-snug text-(--ck-muted)">Many US employers double what their staff give. Search your company’s giving portal, or send HR these details.</span></span>
+            <span className="text-[14px] font-medium [overflow-wrap:anywhere]">{text}</span>
+            <span><Copy text={text} label="Copy for HR" /></span>
+        </div>
+    );
+};
+/** "Pledge now, pay by a date": on the pledge and kiosk layouts, instead of paying now. */
+export const PledgeLater = ({ ck }: { ck: Ck }) => {
+    const [open, setOpen] = useState(false);
+    if (!ck.us || !ck.addons.includes("pledge") || ck.nights || ck.recurring) return null;
+    const today = new Date(), max = new Date(today.getTime() + 90 * 86400000), iso = (d: Date) => d.toISOString().slice(0, 10);
+    return (
+        <div className="flex flex-col gap-3 rounded-[18px] bg-white p-4 shadow-[inset_0_0_0_1px_rgba(25,25,25,0.1)]">
+            <span className="flex flex-col gap-0.5"><strong className="text-[15.5px] font-medium">Pledge now, pay by a date</strong><span className="text-[13.5px] text-(--ck-muted)">Nothing is taken today. We email you a link to pay, and a reminder before the date.</span></span>
+            {open ? (
+                <div className="flex flex-wrap items-end gap-3">
+                    <Field label="Pay by" type="date" className="flex-[1_1_180px]" min={iso(today)} max={iso(max)} value={ck.s.pledgeBy} invalid={ck.s.errField === "pledgeBy"} onChange={(e) => ck.set({ pledgeBy: e.target.value, err: "", errField: "" })} />
+                    <button type="button" onClick={() => void ck.pledgeLater()} disabled={ck.busy} className={cx(dark, "min-h-[54px] flex-[1_1_180px]")}>Pledge {ck.f(ck.q.total)}</button>
+                </div>
+            ) : <span><button type="button" onClick={() => setOpen(true)} className={cx(pill, pillOn(false))}>Pledge instead</button></span>}
+        </div>
+    );
+};

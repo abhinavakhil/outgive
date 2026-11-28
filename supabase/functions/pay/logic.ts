@@ -5,7 +5,11 @@ export interface StartInput {
     action: "start";
     /** One per checkout attempt, made by the client. The same key always resolves to the same donation row and the same charge. */
     attempt_key: string;
-    org_id?: string; page_id?: string; method: PayMethod; freq?: "once" | "monthly" | "yearly"; currency: string;
+    org_id?: string; page_id?: string; method: PayMethod; currency: string;
+    /** "nights": the last ten nights of Ramadan. Nothing is charged now; the method is saved and nightly-charge takes each night. */
+    freq?: "once" | "monthly" | "yearly" | "weekly" | "nights";
+    /** The ten nights: double on the odd nights; cover each night's fee. The server works out the nights and amounts itself (nightly-charge/plan.ts). */
+    odd?: boolean; cover_nights?: boolean;
     /** The gift itself; what repeats on a regular gift. */
     amount_cents: number;
     /** One-off add-ons, charged once even on a regular gift. */
@@ -21,6 +25,10 @@ export interface StartInput {
     gift_aid?: boolean;
     /** What the gift is made of (basket items, nights, on behalf of, Gift Aid address), stored on the donation for the charity. */
     details?: Record<string, unknown>;
+    /** Where the gift came from and how (src/shared/attribution.ts giftTags). Cleaned to known keys by the database (revenue_tags_clean). */
+    tags?: Record<string, unknown>;
+    /** Paying a pledge from its one-tap link (/pledge/<token>): the org, currency and donor come from the pledge, and the gift may not exceed what is left. */
+    pledge_token?: string;
 }
 export interface StatusInput { action: "status"; id: string }
 export type PayInput = StartInput | StatusInput;
@@ -38,6 +46,8 @@ export interface PayOut {
 
 /** Stripe payment method types behind each method. Wallets are card payments the Payment Element offers by itself. */
 export const PM_TYPES: Record<Exclude<PayMethod, "paypal">, string[]> = { card: ["card"], wallet: ["card"], dd: ["bacs_debit"], bank: ["pay_by_bank"] };
+/** The types for a method in a currency: "bank" is ACH bank debit (us_bank_account) in dollars, pay by bank in pounds. Must match StripeFields. */
+export const pmTypes = (method: string, currency: string) => (method === "bank" && currency.toUpperCase() === "USD" ? ["us_bank_account"] : PM_TYPES[method as keyof typeof PM_TYPES] ?? ["card"]);
 const SLOW = new Set<string>(["dd", "bank"]);
 const cents = (n: unknown) => n === undefined || (Number.isInteger(n) && (n as number) >= 0);
 
@@ -45,9 +55,16 @@ export const validate = (b: PayInput) => {
     if (b.action === "status") return /^[0-9a-f-]{36}$/i.test(b.id ?? "") ? null : "id is required";
     if (b.action !== "start") return "action must be start or status";
     if (!/^[A-Za-z0-9_-]{16,80}$/.test(b.attempt_key ?? "")) return "attempt_key is required";
-    if (!b.org_id && !b.page_id) return "org_id or page_id is required";
+    if (b.pledge_token !== undefined) {
+        if (!/^[0-9a-f]{64}$/.test(b.pledge_token)) return "That pledge link is not valid";
+        if (b.page_id || (b.freq ?? "once") !== "once") return "A pledge is paid as a one-off gift, without a page";
+    } else if (!b.org_id && !b.page_id) return "org_id or page_id is required";
     if (!["card", "wallet", "dd", "bank", "paypal"].includes(b.method)) return "Unknown payment method";
-    if (!["once", "monthly", "yearly"].includes(b.freq ?? "once")) return "freq must be once, monthly or yearly";
+    if (!["once", "monthly", "yearly", "weekly", "nights"].includes(b.freq ?? "once")) return "freq must be once, monthly, yearly, weekly or nights";
+    // Jumu'ah giving, every Friday: US gifts only (src/features/engage/campaigns/weekly.ts).
+    if (b.freq === "weekly" && (b.currency ?? "").toUpperCase() !== "USD") return "Weekly Friday gifts are for US gifts";
+    if (b.freq === "nights" && (b.currency ?? "").toUpperCase() !== "USD") return "The ten-night schedule is for US gifts";
+    if (b.freq === "nights" && !b.donor_email) return "The ten-night schedule needs an email for its reminders";
     if (!Number.isInteger(b.amount_cents) || b.amount_cents < 100) return "The minimum gift is 1.00";
     if (!cents(b.extras_cents) || !cents(b.cover_cents) || !cents(b.tip_cents)) return "extras_cents, cover_cents and tip_cents must be whole, positive numbers";
     if (totals(b).today > 99_999_900) return "That amount is above the card limit";
@@ -55,6 +72,7 @@ export const validate = (b: PayInput) => {
     if (b.donor_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(b.donor_email)) return "That email address does not look right";
     if ((b.dedication ?? "").length > 200 || (b.cause ?? "").length > 80 || (b.donor_name ?? "").length > 80 || (b.fund ?? "").length > 40) return "Text is too long";
     if (b.details !== undefined && (typeof b.details !== "object" || b.details === null || JSON.stringify(b.details).length > 8000)) return "details must be a small object";
+    if (b.tags !== undefined && (typeof b.tags !== "object" || b.tags === null || Array.isArray(b.tags) || JSON.stringify(b.tags).length > 4000)) return "tags must be a small object";
     if (b.gift_aid && !(typeof b.details?.postcode === "string" && b.details.postcode.trim() && typeof b.details?.house === "string" && b.details.house.trim())) return "Gift Aid needs a house name or number and a postcode";
     return null;
 };

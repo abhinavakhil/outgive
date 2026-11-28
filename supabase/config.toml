@@ -424,3 +424,30 @@ verify_jwt = false
 verify_jwt = false
 [functions.connect]
 verify_jwt = true
+[functions.pledge-recovery]
+# The cron calls with x-cron-secret only; "Run recovery now" is checked with has_role inside the function.
+verify_jwt = false
+[functions.morning-report]
+# The hourly cron calls with x-cron-secret only.
+verify_jwt = false
+[functions.journey-run]
+# Cron (x-cron-secret) and tracked email links call it without a Supabase JWT; "run now" checks the JWT itself.
+verify_jwt = false
+[functions.receipt-send]
+# Donors open receipt PDFs from their email; the receipt id is the key.
+verify_jwt = false
+[functions.year-end-statements]
+# Called by cron with x-cron-secret; admins pass their JWT and the function checks it.
+verify_jwt = false
+[functions.billing-webhook]
+# Stripe Billing (platform account) calls without a Supabase JWT; the Stripe signature (BILLING_WEBHOOK_SECRET) is checked instead.
+verify_jwt = false
+[functions.sms-inbound]
+# Twilio posts inbound texts without a Supabase JWT; the X-Twilio-Signature (TWILIO_AUTH_TOKEN) is checked instead.
+verify_jwt = false
+[functions.api]
+# The public REST API: callers send an Outgive API key (checked by api_auth), not a Supabase JWT.
+verify_jwt = false
+[functions.webhook-deliver]
+# Cron and webhook_kick call with x-cron-secret; the Headless API screen passes an admin's JWT and the function checks it.
+verify_jwt = false

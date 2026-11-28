@@ -9,6 +9,7 @@ import type { PageRef } from "@/shared/lib/route";
 import { fmt } from "@/shared/lib/money";
 import type { DonationRow, LiveItem, LiveLayout, LiveState, PageBundle } from "@/shared/domain/types";
 import { cx } from "@/shared/utils/cx";
+import type { PledgeLive } from "./HostConsole";
 
 /**
  * The live screen: a wall display for a giving day, gala or stream, in five layouts the presenter switches between from the console.
@@ -41,11 +42,14 @@ export const useLive = (pageRef?: PageRef) => {
     }, [db, org, bundle?.page.id]); // eslint-disable-line react-hooks/exhaustive-deps
     const state: LiveState = { ...(org?.live ?? {}), ...(bundle?.page.live ?? {}) };
     const recent: Activity[] = useMemo(() => (bundle ? bundle.donations.map((d) => ({ who: d.name, usd: d.usd_cents / 100, at: new Date(d.created_at).getTime(), cause: d.cause, message: d.message })) : orgRecent), [bundle, orgRecent]);
-    const totalUsd = bundle ? bundle.page.raised_cents / 100 / (CURRENCIES[bundle.page.currency] ?? 1) : board.reduce((n, o) => n + o.total, 0);
+    // The host console (HostConsole.tsx) adds tonight's cash, checks and Zelle to the organisation's total, and what is still pledged.
+    const host = bundle ? {} : (state as PledgeLive);
+    const totalUsd = bundle ? bundle.page.raised_cents / 100 / (CURRENCIES[bundle.page.currency] ?? 1) : board.reduce((n, o) => n + o.total, 0) + (host.offline_usd ?? 0);
+    const pledgedUsd = host.pledged_usd ?? 0;
     const goalUsd = bundle ? bundle.page.goal_cents / 100 / (CURRENCIES[bundle.page.currency] ?? 1) : state.goal_usd ?? 0;
     const items: LiveItem[] = state.items ?? [];
     const fundedToday = useMemo(() => { const since = startOfToday(); const m: Record<string, number> = {}; for (const g of recent) if (g.cause && g.at >= since) m[g.cause] = (m[g.cause] ?? 0) + 1; return m; }, [recent]);
-    return { bundle, gifts, last, state, recent, totalUsd, goalUsd, items, fundedToday };
+    return { bundle, gifts, last, state, recent, totalUsd, pledgedUsd, goalUsd, items, fundedToday };
 };
 
 /** Counts up to the value over half a second, so a new gift is seen landing. */
@@ -108,7 +112,7 @@ const Rank = ({ o, s, size = "md" }: { o: { id: string; name: string; total: num
 
 export const Live = ({ pageRef, layout: linkLayout, theme: linkTheme }: { pageRef?: PageRef; layout?: LiveLayout; theme?: "dark" | "light" }) => {
     const { org, brand, board, money, currency, href } = useApp();
-    const { bundle, gifts, last, state, recent, totalUsd, goalUsd, items, fundedToday } = useLive(pageRef);
+    const { bundle, gifts, last, state, recent, totalUsd, pledgedUsd, goalUsd, items, fundedToday } = useLive(pageRef);
     const [qr, setQr] = useState("");
     const [confetti, setConfetti] = useState(0);
     const [milestone, setMilestone] = useState<number | null>(null);
@@ -138,7 +142,7 @@ export const Live = ({ pageRef, layout: linkLayout, theme: linkTheme }: { pageRe
     const impact = brand.impact && brand.impact.usd > 0 && totalUsd >= brand.impact.usd ? <div className={cx("text-xl", s.soft)}>Enough for <b><span className="font-bubble">{Math.floor(totalUsd / brand.impact.usd).toLocaleString("en")}</span> {brand.impact.unit}</b></div> : null;
 
     if (!org) return null;
-    const Total = ({ size }: { size: "md" | "lg" | "xl" }) => <div><div className={cx("text-sm font-medium tracking-wide uppercase", s.muted)}>Raised so far</div><div className={cx("mt-2 leading-none font-bubble font-bold tabular-nums tracking-[-0.02em]", size === "xl" ? "text-[clamp(3.5rem,11vw,11rem)]" : size === "lg" ? "text-[clamp(3rem,9vw,9rem)]" : "text-[clamp(2rem,5vw,4.5rem)]")}>{money(Math.round(shown))}</div></div>;
+    const Total = ({ size }: { size: "md" | "lg" | "xl" }) => <div><div className={cx("text-sm font-medium tracking-wide uppercase", s.muted)}>Raised so far</div><div className={cx("mt-2 leading-none font-bubble font-bold tabular-nums tracking-[-0.02em]", size === "xl" ? "text-[clamp(3.5rem,11vw,11rem)]" : size === "lg" ? "text-[clamp(3rem,9vw,9rem)]" : "text-[clamp(2rem,5vw,4.5rem)]")}>{money(Math.round(shown))}</div>{pledgedUsd > 0 && <div className={cx("mt-3 font-bubble font-bold tabular-nums", size === "md" ? "text-xl" : "text-[clamp(1.25rem,2.4vw,2.25rem)]", s.soft)}>+ {money(Math.round(pledgedUsd))} pledged</div>}</div>;
     const Board = ({ limit = 10, size = "md" as "md" | "sm", heading = bundle ? "Top supporters" : "Leaderboard" }) => (
         <section className={cx("flex flex-col gap-3 rounded-3xl p-6 md:p-8", s.panel)}>
             <h2 className={cx("text-sm font-medium tracking-wide uppercase", s.muted)}>{heading}</h2>

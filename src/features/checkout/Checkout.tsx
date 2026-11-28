@@ -1,7 +1,9 @@
 import { useEffect, useLayoutEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { Loading } from "@/shared/ui";
 import { flag } from "@/shared/lib/flags";
-import { onTrack, sent } from "@/shared/lib/analytics";
+import { onTrack, sent, track } from "@/shared/lib/analytics";
+import { db, isDemo } from "@/shared/lib/db";
+import { assign, sessionId } from "./experiments";
 import { campaigns } from "@/shared/lib/campaign-store";
 import { PREFIX, type PageType } from "@/shared/domain/model";
 import { payConfigOf } from "@/shared/domain/types";
@@ -9,6 +11,9 @@ import { useApp } from "@/shared/lib/app-context";
 import { GiftTicket } from "./GiftTicket";
 import { HeroStage } from "./HeroStage";
 import { Pledge } from "./Pledge";
+import { Short } from "./Short";
+import { EmbedCheckout, ScheduleManage, usePublicCampaign } from "./Embed";
+import { DEFAULT_SETTINGS, toSettings, usCampaign, usSample } from "./us";
 import { type CheckoutCampaign, ICONS, SAMPLE, sampleFrom } from "./model";
 import { PayAnimation, soft } from "./parts";
 import { demoPayments } from "./payments";
@@ -16,22 +21,31 @@ import { type CheckoutProps, type Ck, type Layout, useCheckout } from "./useChec
 import "./checkout.css";
 
 const FONT = "https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap";
-const LAYOUTS = { hero: HeroStage, pledge: Pledge, ticket: GiftTicket };
+const LAYOUTS = { hero: HeroStage, pledge: Pledge, ticket: GiftTicket, nights: Short, compact: Short, kiosk: Short };
 
 /**
  * The donate checkout, in one of three layouts. Drop it into any app:
  *   <Checkout campaign={myCampaign} onPay={takePayment} />
  * The layout comes from the checkout_layout flag (?checkout_layout=hero|pledge|ticket, or VITE_FF_CHECKOUT_LAYOUT) unless `layout` is given.
  */
-export const Checkout = ({ layout, brand = "outgive", ...rest }: Omit<CheckoutProps, "layout"> & { layout?: Layout; brand?: string }) => {
-    const chosen = layout ?? flag("checkout_layout");
+export const Checkout = ({ layout, brand = "outgive", campaign: given, ...rest }: Omit<CheckoutProps, "layout"> & { layout?: Layout; brand?: string }) => {
+    // A running A/B test: this session's variant may change the amount buttons or the layout, and is kept on the gift.
+    const exp = given.experiment;
+    const [variant] = useState(() => (exp?.variants.length ? assign(exp, sessionId()) : null));
+    const campaign = useMemo(() => (variant?.presets?.length ? { ...given, presets: variant.presets } : given), [given, variant]);
+    useEffect(() => {
+        if (!exp || !variant) return;
+        track("checkout_experiment", { experiment: exp.id, variant: variant.id, campaign: given.id });
+        if (!isDemo) void db().then((d) => d.rpc("checkout_experiment_visit", { exp: exp.id, variant: variant.id, session: sessionId() })).catch(() => {});
+    }, [exp?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+    const chosen = variant?.layout ?? layout ?? flag("checkout_layout");
     // Embedded as a preview (the phone on the home page): it still scrolls, but shows no scrollbars. See .ck-preview in checkout.css.
     useLayoutEffect(() => { if (new URLSearchParams(location.search).has("preview")) document.documentElement.classList.add("ck-preview"); }, []);
     useEffect(() => {
         if (document.querySelector(`link[href="${FONT}"]`)) return;
         const l = document.createElement("link"); l.rel = "stylesheet"; l.href = FONT; document.head.appendChild(l);
     }, []);
-    return <Flow key={chosen} {...rest} layout={chosen} brand={brand} />;
+    return <Flow key={chosen} {...rest} campaign={campaign} experiment={exp && variant ? { id: exp.id, variant: variant.id } : undefined} layout={chosen} brand={brand} />;
 };
 const Flow = ({ brand, ...p }: CheckoutProps & { brand: string }) => {
     const ck = useCheckout(p);
@@ -110,6 +124,20 @@ const SAMPLE_ADDON = { id: "related", name: "[Related cause]", amount: 5 };
  * (its gifts are recorded in the campaign service).
  */
 export const CheckoutScreen = () => {
+    const q = new URLSearchParams(location.search);
+    if (q.has("embed")) return <EmbedCheckout />;
+    if (q.get("schedule")) return <ScheduleManage token={q.get("schedule")!} />;
+    if (q.get("region") === "us") return <UsSampleCheckout />;
+    return <SampleOrStore />;
+};
+/** /checkout?region=us: the US sample (a fictional charity in test mode), every add-on the builder defaults to. ?layout= picks one. */
+const UsSampleCheckout = () => {
+    const q = new URLSearchParams(location.search), s = toSettings({ ...DEFAULT_SETTINGS, ...(q.get("addons") ? { addons: q.get("addons")!.split(",") } : {}) });
+    const c = useMemo(() => usSample(s), []); // eslint-disable-line react-hooks/exhaustive-deps
+    useEffect(() => { document.title = `Give to ${c.charity}`; }, [c]);
+    return <Checkout campaign={c} brand={c.charity} />;
+};
+const SampleOrStore = () => {
     const key = new URLSearchParams(location.search).get("campaign");
     const [state, setState] = useState<{ c: CheckoutCampaign; storeId?: string } | "loading" | "missing">(key ? "loading" : { c: sampleFrom(location.search) });
     useEffect(() => {
@@ -142,8 +170,15 @@ export const CheckoutScreen = () => {
 export const OrgCheckout = () => {
     const { org } = useApp();
     if (!org) return null;
+    // A US organisation gets the US checkout from its saved builder settings, legal name, EIN and running A/B test.
+    if (org.currency === "USD" || org.country === "US") return <UsOrgCheckout slug={org.slug} brand={org.name} />;
     const campaign: CheckoutCampaign = { ...SAMPLE, id: `org/${org.slug}`, charity: org.name, payments: payConfigOf(org) };
     // Real payments need the charity's Stripe account; the checkout also wants a real backend and VITE_STRIPE_PUBLISHABLE_KEY, and simulates otherwise.
     const live = org.stripe_account_id && org.stripe_charges_enabled ? { org_id: org.id, stripeAccount: org.stripe_account_id } : undefined;
     return <Checkout campaign={campaign} brand={org.name.toLowerCase()} live={live} />;
+};
+const UsOrgCheckout = ({ slug, brand }: { slug: string; brand: string }) => {
+    const st = usePublicCampaign(slug);
+    if (!st) return <Loading full />;
+    return <Checkout campaign={st.c} layout={st.layout} live={st.live} brand={brand} />;
 };

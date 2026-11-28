@@ -21,12 +21,18 @@ serve(async (req) => {
     if (b.action === "onboard") {
         let acct = org.stripe_account_id as string | null;
         if (!acct) {
-            const country = (b.country ?? "GB").toUpperCase();
+            const country = (b.country ?? (org.country || "GB")).toUpperCase();
             if (!/^[A-Z]{2}$/.test(country)) return fail("country must be a two-letter code");
+            // US charities take direct charges (stripe.ts isDirect): the charity is the merchant of record, pays its own Stripe fees
+            // (so it gets Stripe's nonprofit rate once it applies), owns its disputes, and has the full Stripe dashboard. ACH is a capability.
+            const us = country === "US";
             const a = await s.accounts.create({
                 country, email: user.user.email ?? undefined,
-                controller: { fees: { payer: "application" }, losses: { payments: "application" }, stripe_dashboard: { type: "express" } },
-                capabilities: { card_payments: { requested: true }, transfers: { requested: true } },
+                controller: us
+                    ? { fees: { payer: "account" }, losses: { payments: "stripe" }, stripe_dashboard: { type: "full" } }
+                    : { fees: { payer: "application" }, losses: { payments: "application" }, stripe_dashboard: { type: "express" } },
+                capabilities: { card_payments: { requested: true }, transfers: { requested: true }, ...(us ? { us_bank_account_ach_payments: { requested: true } } : {}) },
+                ...(us ? { business_type: "non_profit" as const } : {}),
                 business_profile: { name: org.name, url: org.website || `${SITE_URL()}/o/${org.slug}`, product_description: "Charitable donations and fundraising" },
                 metadata: { org_id: org.id, org_slug: org.slug },
             });
@@ -42,6 +48,7 @@ serve(async (req) => {
         await db.from("orgs").update({ stripe_charges_enabled: !!a.charges_enabled, stripe_payouts_enabled: !!a.payouts_enabled }).eq("id", org.id);
         return json({ connected: true, charges_enabled: !!a.charges_enabled, payouts_enabled: !!a.payouts_enabled, details_submitted: !!a.details_submitted, requirements: a.requirements?.currently_due ?? [] });
     }
-    if (b.action === "dashboard") { const l = await s.accounts.createLoginLink(org.stripe_account_id); return json({ url: l.url }); }
+    // A full-dashboard (US, direct-charge) account signs in to Stripe itself; login links are only for Express dashboards.
+    if (b.action === "dashboard") { try { const l = await s.accounts.createLoginLink(org.stripe_account_id); return json({ url: l.url }); } catch { return json({ url: "https://dashboard.stripe.com" }); } }
     return fail("Unknown action");
 });

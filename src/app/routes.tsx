@@ -23,6 +23,10 @@ const Leaderboard = screen(() => import("@/features/leaderboard"), "Leaderboard"
 const Live = screen(() => import("@/features/live"), "Live");
 const Overlay = screen(() => import("@/features/live"), "Overlay");
 const Embed = screen(() => import("@/features/live"), "Embed");
+const HostConsole = screen(() => import("@/features/live/components/HostConsole"), "HostConsole");
+const PledgePay = screen(() => import("@/features/pledge-pay"), "PledgePay");
+const ImpactReport = screen(() => import("@/features/impact-report"), "ImpactReport");
+const Unsubscribe = screen(() => import("@/features/impact-report"), "Unsubscribe");
 const Give = screen(() => import("@/features/donate"), "Give");
 const Thanks = screen(() => import("@/features/donate"), "Thanks");
 const CreateFlow = screen(() => import("@/features/create"), "CreateFlow");
@@ -30,6 +34,9 @@ const Admin = screen(() => import("@/features/admin"), "Admin");
 const PageScreen = screen(() => import("@/features/campaign"), "PageScreen");
 const CheckoutScreen = screen(() => import("@/features/checkout"), "CheckoutScreen");
 const OrgCheckout = screen(() => import("@/features/checkout"), "OrgCheckout");
+const Engage = screen(() => import("@/features/engage"), "Engage");
+const ZakatPage = screen(() => import("@/features/zakat"), "ZakatPage");
+const ZakatEmbed = screen(() => import("@/features/zakat"), "ZakatEmbed");
 const NotFound = screen(() => import("@/shared/ui"), "NotFound");
 /** Design-system gallery; only built into dev. */
 const Gallery = import.meta.env.DEV ? screen(() => import("@/shared/ui/gallery"), "Gallery") : NotFound;
@@ -55,6 +62,9 @@ export const screenFor = (view: View): ReactNode => {
         case "pricing": return <Pricing />;
         case "blog": return <Blog />;
         case "post": return <Blog slug={view.slug} />;
+        case "engage": return <Engage section={view.section} />;
+        case "zakat-calculator": return <ZakatPage />;
+        case "zakat-embed": return <ZakatEmbed />;
         case "start": return <Start />;
         case "login": return <Login />;
         case "dashboard": return view.gift ? <Receipt gift={view.gift} /> : <Dashboard tab={view.tab} />;
@@ -67,6 +77,10 @@ export const screenFor = (view: View): ReactNode => {
         case "admin": return <Admin tab={view.tab} />;
         case "thanks": return <Thanks gref={view.ref} />;
         case "page": return <PageScreen key={`${view.page.type}/${view.page.slug}`} real={view.real} pageRef={view.page} manage={view.sub === "manage"} donate={view.sub === "donate" ? view.amount ?? true : undefined} />;
+        case "pledge": return <PledgePay token={view.token} />;
+        case "impact-report": return <ImpactReport token={view.token} />;
+        case "unsubscribe": return <Unsubscribe token={view.token} />;
+        case "host": return <HostConsole />;
         case "embed": return <Embed pageRef={view.page} theme={view.theme} limit={view.limit} />;
         default: return <NotFound />;
     }

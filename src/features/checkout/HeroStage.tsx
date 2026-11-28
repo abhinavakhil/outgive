@@ -1,7 +1,7 @@
 /** Layout 1, "Hero stage": the amount dial centre stage, with an impact card on the left and the running gift on the right. */
 import { cx } from "@/shared/utils/cx";
 import { impactFor } from "./model";
-import { AfterButtons, AmountInput, Details, Dial, Err, ExpressGiftAid, Extras, FreqSeg, GoldFrame, Later, Lines, Logo, Mandate, NEXT_FOOT, NextStep, NoPayments, Nudge, PayFields, PayState, Presets, Seg, Switch, Tribute, TrustPanel, Verified, Wallets, cta, dark, endCopy, matchInfo, payLabel, soft } from "./parts";
+import { AddonCards, DafPanel, EmployerMatch, FundChips, NightsPanel, UnitAmount, AfterButtons, AmountInput, Details, Dial, Err, ExpressGiftAid, Extras, FreqSeg, GoldFrame, Later, Lines, Logo, Mandate, NEXT_FOOT, NextStep, NoPayments, Nudge, PayFields, PayState, Presets, Seg, Switch, Tribute, TrustPanel, Verified, Wallets, cta, dark, endCopy, matchInfo, payLabel, soft } from "./parts";
 import type { Ck } from "./useCheckout";
 
 const NAMES = ["Amount", "Gift Aid", "Details", "Payment"];
@@ -18,18 +18,18 @@ const Framed = ({ shell, foot, footInk, tilt, className, children }: { shell: st
 export const HeroStage = ({ ck, brand, onShare, onStart }: { ck: Ck; brand: string; onShare?: () => void; onStart?: () => void }) => {
     const { s, c, f, q } = ck;
     const step = s.step, done = step === 4, match = matchInfo(ck), end = endCopy(ck);
-    const gaLabel = c.giftAid ? "Gift Aid" : "Extras";
+    const gaLabel = c.giftAid ? "Gift Aid" : ck.us ? "Add-ons" : "Extras", unit = ck.us ? "dollar" : "pound";
     const left = [
-        { shell: SHELL.coral, chip: "#FDE7E1", ink: "#8A3524", badge: f(s.amount), title: (impactFor(s.amount, c) || "Every pound helps").replace(/^./, (m) => m.toUpperCase()), sub: "Example from the charity", foot: q.match > 0 ? `${match.doubled && !q.matchCapped ? "Doubled" : "Matched"} until ${match.until}` : "Every pound counts" },
+        { shell: SHELL.coral, chip: "#FDE7E1", ink: "#8A3524", badge: f(s.amount), title: (impactFor(s.amount, c) || `Every ${unit} helps`).replace(/^./, (m) => m.toUpperCase()), sub: "Example from the charity", foot: q.match > 0 ? `${match.doubled && !q.matchCapped ? "Doubled" : "Matched"} until ${match.until}` : `Every ${unit} counts` },
         c.giftAid
             ? { shell: SHELL.gold, chip: "#FDF1C4", ink: "#6B5408", badge: "+25%", title: `Gift Aid turns ${f(q.total)} into ${f(q.total + ck.gaAdds)}`, sub: "Paid by HMRC, not by you", foot: "For UK taxpayers" }
             : { shell: SHELL.gold, chip: "#FDF1C4", ink: "#6B5408", badge: "Optional", title: "Small extras go a long way", sub: "Everything on this step is optional", foot: "Skip any of it" },
-        { shell: SHELL.green, chip: "#DDF4E8", ink: "#14573B", badge: "Private", title: "Your details stay with the charity", sub: "Used for your receipt and Gift Aid only", foot: "Never sold or shared" },
+        { shell: SHELL.green, chip: "#DDF4E8", ink: "#14573B", badge: "Private", title: "Your details stay with the charity", sub: ck.us ? "Used for your tax receipt only" : "Used for your receipt and Gift Aid only", foot: "Never sold or shared" },
         { shell: SHELL.blue, chip: "#E3EAFE", ink: "#2B3F8F", badge: "Secure", title: "Your bank confirms before we say thanks", sub: "Card details are encrypted and never stored by the charity", foot: "Protected checkout" },
     ][Math.min(3, step)];
     const titles = [c.title, "Make your gift go further", "Where should we send your receipt?", "How would you like to pay?"];
     const pct = Math.round((c.raised / c.goal) * 100);
-    const methods = ck.methods.map((m) => [m, <span key={m} className="flex flex-col items-center"><strong className="text-[16px] font-extrabold">{{ card: "Card", dd: "Direct Debit", bank: "Pay by bank" }[m as string] ?? m}</strong><span className="text-[12px] font-bold opacity-80">{{ card: "Debit or credit", dd: "Lowest fees", bank: "Approve in your app" }[m as string]}</span></span>] as [typeof m, React.ReactNode]);
+    const methods = ck.methods.map((m) => [m, <span key={m} className="flex flex-col items-center"><strong className="text-[16px] font-extrabold">{{ card: "Card", dd: "Direct Debit", bank: ck.us ? "Bank debit" : "Pay by bank" }[m as string] ?? m}</strong><span className="text-[12px] font-bold opacity-80">{{ card: ck.us ? "Apple Pay, Google Pay too" : "Debit or credit", dd: "Lowest fees", bank: ck.us ? "Lowest fees, ACH" : "Approve in your app" }[m as string]}</span></span>] as [typeof m, React.ReactNode]);
 
     return (
         <div className="ck flex min-h-dvh flex-col items-center bg-[#F3EFFC] [background-image:radial-gradient(circle_at_12%_18%,#F7D9FB_0,rgba(247,217,251,0)_42%),radial-gradient(circle_at_88%_30%,#D9E4FF_0,rgba(217,228,255,0)_44%),radial-gradient(circle_at_50%_100%,#FBD6CE_0,rgba(251,214,206,0)_46%)]">
@@ -38,6 +38,7 @@ export const HeroStage = ({ ck, brand, onShare, onStart }: { ck: Ck; brand: stri
                 <nav aria-label="Checkout steps" className="order-last -mx-4 flex w-[calc(100%+2rem)] gap-1 overflow-x-auto px-4 sm:order-none sm:mx-0 sm:w-auto sm:overflow-visible sm:px-0">
                     <div className="flex gap-1 rounded-[18px] border border-white bg-white/75 p-1.5 shadow-[0_6px_18px_rgba(110,80,200,0.10)]">
                         {NAMES.map((label, i) => {
+                            if (!ck.flow.includes(i)) return null;
                             const cur = i === step, past = i < step || done;
                             return (
                                 <button key={label} type="button" disabled={i > step || done} onClick={() => ck.go(i)} aria-current={cur ? "step" : undefined}
@@ -72,8 +73,9 @@ export const HeroStage = ({ ck, brand, onShare, onStart }: { ck: Ck; brand: stri
                                     <p className="m-0 text-center text-[15px] font-bold text-(--ck-coral-ink) lg:hidden">{f(s.amount)} could pay for {impactFor(s.amount, c)}</p>
                                     <div className="flex w-full flex-wrap gap-2.5"><Presets ck={ck} /><AmountInput ck={ck} className="flex-[1.3_1_120px]" /></div>
                                     <Err ck={ck} className="self-start" />
+                                    <div className="w-full"><NightsPanel ck={ck} /></div>
                                     <div className="flex w-full flex-wrap items-center gap-3">
-                                        <FreqSeg ck={ck} className="flex-[1_1_230px]" />
+                                        <FreqSeg ck={ck} className="flex-[1_1_300px]" />
                                         <button type="button" onClick={ck.next} className={cx(cta, "flex-[1.3_1_260px]")}>Continue with {f(s.amount)}</button>
                                     </div>
                                 </div>
@@ -98,11 +100,13 @@ export const HeroStage = ({ ck, brand, onShare, onStart }: { ck: Ck; brand: stri
                                                     </div>
                                                 </GoldFrame>
                                             )}
-                                            {!!c.funds?.length && (
+                                            {ck.us && <div className="flex flex-col gap-2.5"><h2 className="m-0 text-[16px] font-extrabold">Which fund?</h2><FundChips ck={ck} /><UnitAmount ck={ck} /></div>}
+                                            {ck.us && <AddonCards ck={ck} />}
+                                            {!ck.us && !!c.funds?.length && (
                                                 <div className="flex flex-col gap-2.5">
                                                     <h2 className="m-0 text-[16px] font-extrabold">Where should it go?</h2>
                                                     <div className="flex flex-wrap gap-2">
-                                                        {c.funds.map(([id, label]) => { const on = s.fund === id; return <button key={id} type="button" aria-pressed={on} onClick={() => ck.setFund(id)} className="ck-soft min-h-11 rounded-xl border-[1.5px] px-3.5 text-[13px] font-extrabold tracking-[0.3px] text-(--ck-link) shadow-[0_2px_6px_rgba(40,20,90,0.08)]" style={{ borderColor: on ? "var(--ck-accent-strong)" : "var(--ck-line)", background: on ? "var(--ck-accent-soft)" : "#fff" }}>{label}</button>; })}
+                                                        {c.funds.map(([id, label]) => { const on = s.fund === id; return <button key={id} type="button" aria-pressed={on} onClick={() => ck.setFund(id)} className="ck-soft min-h-11 rounded-xl border-[1.5px] px-3.5 text-[13px] font-extrabold tracking-[0.3px] text-(--ck-link) shadow-[0_2px_6px_rgba(40,20,90,0.08)]" style={{ borderColor: on ? "var(--ck-accent-strong)" : "var(--ck-line)", background: on ? "var(--ck-ink)" : "#fff", color: on ? "#fff" : undefined }}>{label}</button>; })}
                                                     </div>
                                                 </div>
                                             )}
@@ -112,6 +116,7 @@ export const HeroStage = ({ ck, brand, onShare, onStart }: { ck: Ck; brand: stri
                                         </>}
                                         {step === 2 && <><Details ck={ck} /><Err ck={ck} /></>}
                                         {step === 3 && <>
+                                            {ck.detailsOnPay && !s.express && <Details ck={ck} />}
                                             <ExpressGiftAid ck={ck} />
                                             <Wallets ck={ck} className="grid-cols-[repeat(auto-fit,minmax(min(130px,100%),1fr))]" />
                                             <NoPayments ck={ck} />
@@ -119,13 +124,14 @@ export const HeroStage = ({ ck, brand, onShare, onStart }: { ck: Ck; brand: stri
                                             {ck.methods.length > 1 && <div data-ck-methods><Seg label="Payment method" options={methods} value={ck.method} onPick={ck.setMethod} track="bg-(--ck-seg)" /></div>}
                                             <PayFields ck={ck} preview />
                                             <Mandate ck={ck} />
+                                            <DafPanel ck={ck} />
                                             <Err ck={ck} />
                                             <TrustPanel ck={ck} />
                                         </>}
                                     </div>
                                     <div className="sticky bottom-0 flex flex-wrap gap-3 rounded-b-[28px] border-t border-(--ck-sep) bg-white px-4 pt-4 pb-5 sm:static sm:rounded-b-[36px] sm:px-[30px] sm:pt-5 sm:pb-7">
                                         <button type="button" onClick={ck.back} className={soft}>Back</button>
-                                        <button type="button" onClick={ck.next} disabled={ck.busy} className={cx(cta, "flex-[1_1_220px]")}>{step === 1 ? "Continue" : step === 2 ? "Continue to payment" : payLabel(ck)}</button>
+                                        <button type="button" onClick={ck.next} disabled={ck.busy} className={cx(cta, "flex-[1_1_220px]")}>{step === 1 ? (ck.detailsOnPay ? "Continue to payment" : "Continue") : step === 2 ? "Continue to payment" : payLabel(ck)}</button>
                                     </div>
                                 </div>
                             )}
@@ -154,6 +160,7 @@ export const HeroStage = ({ ck, brand, onShare, onStart }: { ck: Ck; brand: stri
                             <div className="mt-auto flex items-baseline justify-between border-t-[1.5px] border-dashed border-(--ck-line) pt-3.5"><span className="text-[16px] font-extrabold">{end.total}</span><strong className="text-[34px] font-extrabold tracking-[-1px]">{f(q.total)}</strong></div>
                             <Later ck={ck} manage />
                             <TrustPanel ck={ck} />
+                            <EmployerMatch ck={ck} />
                             {!ck.pending && <button type="button" onClick={() => window.print()} className={cx(soft, "min-h-[52px] text-[15px] font-extrabold")}>Download receipt (PDF)</button>}
                         </Framed>
                         {ck.nextUp && (

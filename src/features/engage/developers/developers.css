@@ -1,0 +1,84 @@
+/* Headless API (/engage/api). Builds on engage.css; buttons stay sage, black or white. */
+.eg-dv { display: grid; gap: 16px; }
+.eg-dv-head { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 14px; padding: 18px 6px 4px; }
+.eg-dv-head h1 { font-size: clamp(28px, 3vw, 38px); letter-spacing: -.045em; line-height: 1.05; }
+.eg-dv-head .eg-muted { max-width: 62ch; margin-top: 6px; }
+.eg-dv-mode { margin: 0; }
+.eg-dv-mode .eg-tag { height: 32px; padding: 0 12px; border-radius: 999px; }
+.eg-dv-kpis .eg-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.eg-dv-foot { font-size: 13px; padding: 0 6px; }
+.eg-dv small { display: block; color: var(--muted); font-size: 12.5px; font-weight: 400; }
+.eg-dv code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: .88em; }
+.eg-dv h3 { font-size: 15px; letter-spacing: -.01em; }
+.eg-dv-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.eg-dv-row { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.eg-dv-note { margin: 10px 0 0; font-size: 13.5px; color: var(--muted); }
+.eg-dv-note code { overflow-wrap: anywhere; color: var(--ink); }
+
+/* code */
+.eg-dv-code .eg-tabs { align-self: start; max-width: 100%; padding: 4px; border-radius: 16px; background: var(--surface); }
+.eg-dv-code .eg-tab { min-height: 38px; padding: 0 14px; border-radius: 12px; }
+.eg-dv-pre { margin: 0; max-height: 440px; overflow: auto; padding: 16px 18px; border-radius: 14px; background: var(--ink); color: #EDEDE8; font-size: 13px; line-height: 1.6; tab-size: 2; }
+.eg-dv-pre code { font-size: inherit; white-space: pre; }
+
+/* lists: keys and endpoints */
+.eg-dv-list { display: grid; margin: 0; padding: 0; list-style: none; }
+.eg-dv-list > li { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 12px; padding: 12px 0; border-top: 1px solid var(--line); }
+.eg-dv-list > li:first-child { border-top: 0; padding-top: 2px; }
+.eg-dv-list > li.off { opacity: .6; }
+.eg-dv-grow { display: grid; gap: 2px; flex: 1 1 220px; }
+.eg-dv-grow b { font-weight: 500; }
+.eg-dv-grow > code { overflow-wrap: anywhere; }
+.eg-dv-url { overflow-wrap: anywhere; }
+.eg-dv-secret { display: flex !important; align-items: center; flex-wrap: wrap; gap: 4px 8px; }
+.eg-dv-secret code { overflow-wrap: anywhere; color: var(--ink); }
+.eg-dv-link { min-height: 32px; padding: 0 4px; border: 0; background: none; font: inherit; font-size: 12.5px; font-weight: 500; color: var(--ink); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+.eg-dv-keys > .eg-dv-row { margin-top: 2px; }
+.eg-dv-fresh { display: grid; gap: 10px; padding: 14px 16px; border-radius: 14px; background: var(--sage-soft); color: var(--sage-ink); font-size: 14px; }
+.eg-dv-fresh b { font-weight: 500; }
+.eg-dv-key { display: block; padding: 10px 12px; border-radius: 10px; background: #fff; color: var(--ink); overflow-wrap: anywhere; user-select: all; }
+
+/* add an endpoint */
+.eg-dv-form { display: grid; gap: 12px; padding: 16px; border-radius: 16px; background: var(--surface); }
+.eg-dv-form .eg-btn { justify-self: start; }
+.eg-dv-field { display: grid; gap: 5px; font-size: 13.5px; }
+.eg-dv-field > span { color: #555; }
+.eg-dv-field input { width: 100%; height: 44px; padding: 0 12px; border: 0; border-radius: 12px; background: #fff; font: inherit; color: var(--ink); box-shadow: inset 0 0 0 1px rgba(25, 25, 25, .08); }
+.eg-dv-events { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 4px 12px; margin: 0; padding: 0; border: 0; }
+.eg-dv-events legend { padding: 0; margin-bottom: 6px; font-size: 13.5px; color: #555; }
+.eg-dv-events label { display: flex; align-items: flex-start; gap: 10px; min-height: 44px; padding: 6px 0; cursor: pointer; }
+.eg-dv-events input { flex: none; width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--ink); }
+
+/* delivery log */
+.eg-dv-h3 { margin-top: 6px !important; }
+.eg-dv-scroll { overflow-x: auto; }
+.eg-dv-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.eg-dv-table th, .eg-dv-table td { padding: 10px; border-top: 1px solid var(--line); text-align: left; vertical-align: middle; font-weight: 400; }
+.eg-dv-table thead th { border-top: 0; padding-top: 2px; color: var(--muted); font-size: 12.5px; }
+.eg-dv-table th:first-child, .eg-dv-table td:first-child { padding-left: 0; }
+.eg-dv-table td small { max-width: 26ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 3px; }
+.eg-dv-act { text-align: right; white-space: nowrap; }
+
+/* integrations */
+.eg-dv-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+.eg-dv-tiles li { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 14px 16px; border-radius: 16px; background: var(--surface); }
+.eg-dv-tiles b { font-weight: 500; }
+.eg-dv-tiles small { flex: 1; }
+.eg-dv-tiles a { text-decoration-color: rgba(25, 25, 25, .3); text-underline-offset: 3px; }
+
+@media (max-width: 1100px) {
+    .eg-dv-grid { grid-template-columns: minmax(0, 1fr); }
+    .eg-dv-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 720px) {
+    .eg-dv-kpis .eg-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .eg-dv-table thead { display: none; }
+    .eg-dv-table, .eg-dv-table tbody, .eg-dv-table tr, .eg-dv-table th, .eg-dv-table td { display: block; }
+    .eg-dv-table tr { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+    .eg-dv-table th, .eg-dv-table td { padding: 0; border: 0; }
+    .eg-dv-table .eg-dv-act { grid-column: 2; grid-row: 1 / span 3; align-self: center; }
+    .eg-dv-pre { font-size: 12px; padding: 14px; }
+}
+@media (max-width: 480px) {
+    .eg-dv-tiles { grid-template-columns: minmax(0, 1fr); }
+}
