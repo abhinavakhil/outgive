@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 260" width="680" height="520" role="img"><title>Donors who give again next year</title><rect width="340" height="260" fill="#fff"/>
+<text x="20" y="32" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="15" font-weight="600" fill="#242424">Donors who give again next year</text>
+<path d="M64 206v-33.53846153846154a4 4 0 0 1 4-4h76a4 4 0 0 1 4 4v33.53846153846154z" fill="#BDBDBD"/><text x="106" y="158.46153846153845" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#242424">24%</text><text x="106" y="230" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="14" fill="#6B6B6B">New donors</text>
+<path d="M192 206v-99.23076923076923a4 4 0 0 1 4-4h76a4 4 0 0 1 4 4v99.23076923076923z" fill="#242424"/><text x="234" y="92.76923076923077" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#242424">66%</text><text x="234" y="230" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="14" fill="#6B6B6B">Returning</text>
+<line x1="48" y1="206" x2="292" y2="206" stroke="#E5E5E5"/>
+</svg>

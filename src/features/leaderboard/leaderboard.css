@@ -92,7 +92,7 @@
 
 /*
  * /leaderboard/v2: the same board in the /v2 landing page's world. Neutral paper and near-black ink, selected chips in ink,
- * orange for the action, deep olive for the #1 card, and sage, orange and lilac for the top three. Medium-weight, tight headings.
+ * green for the action (buttons are green, black or white only), deep olive for the #1 card, and sage, orange and lilac for the top three. Medium-weight, tight headings.
  */
 .lb-v2 {
     --color-brand-50: #f4f6e8; --color-brand-100: #e9eed3; --color-brand-200: #D2DBA0; --color-brand-300: #c4cf93; --color-brand-400: #8fa36a;
@@ -120,9 +120,9 @@
     --color-border-primary: #353536; --color-border-secondary: #262627;
 }
 .dark-mode .lb-v2 .bg-ink, .dark-mode .lb-v2 [aria-pressed="true"].bg-ink { color: #111111; }
-/* Orange action, as on /v2. */
+/* Green action, as on the landing page. Buttons are green, black or white; orange is never a button. */
 .lb-v2 .bg-cta { background-image: none; background-color: #D2DBA0; box-shadow: 0 8px 18px -8px rgba(110,125,60,.55); }
-.lb-v2 .bg-cta:hover { background-color: #E0662A; }
+.lb-v2 .bg-cta:hover { background-color: #C8D292; }
 /* Headings and big figures: medium weight, very tight, like /v2. */
 .lb-v2 h1, .lb-v2 h1 * { font-weight: 500; letter-spacing: -0.055em; }
 .lb-v2 .lb-script { color: #2F3A22; }
@@ -154,7 +154,7 @@
     background: radial-gradient(60% 34% at 50% 0%, #efe6f6 0%, rgb(239 230 246 / 0.5) 45%, transparent 80%), radial-gradient(40% 26% at 50% 36%, rgb(240 123 69 / 0.07), transparent 70%), #FFFFFF;
 }
 .lbg ::selection { background: var(--sage); color: var(--olive); }
-.lbg :focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+.lbg :focus-visible { outline: 2px solid #7B3FD6; outline-offset: 2px; }
 .lbg-title { font-size: clamp(38px, 5.6vw, 72px); line-height: 1; font-weight: 500; letter-spacing: -0.055em; text-wrap: balance; }
 .lbg-live { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; border-radius: 999px; background: #fff; box-shadow: 0 0 0 1px var(--rule); font-size: 12px; color: var(--muted); }
 .lbg-dot { width: 7px; height: 7px; border-radius: 50%; background: #8fa36a; box-shadow: 0 0 0 4px rgb(143 163 106 / 0.2); animation: lbg-blink 1.8s ease-in-out infinite; }
@@ -195,7 +195,7 @@
 .lbg-step:hover { background: #e6e6e6; }
 .lbg-input { height: 48px; padding: 0 16px; border-radius: 14px; background: #f4f4f4; color: var(--ink); font-size: 15px; outline: none; }
 .lbg-input::placeholder { color: var(--faint); }
-.lbg-input:focus { box-shadow: inset 0 0 0 2px var(--orange); }
+.lbg-input:focus { box-shadow: inset 0 0 0 2px var(--ink); }
 .lbg-select { appearance: none; cursor: pointer; background: #f4f4f4 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23888' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center; }
 .lbg-cta { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 48px; padding: 0 22px; border-radius: 999px; cursor: pointer; font-size: 15px; font-weight: 600; color: #191919; background: #D2DBA0; box-shadow: 0 10px 22px -10px rgba(110,125,60,.55); transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), background 0.2s ease; }
 .lbg-cta:hover { transform: translateY(-1px); background: #C5CF9A; }
@@ -211,7 +211,7 @@
 .lbg-avatar-sm { width: 28px; height: 28px; font-size: 10px; }
 .lbg-gap { padding: 3px 10px; border-radius: 999px; font-size: 12px; color: var(--muted); background: #f4f4f4; white-space: nowrap; }
 .lbg-claim { flex-shrink: 0; height: 32px; padding: 0 14px; border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer; color: var(--ink); box-shadow: inset 0 0 0 1px var(--rule); transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease; }
-.lbg-row:hover .lbg-claim, .lbg-claim:focus-visible { background: var(--orange); color: #fff; box-shadow: none; }
+.lbg-row:hover .lbg-claim, .lbg-claim:focus-visible { background: var(--ink); color: #fff; box-shadow: none; }
 .lbg-you { box-shadow: inset 0 0 0 2px var(--orange); }
 .lbg-tag { padding: 1px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; background: var(--orange); color: #fff; }
 

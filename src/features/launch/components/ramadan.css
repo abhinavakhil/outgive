@@ -5,7 +5,7 @@
         --rd-board: #191919; --rd-board-2: #111111; --rd-orchid: #F0783C;
         --rd-paper: #FFFFFF; --rd-paper-2: #F4F3F0; --rd-rule: #EEEEEE; --rd-ink: #191919; --rd-ink-2: #666666;
         /* named for the first (green) design; now the purple accent */
-        --rd-green: #191919; --rd-mono: #191919; --rd-gold: #D2DBA0;
+        --rd-green: #191919; --rd-mono: #191919; --rd-gold: #D2DBA0; --rd-focus: #7B3FD6;
         font-family: "Outfit", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
         font-weight: 400;
         color: var(--rd-ink);
@@ -57,18 +57,18 @@
     .rd-scallop { background: radial-gradient(circle at 18px 36px, var(--rd-paper) 17px, transparent 18px) 0 0 / 72px 36px repeat-x; }
     .rd-fold { position: absolute; right: 0; bottom: 0; width: 64px; height: 64px; background: linear-gradient(135deg, #fff 50%, transparent 50%); box-shadow: -6px -6px 12px rgb(0 0 0 / 0.05); border-top-left-radius: 10px; }
 
-    /* Buttons. The names date from the first design: -yellow is the main action, -dark the second one, -grey the quiet one.
-       On the board the main action is a pale glossy pill; on paper it is the purple pill. A board card on the paper goes back to the board look. */
-    .rd-btn-yellow, .rd-btn-light, .rd-sheet .rd-board .rd-btn-yellow { background: linear-gradient(180deg, #f7f6f2, #d8d7d1); color: #191919; box-shadow: inset 0 1px 0 #fff, 0 6px 14px rgb(0 0 0 / 0.22); }
-    .rd-btn-yellow:hover, .rd-btn-light:hover, .rd-sheet .rd-board .rd-btn-yellow:hover { background: linear-gradient(180deg, #fff, #e2e1db); }
-    .rd-sheet .rd-btn-yellow, .rd-btn-green { background: linear-gradient(180deg, #F0783C, #191919); color: #fff; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 6px 14px rgb(122 47 166 / 0.28); }
-    .rd-sheet .rd-btn-yellow:hover, .rd-btn-green:hover { background: linear-gradient(180deg, #F48A55, #000000); }
+    /* Buttons. The names date from the first design: -yellow is the main action (sage), -dark the second one (ink), -grey and
+       -light the quiet ones (white). Orange is never a button colour. */
+    .rd-btn-light { background: #fff; color: #191919; box-shadow: 0 0 0 1px rgb(25 25 25 / 0.08), 0 6px 14px rgb(0 0 0 / 0.22); }
+    .rd-btn-light:hover { background: #F4F3F0; }
+    .rd-btn-yellow, .rd-btn-green { background: #D2DBA0; color: #191919; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.6), 0 12px 26px -12px rgb(75 85 48 / 0.55); }
+    .rd-btn-yellow:hover, .rd-btn-green:hover { background: #C8D292; }
     .rd-btn-dark, .rd-sheet .rd-board .rd-btn-dark { background: rgb(0 0 0 / 0.22); color: #fff; box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.16); }
     .rd-btn-dark:hover, .rd-sheet .rd-board .rd-btn-dark:hover { background: rgb(0 0 0 / 0.34); }
-    .rd-sheet .rd-btn-dark { background: linear-gradient(180deg, #2A2A2A, #111111); color: #fff; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 6px 14px rgb(74 29 107 / 0.25); }
-    .rd-sheet .rd-btn-dark:hover { background: linear-gradient(180deg, #2A2A2A, #191919); }
-    .rd-btn-grey { background: #e4e2dc; color: #191919; box-shadow: inset 0 0 0 1px #d2cfc8; }
-    .rd-btn-grey:hover { background: #EEEEEE; }
+    .rd-sheet .rd-btn-dark { background: #191919; color: #fff; box-shadow: 0 6px 14px rgb(25 25 25 / 0.2); }
+    .rd-sheet .rd-btn-dark:hover { background: #2A2A2A; }
+    .rd-btn-grey { background: #fff; color: #191919; box-shadow: inset 0 0 0 1px #d2cfc8; }
+    .rd-btn-grey:hover { background: #F4F3F0; }
     .rd-btn-yellow, .rd-btn-light, .rd-btn-dark, .rd-btn-green, .rd-btn-grey { transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), background 0.2s ease; }
     .rd-btn-yellow:hover, .rd-btn-light:hover, .rd-btn-dark:hover, .rd-btn-green:hover, .rd-btn-grey:hover { transform: translateY(-1px); }
     .rd-btn-yellow:active, .rd-btn-light:active, .rd-btn-dark:active, .rd-btn-green:active, .rd-btn-grey:active { transform: translateY(1px); }
@@ -76,7 +76,7 @@
     .rd-chip:hover { background: rgb(255 255 255 / 0.17); }
     .rd-chip[aria-pressed="true"] { background: #fff; color: #191919; }
     .rd a:focus-visible, .rd button:focus-visible, .rd input:focus-visible { outline: 3px solid var(--rd-gold); outline-offset: 3px; }
-    .rd-sheet a:focus-visible, .rd-sheet button:focus-visible, .rd-sheet input:focus-visible { outline-color: var(--rd-green); }
+    .rd-sheet a:focus-visible, .rd-sheet button:focus-visible, .rd-sheet input:focus-visible { outline-color: var(--rd-focus); }
     .rd-sheet .rd-board a:focus-visible, .rd-sheet .rd-board button:focus-visible { outline-color: var(--rd-gold); }
 
     /* Medals: a white embossed disc hanging on two purple and white ribbons. */

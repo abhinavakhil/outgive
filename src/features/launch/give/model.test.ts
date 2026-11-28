@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_PAGE } from "../bio/model";
-import { type Choice, type Item, expiryOk, impactOf, levelOf, luhn, menuFrom, nightsFor, quote, splitOf } from "./model";
+import { type Choice, type Item, expiryOk, impactOf, levelOf, luhn, menuFrom, nightsFor, quote, receiptPdf, splitOf } from "./model";
 
 const menu = menuFrom(DEFAULT_PAGE);
 const base: Choice = { qty: { food: 2, water: 1 }, mode: "10", picked: [], boost: 0, roundUp: false, cover: false, giftAid: false, tip: 0, qadr: 0, extra: 0 };
@@ -88,5 +88,20 @@ describe("splitOf", () => {
     it("puts a gift with no items on the general fund", () => {
         const c = ch({ qty: {}, mode: "once", amount: 20 });
         expect(splitOf(c, quote(c, menu), menu)).toEqual({ general: 2000 });
+    });
+});
+
+describe("receipt PDF", () => {
+    const pdf = receiptPdf("Donation receipt · Clearwell Trust", ["Receipt RG-1 · 1 March 2027", "Donor: Aisha O’Khan (سارة)"], [["Donation", "£70.00"], ["Total charged", "£77.15"]], ["Thank you"]);
+    it("carries the figures it is given, in Latin-1", () => {
+        expect(pdf.startsWith("%PDF-1.4")).toBe(true);
+        expect(pdf).toContain("(Total charged)"); expect(pdf).toContain("(£77.15)"); expect(pdf).toContain("(Donor: Aisha O'Khan \\(????\\))");
+        expect([...pdf].every((c) => c.charCodeAt(0) < 256)).toBe(true);
+    });
+    it("has a cross-reference table that points at each object", () => {
+        const offsets = [...pdf.matchAll(/^(\d{10}) 00000 n /gm)].map((m) => Number(m[1]));
+        expect(offsets).toHaveLength(6);
+        offsets.forEach((o, i) => expect(pdf.slice(o, o + 8)).toBe(`${i + 1} 0 obj\n`));
+        expect(pdf.slice(Number(/startxref\n(\d+)/.exec(pdf)![1])).startsWith("xref")).toBe(true);
     });
 });

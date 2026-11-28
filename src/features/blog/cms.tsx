@@ -6,17 +6,18 @@
 import { useEffect, useState } from "react";
 import { PortableText, type PortableTextComponents } from "@portabletext/react";
 import type { Audience, Post } from "./posts";
-import { A, Note } from "./posts/kit";
+import { A, Figure, Gallery, Note, Pull } from "./posts/kit";
 
 const PROJECT = import.meta.env.VITE_SANITY_PROJECT_ID as string | undefined;
 const DATASET = (import.meta.env.VITE_SANITY_DATASET as string | undefined) || "production";
 export const CMS_ON = !!PROJECT;
 
+const IMG = `"url": asset->url, "width": asset->metadata.dimensions.width, "height": asset->metadata.dimensions.height`;
 const QUERY = `*[_type == "post" && defined(slug.current) && !(_id in path("drafts.**"))] | order(publishedAt desc) {
   "slug": slug.current, title, description, audience, "published": publishedAt, "updated": coalesce(updatedAt, _updatedAt),
   answer, takeaways, "faq": faq[]{question, answer}, "sources": sources[]{name, url}, author,
   "cover": cover.asset->url, "coverAlt": cover.alt,
-  body[]{..., _type == "image" => {..., "url": asset->url}}
+  body[]{..., _type == "image" => {..., ${IMG}}, _type == "gallery" => {..., images[]{..., ${IMG}}}}
 }`;
 
 type Block = { _type: string; children?: { text?: string }[]; text?: string };
@@ -26,11 +27,17 @@ type Doc = {
     author?: string; cover?: string; coverAlt?: string; body?: Block[];
 };
 
+type SanityImg = { url?: string; alt?: string; width?: number; height?: number };
+/** Sanity's image CDN resizes on request: 1400px covers the 680px column on a 2x screen. */
+const img = (i: SanityImg) => ({ src: `${i.url}?w=1400&auto=format`, alt: i.alt ?? "", width: i.width ?? 1400, height: i.height ?? 933 });
+
 const components: PortableTextComponents = {
     types: {
-        image: ({ value }) => value.url ? <figure><img src={`${value.url}?w=1400&auto=format`} alt={value.alt ?? ""} loading="lazy" />{value.caption && <figcaption>{value.caption}</figcaption>}</figure> : null,
+        image: ({ value }) => value.url ? <Figure {...img(value)} caption={value.caption} /> : null,
+        gallery: ({ value }) => <Gallery images={((value.images ?? []) as SanityImg[]).filter((i) => i.url).map(img)} caption={value.caption} />,
         note: ({ value }) => <Note title={value.title ?? "Note"}><p>{value.text}</p></Note>,
     },
+    block: { pull: ({ children }) => <Pull>{children}</Pull> },
     marks: { link: ({ value, children }) => /^https?:\/\//.test(value?.href ?? "") && !value.href.includes("outgive.tech") ? <A href={value.href}>{children}</A> : <a href={value?.href}>{children}</a> },
 };
 
