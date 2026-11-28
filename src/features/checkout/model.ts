@@ -2,7 +2,14 @@
  * Checkout maths, shared by every layout. Plain functions over major currency units (pounds, dollars), rounded to pennies.
  * A host app describes its campaign as a CheckoutCampaign; nothing here knows about Outgive's data.
  */
-export type Freq = "once" | "monthly" | "yearly";
+import { nextFriday, nightCharges, nightPlan } from "../../../supabase/functions/nightly-charge/plan";
+import type { Experiment } from "./experiments";
+
+/**
+ * "nights": one gift on each of the last ten nights of Ramadan, charged night by night from a saved payment method.
+ * "weekly": Jumu'ah giving, every Friday (US; offered when the campaign's appeal is weekly).
+ */
+export type Freq = "once" | "monthly" | "yearly" | "weekly" | "nights";
 export type Method = "card" | "dd" | "bank" | "wallet" | "apple" | "paypal";
 export type Tone = "violet" | "coral" | "green" | "gold";
 
@@ -11,7 +18,13 @@ export type Tone = "violet" | "coral" | "green" | "gold";
  * giftAidEligible: true only when the add-on is a further donation with nothing given back (an extra gift to a fund).
  * Leave it off for anything bought or carrying a benefit (a ticket, merchandise, a raffle entry). Fee cover never counts.
  */
-export interface Extra { id: string; name: string; desc?: string; price: number | "fee"; tone: Tone; icon: string; tribute?: boolean; giftAidEligible?: boolean }
+export interface Extra {
+    id: string; name: string; desc?: string; price: number | "fee"; tone: Tone; icon: string; tribute?: boolean; giftAidEligible?: boolean;
+    /** Priced per person or per day: price × the donor's count (Zakat al-Fitr per person, Fidya per missed fast). */
+    unit?: { one: string; many: string; max: number };
+    /** The fund this line is credited to, when it is not the gift's own (zakat_al_fitr, fidya). Kept on its own receipt line. */
+    fund?: string;
+}
 
 /**
  * A match pledge from a named sponsor. It counts only while confirmed, up to the deadline and inside the caps;
@@ -89,8 +102,28 @@ export interface CheckoutCampaign {
      * Leave out to offer everything (the sample). All false: the checkout says it cannot take payments yet.
      */
     payments?: PayConfig;
-    /** Card fee estimate: rate and fixed part, for "cover the fee". */
+    /** Card fee estimate: rate and fixed part (major units), for "cover the fee". */
     fee?: { rate: number; fixed: number };
+    /** US: dollars, EIN and tax-deductible wording, no Gift Aid, no PayPal. Unset: worked out from the currency (regionOf). */
+    region?: "US" | "UK";
+    /** The add-ons the charity switched on in the checkout builder (us.ts ADDONS). Unset on UK campaigns, which use `extras` as they are. */
+    addons?: string[];
+    /** The charity pre-ticks "cover the fees". It is then always shown, never hidden. */
+    coverDefault?: boolean;
+    /** The last-ten-nights schedule: the ISO date of night 21's evening (moves with the moon sighting). */
+    nights?: { start: string };
+    /** Amount buttons for a fund that needs its own (Zakat gifts run larger). */
+    fundPresets?: Record<string, number[]>;
+    /** A fund priced per person or per day (Zakat al-Fitr, Fidya): the amount is price × count. */
+    perUnitFunds?: Record<string, { price: number; one: string; many: string; max: number }>;
+    /** "Round up to a milestone": the appeal's milestones come every `step` (a table's goal, say), named in `label`. */
+    milestone?: { step: number; label: string };
+    /** For "give from my donor-advised fund": the charity's mailing address and any note for the DAF sponsor. */
+    daf?: { address: string; note?: string };
+    /** The appeal is weekly (Jumu'ah): offer "Every Friday" (Appeal.weekly on the bio page's appeals). US only. */
+    weekly?: boolean;
+    /** The organisation's running A/B test of ask amounts or layouts (experiments.ts). The checkout picks a sticky variant. */
+    experiment?: Experiment | null;
 }
 
 export const FREQS: Freq[] = ["once", "monthly", "yearly"];
@@ -98,8 +131,12 @@ export const FREQ_LABEL: Record<Freq, { short: string; line: string; every: stri
     once: { short: "One-off", line: "One-off gift", every: "", sentence: "once" },
     monthly: { short: "Monthly", line: "Every month", every: "every month", sentence: "every month" },
     yearly: { short: "Yearly", line: "Every year", every: "every year", sentence: "every year" },
+    weekly: { short: "Fridays", line: "Every Friday", every: "every Friday", sentence: "every Friday" },
+    nights: { short: "Last ten nights", line: "Each of the last ten nights", every: "each night", sentence: "on each of the last ten nights" },
 };
 export const METHOD_NAME: Record<Method, string> = { card: "Card", dd: "Direct Debit", bank: "Pay by bank", wallet: "Apple Pay", apple: "Apple Pay", paypal: "PayPal" };
+/** "bank" is ACH bank debit in the US, pay by bank in the UK. */
+export const methodName = (m: Method, us: boolean) => (us && m === "bank" ? "Bank debit" : METHOD_NAME[m]);
 
 export const MIN = 2, MAX = 10000;
 /** The dial runs DIAL_MIN..DIAL_MAX in steps of 5; typing reaches anything MIN..MAX. */
@@ -113,7 +150,13 @@ export const money = (n: number, currency: string, locale = "en-GB") => {
     return new Intl.NumberFormat(locale, { style: "currency", currency, minimumFractionDigits: Number.isInteger(r) ? 0 : 2, maximumFractionDigits: 2 }).format(r);
 };
 
-export const feeFor = (amount: number, c: Pick<CheckoutCampaign, "fee">) => round2(amount * (c.fee?.rate ?? 0.015) + (c.fee?.fixed ?? 0.2));
+const feeOf = (c: Pick<CheckoutCampaign, "fee">) => ({ rate: c.fee?.rate ?? 0.015, fixed: Math.round((c.fee?.fixed ?? 0.2) * 100) });
+/** What covers the processor's fee on a charge of `amount`, so the charity nets all of it: (A + f) / (1 − p) − A, rounded up to the cent. */
+export const feeFor = (amount: number, c: Pick<CheckoutCampaign, "fee">) => {
+    const f = feeOf(c), cents = Math.round(amount * 100);
+    return cents > 0 ? Math.ceil((cents + f.fixed) / (1 - f.rate) - cents - 1e-9) / 100 : 0;
+};
+export const regionOf = (c: Pick<CheckoutCampaign, "region" | "currency">): "US" | "UK" => c.region ?? (c.currency === "USD" ? "US" : "UK");
 
 /** 0..1 around the dial for an amount. */
 export const dialRatio = (amount: number) => Math.min(1, Math.max(0, (amount - DIAL_MIN) / (DIAL_MAX - DIAL_MIN)));
@@ -133,6 +176,8 @@ export const ratioAt = (dx: number, dy: number, prevAmount: number, dragging: bo
 
 /** The next charge: same day next month or year, or the month's last day when it is shorter (31 Jan → 28 Feb, not 3 Mar). */
 export const nextDate = (freq: Freq, from = new Date()) => {
+    // Weekly: the next Friday after today (a gift made on a Friday is this Friday's), at noon local time for display.
+    if (freq === "weekly") { const [y, m, dd] = nextFriday(from).split("-").map(Number); return new Date(y, m - 1, dd, 12); }
     const d = new Date(from), day = d.getDate();
     d.setDate(1);
     d.setMonth(d.getMonth() + (freq === "monthly" ? 1 : freq === "yearly" ? 12 : 0));
@@ -225,27 +270,48 @@ export interface Quote {
     today: { lines: QuoteLine[]; total: number };
     /** Each later payment of a regular gift, with its Gift Aid and first date; null for a one-off. Later payments are not matched here. */
     later: { lines: QuoteLine[]; total: number; giftAid: number; next: Date } | null;
+    /** The last-ten-nights schedule: nothing is charged today, each night is charged on its own. `total` above is the whole schedule. */
+    nights: { units: number; charges: { night: number; date: string; due: string; units: number; total: number }[] } | null;
 }
+export interface QuoteState { amount: number; freq: Freq; picks: Record<string, boolean>; ga: boolean; counts?: Record<string, number>; odd?: boolean; round?: number; fund?: string }
+/** The donor's count for a per-unit extra, kept between 1 and its maximum. */
+export const countOf = (x: Pick<Extra, "id" | "unit">, counts?: Record<string, number>) => Math.max(1, Math.min(x.unit?.max ?? 1, Math.round(counts?.[x.id] ?? 1)));
 const sum = (ls: QuoteLine[], k: "value" | "giftAid") => round2(ls.reduce((t, l) => t + l[k], 0));
-export const quote = (s: { amount: number; freq: Freq; picks: Record<string, boolean>; ga: boolean }, c: CheckoutCampaign, now = new Date()): Quote => {
-    const fee = feeFor(s.amount, c), regular = s.freq !== "once", ga = !!c.giftAid && s.ga;
+/**
+ * Everything the donor is charged, line by line. Each add-on, Zakat al-Fitr, Fidya, a round-up and the covered fee is a line of its own,
+ * so a Zakat amount is never blended with anything else. On a one-off gift the fee covers the whole charge; on a regular gift it covers
+ * the repeating gift; on the ten nights each night's charge covers its own fee.
+ */
+export const quote = (s: QuoteState, c: CheckoutCampaign, now = new Date()): Quote => {
+    const regular = s.freq === "monthly" || s.freq === "yearly" || s.freq === "weekly", ga = !!c.giftAid && s.ga, us = regionOf(c) === "US";
+    const plan = s.freq === "nights" ? nightPlan(c.nights?.start, !!s.odd, now) : null;
+    const units = plan?.reduce((t, n) => t + n.units, 0) ?? 1, gift = round2(s.amount * units);
     const line = (key: string, label: string, value: number, repeats: boolean, donation: boolean): QuoteLine =>
         ({ key, label, value, when: repeats && regular ? "recurring" : "once", giftAid: ga && donation ? round2(value * GIFT_AID_RATE) : 0 });
-    const lines = [line("gift", `${FREQ_LABEL[s.freq].short} gift`, s.amount, true, true)];
-    let cover = 0;
+    const fundName = us && s.fund ? c.funds?.find(([id]) => id === s.fund)?.[1] : "";
+    const giftLabel = fundName ? `${fundName}${plan ? `, ${plan.length} nights${s.odd ? ", double on odd nights" : ""}` : regular ? `, ${FREQ_LABEL[s.freq].every}` : ""}` : `${FREQ_LABEL[s.freq].short} gift`;
+    const lines = [line("gift", giftLabel, gift, true, true)];
+    let wantCover = false;
     for (const x of c.extras ?? []) {
         if (!s.picks[x.id] || x.tribute) continue;
-        if (x.price === "fee") cover = fee;
-        else lines.push(line(x.id, x.name.replace(/^Add an? /, "").replace(/^./, (m) => m.toUpperCase()), x.price, false, !!x.giftAidEligible));
+        if (x.price === "fee") { wantCover = true; continue; }
+        const n = countOf(x, s.counts), name = x.name.replace(/^Add an? /, "").replace(/^./, (m) => m.toUpperCase());
+        lines.push(line(x.id, x.unit ? `${name}, ${n} ${n === 1 ? x.unit.one : x.unit.many}` : name, round2(x.price * n), false, !!x.giftAidEligible));
     }
-    if (cover) lines.push(line("fee", "Card fee", cover, true, false));
+    if (s.round && s.round > 0) lines.push(line("round", "Round up", round2(s.round), false, true));
+    const extras = round2(lines.slice(1).reduce((t, l) => t + l.value, 0));
+    const charges = plan ? nightCharges(Math.round(s.amount * 100), plan, Math.round(extras * 100), true, feeOf(c)) : null;
+    const fee = charges ? charges.reduce((t, n) => t + n.cover, 0) / 100 : feeFor(regular ? s.amount : s.amount + extras, c);
+    const cover = wantCover ? fee : 0;
+    if (cover) lines.push(line("fee", us ? "Cover the fees" : "Card fee", cover, true, false));
     const again = lines.filter((l) => l.when === "recurring");
-    const recur = round2(s.amount + cover), total = sum(lines, "value"), oneOff = round2(total - recur), giftAid = sum(lines, "giftAid");
-    const m = matchFor(c.match, s.amount, now);
+    const total = sum(lines, "value"), recur = plan ? s.amount : round2(s.amount + cover), oneOff = round2(total - recur), giftAid = sum(lines, "giftAid");
+    const m = matchFor(c.match, gift, now);
     return {
         fee, oneOff, recur, total, giftAid, match: m.amount, matchReason: m.reason, matchCapped: m.capped,
-        receives: round2(s.amount + oneOff + giftAid + m.amount), lines, today: { lines, total },
+        receives: round2(total - cover + giftAid + m.amount), lines, today: plan ? { lines: [], total: 0 } : { lines, total },
         later: regular ? { lines: again, total: sum(again, "value"), giftAid: sum(again, "giftAid"), next: nextDate(s.freq, now) } : null,
+        nights: charges ? { units, charges: charges.map((n) => ({ night: n.night, date: n.date, due: n.due, units: n.units, total: (wantCover ? n.total : n.total - n.cover) / 100 })) } : null,
     };
 };
 
@@ -256,7 +322,9 @@ export const PAY_KEY: Record<Method, PayKey> = { card: "card", apple: "wallets",
 export const allows = (pay: PayConfig | undefined, k: PayKey) => !pay || !!pay[k];
 
 /** Payment methods offered: Direct Debit only makes sense for regular gifts, pay-by-bank only for one-off; then only what the charity has switched on. */
-export const methodsFor = (freq: Freq, layout: "hero" | "pledge" | "ticket", pay?: PayConfig): Method[] => {
+export const methodsFor = (freq: Freq, layout: string, pay?: PayConfig, us?: { bank: boolean }): Method[] => {
+    // US: card (Apple Pay and Google Pay ride on it) and, from the bank add-on, ACH bank debit. No PayPal, no Direct Debit.
+    if (us) return (["card", ...(us.bank ? ["bank" as const] : [])] as Method[]).filter((m) => allows(pay, PAY_KEY[m]));
     const regular = freq !== "once";
     const all: Method[] = layout === "ticket" ? ["apple", "card", regular ? "dd" : "bank", "paypal"]
         : layout === "pledge" ? (regular ? ["dd", "card", "wallet"] : ["card", "bank", "wallet"])

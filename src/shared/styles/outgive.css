@@ -4,7 +4,7 @@
 @font-face { font-family: "Junicode"; src: url("/fonts/Junicode-Roman.woff2") format("woff2"); font-weight: 400 700; font-display: swap; }
 @font-face { font-family: "Junicode Italic"; src: url("/fonts/Junicode-Italic.woff2") format("woff2"); font-weight: 400 700; font-display: swap; }
 
-/* Outgive look, from the Outgive design system: white ground, ink #191919 text and primary buttons, neutral greys, orange #F0783C for giving.
+/* Outgive look, from the Outgive design system: white ground, ink #191919 text and primary buttons, neutral greys. Buttons are green #D2DBA0, black or white; orange #F0783C is colour only (bars, badges, highlights), never a button.
    Outfit for every heading and body; Playwrite US Trad as the one script word. The old token names are kept so every screen picks this up. */
 @theme {
     --font-body: "Outfit", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -30,7 +30,7 @@
     --color-brand-900: #0E0E0E;
     --color-brand-950: #080808;
 
-    /* Orange: the give action (design system "orange", "peach-soft"). */
+    /* Orange: colour only (bars, badges, avatars, highlights). Never a button: buttons use bg-cta (green), ink or white. */
     --color-pop-100: #FDEBDF;
     --color-pop-300: #F0783C;
     --color-pop-400: #E0662A;
@@ -132,7 +132,7 @@
     --background-color-ink: var(--color-brand-600); --text-color-ink-inverse: #ffffff; --background-color-ink-inverse: #ffffff; --ring-color-ink: var(--color-brand-600); --border-color-ink: var(--color-brand-600);
     --color-raised: var(--ts-raised); --color-raised-hover: var(--ts-raised-hover); --color-tint-1: var(--ts-tint-1); --color-tint-2: var(--ts-tint-2); --color-tint-3: var(--ts-tint-3);
     --color-field: var(--ts-field); --color-field-hover: var(--ts-field-hover); --color-hairline: var(--ts-border);
-    --color-cta: #D2DBA0; --color-cta-hover: #C5CF9A; --color-cta-ink: #191919; --color-cta-blue: var(--ts-cta-text);
+    --color-cta: #D2DBA0; --color-cta-hover: #C8D292; --color-cta-ink: #191919; --color-cta-blue: var(--ts-cta-text);
     --shadow-edge: var(--ts-edge); --shadow-lift: var(--ts-lift);
     --shadow-press: 0 3px 0 rgb(0 0 0 / 0.15);
     --color-paper: var(--ts-paper); --color-prose: var(--ts-prose); --shadow-soft: var(--ts-soft);
@@ -214,7 +214,7 @@ body {
     --f-ph: #A8A8A8; --f-line: #EEEEEE; --f-line-2: #F2F2F2; --f-soft: #FAFAF8; --f-chip: #F4F3F0; --f-kbd: #F4F3F0; --f-story: #333333; --f-card: #fff; --f-mark: #D2DBA0;
     --f-rec-bg: #FDEBDF; --f-rec: #C24A14; --f-rec-dot: #F0783C; --f-cloud: #fff;
     --f-glow: rgb(198 174 232 / 0.35); --f-sky-1: #efe6f6; --f-sky-2: #faf7fc;
-    --f-cta: #F0783C; --f-cta-hover: #E0662A; --f-cta-ink: #191919; --f-cta-arrow: #191919;
+    --f-cta: #D2DBA0; --f-cta-hover: #C8D292; --f-cta-ink: #191919; --f-cta-arrow: #191919;
     font-family: "Outfit", ui-sans-serif, system-ui, sans-serif !important;
     background: linear-gradient(180deg, var(--f-sky-1) 0%, var(--f-sky-2) 48%, #fff 100%); color: var(--f-ink);
 }
@@ -224,7 +224,7 @@ body {
     --f-ink: #F2F2F2; --f-blue: #F2F2F2; --f-ice: #2A2A2A; --f-sky: #4A3A66; --f-sel: #C6AEE8; --f-ice-line: #3A3A3A; --f-body: #C9C9C9; --f-grey: #A8A8A8; --f-faint: #8A8A8A;
     --f-ph: #6F6F6F; --f-line: #333333; --f-line-2: #2A2A2A; --f-soft: #202020; --f-chip: #2A2A2A; --f-kbd: #2A2A2A; --f-story: #D6D6D6; --f-card: #242424; --f-mark: rgb(210 219 160 / 0.85);
     --f-rec-bg: rgb(240 120 60 / 0.18); --f-rec: #F4A57E; --f-cloud: rgb(255 255 255 / 0.05);
-    --f-glow: rgb(0 0 0 / 0.5); --f-cta: #F0783C; --f-cta-hover: #F48A55; --f-cta-ink: #191919; --f-cta-arrow: #191919;
+    --f-glow: rgb(0 0 0 / 0.5); --f-cta: #D2DBA0; --f-cta-hover: #C8D292; --f-cta-ink: #191919; --f-cta-arrow: #191919;
     background: linear-gradient(180deg, #231c2b 0%, #1c1a1f 48%, #191919 100%);
 }
 .dark-mode .focus-bg[data-accent="pink"] { --f-blue: #F2F2F2; }

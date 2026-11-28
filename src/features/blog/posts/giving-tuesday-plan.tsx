@@ -1,5 +1,8 @@
 import type { Post } from "../posts";
-import { A, Note, Table } from "./kit";
+import { A, Figure, Gallery, Note, Table } from "./kit";
+import decemberShare from "./img/december-share.svg?inline";
+import phoneConversion from "./img/phone-conversion.svg?inline";
+import donorRetention from "./img/donor-retention.svg?inline";
 
 export const givingTuesday: Post = {
     slug: "giving-tuesday-2026-plan",
@@ -41,6 +44,8 @@ export const givingTuesday: Post = {
                 One day isn't the whole story, though. In the <A href="https://mrbenchmarks.com/fundraising/">M+R Benchmarks 2026</A> study, <strong>37% of nonprofits' annual online revenue came in December</strong>, 10% in the last week of the year and 4% on December 31 alone. Europe shows the same pattern: in Germany, December 2025 accounted for <strong>24% of all private donations for the year</strong> (€1.124 billion), according to the <A href="https://www.spendenrat.de/bilanz-des-helfens-2025/">Deutscher Spendenrat</A>. Treat GivingTuesday as the launch of your year-end campaign, not a one-off.
             </p>
 
+            <Figure src={decemberShare} width={1360} height={500} alt="Bar chart: 37% of a nonprofit's annual online revenue arrives in December, 10% in the last week of the year and 4% on December 31." caption="December carries more than a third of the year's online revenue. Data: M+R Benchmarks 2026." />
+
             <h2>Days 25 to 18: what is your goal, and who will match it?</h2>
             <ul>
                 <li>
@@ -63,6 +68,14 @@ export const givingTuesday: Post = {
                 </li>
                 <li><strong>Prepare your assets.</strong> Three emails, five social posts, a short video and a thank-you message, all drafted before December.</li>
             </ul>
+
+            <Gallery
+                images={[
+                    { src: phoneConversion, width: 680, height: 520, alt: "Bar chart: 8% of donation-page visitors on a phone give, against 11% on desktop." },
+                    { src: donorRetention, width: 680, height: 520, alt: "Bar chart: 24% of new online donors give again the next year, against 66% of returning donors." },
+                ]}
+                caption="Two numbers to plan around: phones convert worse than desktops, and new donors rarely come back unasked. Data: M+R Benchmarks 2026."
+            />
 
             <h2>Days 9 to 2: warm up your supporters</h2>
             <ul>

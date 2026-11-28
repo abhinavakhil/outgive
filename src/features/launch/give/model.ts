@@ -161,3 +161,32 @@ export const splitOf = (ch: Choice, q: Quote, menu: Item[]): Record<string, numb
     out[top] += total - Object.values(out).reduce((n, v) => n + v, 0);
     return out;
 };
+
+/**
+ * A one-page A4 PDF receipt, written by hand: the project has no PDF library and a receipt is a title and a table. Returns the
+ * file as a Latin-1 string (one char per byte). Each row is a label and a value; long values wrap.
+ */
+// ponytail: the built-in Helvetica covers Latin-1 only, so other scripts print as "?". Embed a font (or add a PDF library) when donors need non-Latin names on receipts.
+export const receiptPdf = (title: string, sub: string[], rows: [string, string][], foot: string[]): string => {
+    const esc = (t: string) => t.replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/[–—]/g, "-").replace(/[^\x20-\x7E\xA0-\xFF]/g, "?").replace(/[\\()]/g, "\\$&");
+    const wrap = (t: string, n: number) => t.split(" ").reduce<string[]>((l, w) => { const last = l.length - 1, next = `${l[last]} ${w}`.trim(); if (next.length > n && l[last]) l.push(w); else l[last] = next; return l; }, [""]);
+    let y = 772, body = "";
+    const text = (x: number, size: number, font: string, grey: number, t: string) => { body += `BT /${font} ${size} Tf ${grey} g ${x} ${y} Td (${esc(t)}) Tj ET\n`; };
+    text(56, 20, "F2", 0.1, title); y -= 26;
+    for (const l of sub) { text(56, 11, "F1", 0.4, l); y -= 16; }
+    y -= 14;
+    for (const [k, v] of rows) {
+        body += `0.9 G 0.5 w 56 ${y + 16} m 539 ${y + 16} l S\n`;
+        text(56, 11, "F1", 0.4, k);
+        for (const l of wrap(v, 44)) { text(300, 11, "F2", 0.1, l); y -= 15; }
+        y -= 11;
+    }
+    y -= 12;
+    for (const l of foot) { text(56, 9.5, "F1", 0.4, l); y -= 14; }
+    const font = (name: string) => `<< /Type /Font /Subtype /Type1 /BaseFont /${name} /Encoding /WinAnsiEncoding >>`;
+    const objs = ["<< /Type /Catalog /Pages 2 0 R >>", "<< /Type /Pages /Kids [3 0 R] /Count 1 >>", "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>", font("Helvetica"), font("Helvetica-Bold"), `<< /Length ${body.length} >>\nstream\n${body}endstream`];
+    let out = "%PDF-1.4\n"; const at: number[] = [];
+    objs.forEach((o, i) => { at.push(out.length); out += `${i + 1} 0 obj\n${o}\nendobj\n`; });
+    const xref = out.length;
+    return `${out}xref\n0 ${objs.length + 1}\n0000000000 65535 f \n${at.map((n) => `${String(n).padStart(10, "0")} 00000 n \n`).join("")}trailer\n<< /Size ${objs.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
+};

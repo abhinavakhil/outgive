@@ -24,12 +24,19 @@ export const LIVE_LINK_LAYOUTS = ["classic", "thermo", "impact", "podium", "wall
 export const OVERLAY_STYLES = ["bar", "alert", "ticker"] as const;
 /** Views of the dashboard after /dashboard/: the charity's (donations … profile), then the signed-in donor's own (giving, account). No tab is the overview. */
 export const DASH_TABS = ["donations", "subscriptions", "analytics", "gateways", "profile", "giving", "account"] as const;
+/** Sections of the charity back office after /engage/. No section is the overview. */
+export const ENGAGE_SECTIONS = ["checkout", "zakat", "receipts", "api", "pledges", "revenue", "journey", "impact", "campaigns", "team", "chapters", "billing"] as const;
+export type EngageSection = (typeof ENGAGE_SECTIONS)[number];
 type LiveLink = { layout?: (typeof LIVE_LINK_LAYOUTS)[number]; theme?: "dark" | "light" };
 export type View =
     | { name: "landing" } | { name: "legacy" } | { name: "landing-b" } | { name: "v2" } | { name: "ramadan" } | { name: "ramadhan" } | { name: "ramadhan-edit" } | { name: "ramadhan-give" } | { name: "ramadhan-login" } | { name: "ramadhan-account" } | { name: "ramadhan-team" } | { name: "layouts" } | { name: "ui" } | { name: "ui-variants" } | { name: "pricing" } | { name: "start" } | { name: "login" }
     /** /dashboard/giving opens a tab; /dashboard/receipt/<gift id> is that gift's receipt. */
     | { name: "dashboard"; tab?: (typeof DASH_TABS)[number]; gift?: string }
     | { name: "blog" } | { name: "post"; slug: string }
+    /** The public zakat calculator, and its iframe version (reads ?charity= and ?give= itself). */
+    | { name: "zakat-calculator" } | { name: "zakat-embed" }
+    /** Outgive Engage + Checkout, the charity back office: /engage and /engage/<section>. */
+    | { name: "engage"; section?: EngageSection }
     | { name: "about" } | { name: "rules" } | { name: "faq" } | { name: "terms" } | { name: "privacy" } | { name: "notfound" }
     | { name: "board"; org: string; skin?: "v2" } | ({ name: "live"; org: string; page?: PageRef } & LiveLink) | { name: "give"; org: string; page?: PageRef }
     | { name: "overlay"; org: string; page?: PageRef; style?: (typeof OVERLAY_STYLES)[number] }
@@ -41,10 +48,14 @@ export type View =
     | { name: "page"; org: string; page: PageRef; sub?: "manage" | "donate"; amount?: number; real?: true }
     | { name: "embed"; org: string; page?: PageRef; theme?: "dark"; limit?: number }
     /** The donate checkout: /checkout is the sample; /demo/checkout and /o/<org>/checkout offer what that organisation has connected. */
-    | { name: "checkout"; org?: string };
+    | { name: "checkout"; org?: string }
+    /** A donor's one-tap pledge pay link (the token is the key; ?split=3 is read by the page), and the host console for a fundraising night. */
+    | { name: "pledge"; token: string } | { name: "host"; org: string }
+    /** A donor's personal impact report and the journey opt-out page (the token is the key). */
+    | { name: "impact-report"; token: string } | { name: "unsubscribe"; token: string };
 
 const TYPE_OF: Record<string, PageType> = Object.fromEntries(Object.entries(PREFIX).map(([t, p]) => [p, t as PageType]));
-const STATIC: Record<string, View> = { "/": { name: "landing" }, "/landing-b": { name: "landing-b" }, "/v2": { name: "v2" }, "/layouts": { name: "layouts" }, "/ui": { name: "ui" }, "/ui/variants": { name: "ui-variants" }, "/pricing": { name: "pricing" }, "/start": { name: "start" }, "/login": { name: "login" }, "/dashboard": { name: "dashboard" }, "/about": { name: "about" }, "/rules": { name: "rules" }, "/faq": { name: "faq" }, "/terms": { name: "terms" }, "/privacy": { name: "privacy" }, "/blog": { name: "blog" }, "/checkout": { name: "checkout" }, "/ramadan": { name: "ramadan" }, "/ramadhan": { name: "ramadhan" }, "/ramadhan/edit": { name: "ramadhan-edit" }, "/ramadhan/give": { name: "ramadhan-give" }, "/ramadhan/login": { name: "ramadhan-login" }, "/ramadhan/account": { name: "ramadhan-account" }, "/ramadhan/team": { name: "ramadhan-team" }, "/legacy": { name: "legacy" } };
+const STATIC: Record<string, View> = { "/": { name: "landing" }, "/landing-b": { name: "landing-b" }, "/v2": { name: "v2" }, "/layouts": { name: "layouts" }, "/ui": { name: "ui" }, "/ui/variants": { name: "ui-variants" }, "/pricing": { name: "pricing" }, "/start": { name: "start" }, "/login": { name: "login" }, "/dashboard": { name: "dashboard" }, "/about": { name: "about" }, "/rules": { name: "rules" }, "/faq": { name: "faq" }, "/terms": { name: "terms" }, "/privacy": { name: "privacy" }, "/blog": { name: "blog" }, "/checkout": { name: "checkout" }, "/ramadan": { name: "ramadan" }, "/ramadhan": { name: "ramadhan" }, "/ramadhan/edit": { name: "ramadhan-edit" }, "/ramadhan/give": { name: "ramadhan-give" }, "/ramadhan/login": { name: "ramadhan-login" }, "/ramadhan/account": { name: "ramadhan-account" }, "/ramadhan/team": { name: "ramadhan-team" }, "/legacy": { name: "legacy" }, "/zakat-calculator": { name: "zakat-calculator" }, "/zakat-calculator/embed": { name: "zakat-embed" } };
 const clean = (p: string) => (p.length > 1 ? p.replace(/\/+$/, "") : p) || "/";
 
 /** /live/podium/light: an optional layout and theme, in either order. */
@@ -89,6 +100,7 @@ const orgView = (org: string, rest: string, query: URLSearchParams): View => {
     if (a === "overlay") { const o = overlayOpts(seg.slice(1), query); if (o) return drop({ name: "overlay", org, ...o }); }
     if ((a === "give" || a === "donate") && seg.length === 1) return { name: "give", org };
     if (a === "checkout" && seg.length === 1) return { name: "checkout", org };
+    if (a === "host" && seg.length === 1) return { name: "host", org };
     if (a === "create" && seg.length === 1) return drop({ name: "create", org, parent: query.get("for") ?? undefined });
     if (a === "admin" && seg.length <= 2) return drop({ name: "admin", org, tab: b });
     if (a === "thanks" && seg.length <= 2) return drop({ name: "thanks", org, ref: b ?? query.get("session_id") ?? query.get("donation") ?? undefined });
@@ -113,6 +125,10 @@ const orgView = (org: string, rest: string, query: URLSearchParams): View => {
 
 export const parse = (path: string, tenant: Tenant, search = ""): View => {
     const p = clean(path); const q = new URLSearchParams(search);
+    const pledge = p.match(/^\/pledge\/([A-Za-z0-9_-]{6,80})$/);
+    if (pledge) return { name: "pledge", token: pledge[1] };
+    const donorPage = p.match(/^\/(impact|unsubscribe)\/([0-9a-z]{4,80})$/);
+    if (donorPage) return { name: donorPage[1] === "impact" ? "impact-report" : "unsubscribe", token: donorPage[2] };
     const dash = tenant.host ? null : dashView(p);
     if (dash) return dash;
     if (tenant.slug) {
@@ -127,6 +143,8 @@ export const parse = (path: string, tenant: Tenant, search = ""): View => {
     if (p === "/create") return drop({ name: "create", org: DEMO_SLUG, parent: q.get("for") ?? undefined });
     const real = p.match(/^\/([a-z]{1,2})\/([^/]+)$/);
     if (real && TYPE_OF[real[1]]) return { name: "page", org: DEMO_SLUG, page: { type: TYPE_OF[real[1]], slug: decodeURIComponent(real[2]) }, real: true };
+    const eg = p.match(/^\/engage(?:\/([a-z]+))?$/);
+    if (eg) return !eg[1] ? { name: "engage" } : (ENGAGE_SECTIONS as readonly string[]).includes(eg[1]) ? { name: "engage", section: eg[1] as EngageSection } : { name: "notfound" };
     const post = p.match(/^\/blog\/([a-z0-9-]+)$/);
     if (post) return { name: "post", slug: post[1] };
     const m = p.match(/^\/(demo|o\/([a-z0-9-]+))(\/.*)?$/i);
@@ -155,8 +173,14 @@ export const pathOf = (v: View, tenant: Tenant): string => {
         case "thanks": return `${prefix(v.org)}/thanks${opts(v.ref)}`;
         case "embed": return `${prefix(v.org)}${v.page ? `${pg(v.page)}/embed` : "/embed"}${opts(v.theme, v.limit)}`;
         case "post": return `/blog/${v.slug}`;
+        case "zakat-embed": return "/zakat-calculator/embed";
+        case "engage": return `/engage${opts(v.section)}`;
         case "dashboard": return `/dashboard${v.gift ? `/receipt/${v.gift}` : opts(v.tab)}`;
         case "checkout": return v.org ? `${prefix(v.org)}/checkout` : "/checkout";
+        case "pledge": return `/pledge/${v.token}`;
+        case "impact-report": return `/impact/${v.token}`;
+        case "unsubscribe": return `/unsubscribe/${v.token}`;
+        case "host": return `${prefix(v.org)}/host`;
         case "page": return v.real && !tenant.slug && !tenant.host ? pg(v.page) : `${prefix(v.org)}${pg(v.page)}${opts(v.sub, v.sub === "donate" ? v.amount : undefined)}`;
         default: return `/${v.name}`;
     }

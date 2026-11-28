@@ -11,7 +11,7 @@ const rpc = async <T = any>(name: string, args: Record<string, unknown>) => {
 const rows = async <T = any>(sql: string, params: unknown[] = []) => (await db.query<T>(sql, params)).rows;
 
 beforeAll(async () => {
-    db = await fresh();
+    db = await fresh(); await db.query("update orgs set slug = slug || '-migrated' where slug = 'clearwell'"); // migration 20261127000000 already creates clearwell
     owner = await signUp(db, "owner@clearwell.test");
     donor = await signUp(db, "amara@example.test");
 }, 60000);
@@ -160,9 +160,9 @@ describe("donations and the board", () => {
         await as(db, owner, () => rpc("match_pledge_set", { org: org.id, p: { sponsor_name: "Bluefin Logistics", cap_cents: 10000, ratio: 1 } }));
         await as(db, owner, () => rpc("donation_record", { p: { org_id: org.id, page_id: page.id, amount_cents: 6000, currency: "USD", donor_name: "Kofi" } }));
         await as(db, owner, () => rpc("donation_record", { p: { org_id: org.id, page_id: page.id, amount_cents: 6000, currency: "USD", donor_name: "Hana" } }));
-        const m = await rows("select amount_cents from donations where source = 'match' order by created_at");
+        const m = await rows("select amount_cents from donations where source = 'match' and org_id = $1 order by created_at", [org.id]);
         expect(m.map((x: any) => Number(x.amount_cents))).toEqual([6000, 4000]);
-        expect((await rows("select matched_cents from match_pledges"))[0].matched_cents).toBe(10000);
+        expect((await rows("select matched_cents from match_pledges where org_id = $1", [org.id]))[0].matched_cents).toBe(10000);
         const b = await rows("select name, match from board($1) where name = 'Bluefin Logistics'", [org.id]);
         expect(Number(b[0].match)).toBe(100);
     });

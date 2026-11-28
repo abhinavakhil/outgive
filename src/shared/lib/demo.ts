@@ -40,6 +40,8 @@ export const DEMO_ITEMS = [{ label: "A water filter for one family", usd: 40 }, 
 export const seed = async (pg: Pick<PGlite, "query" | "exec">) => {
     await pg.query("insert into auth.users (id, email, raw_user_meta_data) values ($1, $2, $3)", [DEMO_USER.id, DEMO_USER.email, { full_name: DEMO_USER.name }]);
     await pg.query("select set_config('request.jwt.claim.sub', $1, false)", [DEMO_USER.id]);
+    // Migration 20261127000000 already creates clearwell; the seed takes it over instead of failing on the slug.
+    await pg.query("update orgs set slug = slug || '-migrated' where slug = $1", [DEMO_SLUG]);
     const org = (await pg.query<Org>("select * from org_create($1)", [{ slug: DEMO_SLUG, name: DEFAULT_BRAND.name, tagline: DEFAULT_BRAND.tagline, color: DEFAULT_BRAND.color, font: DEFAULT_BRAND.font, variant: DEFAULT_BRAND.variant, impact_usd: DEFAULT_BRAND.impact?.usd, impact_unit: DEFAULT_BRAND.impact?.unit, currency: "USD", country: "Kenya", registration_number: "CT-20418 (sample)", description: "Clean water for 40 villages in Kitui county." }])).rows[0];
     await pg.query("update orgs set verified = true, live = $2 where id = $1", [org.id, { layout: "classic", goal_usd: 200000, items: DEMO_ITEMS }]);
     const s = SAMPLE_PAGE;

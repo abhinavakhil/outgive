@@ -39,6 +39,15 @@ describe("parse", () => {
         expect(parse("/login", sub)).toEqual({ name: "login" });
     });
 });
+describe("engage back office", () => {
+    it("sections are paths and round-trip", () => {
+        expect(parse("/engage", bare)).toEqual({ name: "engage" });
+        expect(pathOf({ name: "engage" }, bare)).toBe("/engage");
+        expect(parse("/engage/pledges/", bare)).toEqual({ name: "engage", section: "pledges" });
+        expect(pathOf({ name: "engage", section: "pledges" }, bare)).toBe("/engage/pledges");
+        expect(parse("/engage/nope", bare)).toEqual({ name: "notfound" });
+    });
+});
 describe("donor dashboard", () => {
     const gift = "0b0e6f0a-1c2d-4e3f-8a9b-0123456789ab";
     it("tabs and receipts are paths", () => {

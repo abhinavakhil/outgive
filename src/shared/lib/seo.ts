@@ -30,6 +30,7 @@ export const metaFor = (name: View["name"], brand: Brand, page?: PageData): [str
         create: [`Start fundraising for ${brand.name}`, `Set up a fundraising page for ${brand.name} in minutes. Every gift to it counts toward your rank on the leaderboard.`],
         about: [`About the ${brand.name} leaderboard`, `How the ${brand.name} leaderboard works: your rank is set by what you give and what you raise.`],
         rules: ["Fundraising leaderboard rules: how ranks work | Outgive", "How an Outgive charity leaderboard works: give more than the holder to take a rank, weekly and daily resets, team races, anonymous giving and refunds."],
+        engage: ["Outgive Engage + Checkout", "Your charity back office: checkout, pledges, revenue and the after-Eid journey."],
         dashboard: [`Your dashboard · ${SITE.name}`, "Your gifts, receipts, fundraising pages and organisations."],
         admin: [`${brand.name} · organiser dashboard`, "Donations, pages, branding, payouts and the live screen."],
         terms: ["Terms of use | Outgive", "The terms for using Outgive: what the platform does, how gifts are paid to charities, and where responsibility sits."],
@@ -44,6 +45,8 @@ export const metaFor = (name: View["name"], brand: Brand, page?: PageData): [str
         blog: ["Fundraising guides for charities, fundraisers and donors | Outgive blog", "Practical, sourced guides on crowdfunding fees, GivingTuesday, team fundraising, checking a charity and the tax rules for donations in the US and Europe."],
         // Each post sets its own title from its article; this is only the fallback.
         post: ["Outgive blog", "Fundraising guides for charities, fundraisers and donors."],
+        "zakat-calculator": ["Zakat calculator (USD): work out the zakat you owe | Outgive", "Free zakat calculator in US dollars. Add cash, gold, silver, shares and business stock, take off debts due now, and see if you are above the nisab and how much zakat is due at 2.5%."],
+        "zakat-embed": ["Zakat calculator", "Work out the zakat you owe and give it in one step."],
         notfound: missing,
         page: page ? [`${page.title || "Fundraising page"} · ${brand.name}`, `Give to ${page.title || "this page"} for ${page.org || brand.name}. Every gift counts toward its rank on the leaderboard.`] : missing,
     };

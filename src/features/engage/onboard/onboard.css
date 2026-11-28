@@ -1,0 +1,73 @@
+/* Self-serve setup inside the Engage glass panel. Same tokens as engage.css; buttons are only sage, black or white. */
+.eg-ob .eg-top { justify-content: flex-end; }
+.eg-ob .eg-body { display: grid; justify-items: center; align-content: start; padding-top: 24px; }
+.eg-ob-who { color: var(--muted); font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eg-ob .eg-side nav > .eg-label { margin-top: 8px; }
+.eg-ob .eg-nav-item { width: 100%; border: 0; background: none; font: inherit; text-align: left; cursor: pointer; }
+.eg-ob .eg-nav-item[aria-current="step"] { background: #fff; box-shadow: var(--card-shadow); font-weight: 500; }
+.eg-ob .eg-nav-item:disabled { cursor: default; color: #9A9A9A; }
+.eg-ob .eg-nav-item:disabled:hover { background: none; }
+.eg-ob-num { display: inline-grid; place-items: center; flex: none; width: 24px; height: 24px; border-radius: 999px; background: var(--surface); font-style: normal; font-size: 12.5px; font-weight: 500; color: var(--ink); }
+.eg-ob-num.done { background: var(--sage); }
+[aria-current="step"] .eg-ob-num { background: var(--ink); color: #fff; }
+
+.eg-ob-card { width: 100%; max-width: 620px; margin-top: 8px; padding: 32px; gap: 20px; border-radius: 24px; }
+.eg-ob-card > header { display: grid; gap: 6px; }
+.eg-ob-card > header .eg-label { padding: 0; margin: 0; }
+.eg-ob-card h1 { font-size: clamp(26px, 3vw, 34px); letter-spacing: -.045em; outline: none; }
+.eg-ob-field { display: grid; gap: 6px; }
+.eg-ob-field > label { font-size: 14px; font-weight: 500; }
+.eg-ob-field input, .eg-ob-field select, .eg-ob-field textarea { width: 100%; min-height: 44px; padding: 0 14px; border: 0; border-radius: 12px; background: var(--surface); font: inherit; color: var(--ink); }
+.eg-ob-field textarea { padding: 11px 14px; resize: vertical; }
+.eg-ob-field select { appearance: auto; }
+.eg-ob-field [aria-invalid="true"], .eg-ob-url:has([aria-invalid="true"]) { box-shadow: inset 0 0 0 1.5px #B3261E; }
+.eg-ob-url input[aria-invalid="true"] { box-shadow: none; }
+.eg-ob .eg-ob-field :focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+.eg-ob-url { display: flex; align-items: center; border-radius: 12px; background: var(--surface); padding-left: 14px; }
+.eg-ob-url:focus-within { outline: 2px solid var(--brand); outline-offset: 1px; }
+.eg-ob-url > span { flex: none; color: var(--muted); white-space: nowrap; }
+.eg-ob .eg-ob-url input { flex: 1; width: auto; padding-left: 1px; background: none; outline: none; }
+.eg-ob-url.ok { box-shadow: inset 0 0 0 1.5px var(--sage-bright); }
+.eg-ob-hint, .eg-ob-err { margin: 0; font-size: 13px; color: var(--muted); }
+.eg-ob-err { color: #B3261E; }
+.eg-ob-err a { font-weight: 500; }
+.eg-ob-ok { display: inline-flex; align-items: center; gap: 4px; color: var(--sage-ink); font-weight: 500; }
+.eg-ob-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.eg-ob-note { margin: 0; padding: 14px 16px; border-radius: 14px; background: var(--peach-soft); font-size: 14px; color: #5A3A26; }
+.eg-ob-note b { font-weight: 500; color: var(--ink); }
+
+.eg-ob-choices { display: grid; gap: 10px; margin: 0; padding: 0; border: 0; }
+.eg-ob-choice { display: flex; align-items: flex-start; gap: 12px; padding: 16px; border-radius: 16px; background: var(--surface); cursor: pointer; box-shadow: inset 0 0 0 1px transparent; transition: box-shadow .15s, background-color .15s; }
+.eg-ob-choice.on { background: #fff; box-shadow: inset 0 0 0 1.5px var(--ink); }
+.eg-ob-choice input { flex: none; width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--ink); }
+.eg-ob-choice span { display: grid; gap: 4px; }
+.eg-ob-choice b { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-weight: 500; }
+.eg-ob-choice small { color: var(--muted); font-size: 14px; }
+
+.eg-ob-foot { display: flex; justify-content: flex-end; gap: 10px; padding-top: 4px; }
+.eg-ob-foot .eg-btn:disabled { opacity: .6; cursor: progress; }
+.eg-ob-invite { width: 100%; max-width: 620px; margin: 14px 0 0; padding: 0 4px; color: var(--muted); font-size: 13.5px; }
+
+/* next steps on the Overview after setup */
+.eg-ob-welcome { margin-bottom: 16px; }
+.eg-ob-welcome ol { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+.eg-ob-welcome li { display: flex; gap: 10px; padding: 12px; border-radius: 14px; background: var(--surface); }
+.eg-ob-welcome li span { display: grid; gap: 2px; }
+.eg-ob-welcome b { font-weight: 500; }
+.eg-ob-welcome a { text-decoration: underline; text-underline-offset: 3px; }
+.eg-ob-welcome small { color: var(--muted); font-size: 13px; }
+
+@media (max-width: 900px) {
+    .eg-ob .eg-logo { display: inline-flex; margin-left: 16px; }
+    .eg-ob .eg-side nav > .eg-label { display: none; }
+    .eg-ob .eg-panel { grid-template-rows: auto auto 1fr; }
+    .eg-ob .eg-nav-item { white-space: nowrap; }
+}
+@media (max-width: 560px) {
+    .eg-ob-card { padding: 22px 18px; }
+    .eg-ob-row { grid-template-columns: 1fr; }
+    .eg-ob-who { display: none; }
+    .eg-ob .eg-nav-item { gap: 8px; padding: 0 10px 0 8px; font-size: 13.5px; }
+    .eg-ob-foot .eg-btn { flex: 1; }
+}
+.eg-ob .eg-ob-url input:focus-visible { outline: none; }

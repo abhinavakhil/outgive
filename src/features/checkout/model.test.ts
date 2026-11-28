@@ -20,10 +20,10 @@ describe("checkout quote", () => {
     });
     it("charges one-off extras and a covered fee, but the fee is not received", () => {
         const q = q$({ picks: all });
-        expect(feeFor(25, SAMPLE)).toBe(0.57);
-        expect(q.recur).toBe(25.57);
+        expect(feeFor(25, SAMPLE)).toBe(0.59); // (25 + 0.20) / (1 - 1.5%) - 25, rounded up
+        expect(q.recur).toBe(25.71); // a one-off covers the fee on the whole charge, extras included
         expect(q.oneOff).toBe(8);
-        expect(q.total).toBe(33.57);
+        expect(q.total).toBe(33.71);
         expect(q.receives).toBe(66.25);
         expect(q.lines.map((l) => l.key)).toEqual(["gift", "meal", "kit", "fee"]);
     });
@@ -49,9 +49,9 @@ describe("checkout quote", () => {
     it("splits a monthly gift into today and later: the fee recurs, extras are charged once", () => {
         const q = q$({ freq: "monthly", picks: all });
         expect(q.lines.map((l) => [l.key, l.when])).toEqual([["gift", "recurring"], ["meal", "once"], ["kit", "once"], ["fee", "recurring"]]);
-        expect(q.today.total).toBe(33.57);
+        expect(q.today.total).toBe(33.59);
         expect(q.later!.lines.map((l) => l.key)).toEqual(["gift", "fee"]);
-        expect(q.later!.total).toBe(25.57);
+        expect(q.later!.total).toBe(25.59);
         expect(q.later!.total).toBe(q.recur);
         expect(q.later!.giftAid).toBe(6.25);
         expect(q.later!.next).toEqual(new Date(2026, 11, 21, 12));

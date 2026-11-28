@@ -158,7 +158,7 @@ const Phone = ({ sim }: { sim: Sim }) => {
                         <div className="grid grid-cols-4 gap-1.5">{amounts.map((a) => <span key={a} className={cx("rounded-xl py-2 text-center text-xs font-bold transition-colors duration-300", a === pick ? "bg-brand-600 text-white" : "bg-neutral-100 text-neutral-600")}>${a}</span>)}</div>
                         <div className="text-center text-[11px] text-neutral-500">Puts you at <b className="text-brand-700">#2</b> on the board</div>
                         <div className="relative">
-                            <motion.div key={last.k} initial={{ scale: 0.92 }} animate={{ scale: 1 }} transition={{ type: "spring", bounce: 0.6 }} className="flex h-11 items-center justify-center rounded-full bg-pop-300 text-sm font-bold text-brand-950 shadow-[0_3px_0_rgb(0_0_0/0.15)]">Give ${pick}</motion.div>
+                            <motion.div key={last.k} initial={{ scale: 0.92 }} animate={{ scale: 1 }} transition={{ type: "spring", bounce: 0.6 }} className="flex h-11 items-center justify-center rounded-full bg-cta text-sm font-bold text-brand-950 shadow-[0_3px_0_rgb(0_0_0/0.15)]">Give ${pick}</motion.div>
                             {/* The "tap": a ring that grows out of the button each time. */}
                             <motion.span key={`t${last.k}`} initial={{ scale: 0.3, opacity: 0.7 }} animate={{ scale: 2.2, opacity: 0 }} transition={{ duration: 0.8 }} className="pointer-events-none absolute top-1/2 left-1/2 -mt-5 -ml-5 size-10 rounded-full ring-2 ring-white" />
                         </div>

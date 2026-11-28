@@ -4,7 +4,7 @@
 .od {
     --od-bg: #F4F3F0; --od-card: #fff; --od-cs: #fff; --od-edge: #EEEEEE; --od-soft: #EEEDE9; --od-sel: #EEF2D6;
     --od-ink: #191919; --od-ink2: #444444; --od-muted: #666666; --od-line: #EEEEEE; --od-link: #191919; --od-field: #fff; --od-tip: #fff;
-    --od-lime: #2F3A22; --od-lime-a: #D2DBA0; --od-lime-b: #2F3A22; --od-accent: #F0783C; --od-cta: #F0783C; --od-cta-ink: #191919;
+    --od-lime: #2F3A22; --od-lime-a: #D2DBA0; --od-lime-b: #2F3A22; --od-accent: #F0783C; --od-cta: #D2DBA0; --od-cta-ink: #191919;
     --od-ok-fg: #4B5530; --od-ok-bg: #EEF2D6; --od-warn-fg: #6b5408; --od-warn-bg: #fdf1c4; --od-bad-fg: #b3261e; --od-bad-bg: #fde9e7;
     --od-bar-dim: linear-gradient(180deg, #DCCBF3, rgb(220 203 243 / 0.35)); --od-bar-on: linear-gradient(180deg, #F59A6E, #F0783C); --od-glow: 0 8px 22px rgb(240 120 60 / 0.35);
     --od-m1: #D2DBA0; --od-m2: #C6AEE8; --od-m3: #E0DDD6; --od-m4: #FAD8C4; --od-donut-glow: none;
@@ -27,7 +27,7 @@
 }
 .od button { font-family: inherit; cursor: pointer; }
 .od button:disabled { cursor: not-allowed; opacity: 0.55; }
-.od button:focus-visible, .od input:focus-visible, .od textarea:focus-visible, .od select:focus-visible, .od a:focus-visible { outline: 3px solid #b45fd6; outline-offset: 2px; }
+.od button:focus-visible, .od input:focus-visible, .od textarea:focus-visible, .od select:focus-visible, .od a:focus-visible { outline: 3px solid #7B3FD6; outline-offset: 2px; }
 .od h1, .od h2, .od h3 { font-family: inherit; color: inherit; }
 
 /* Surfaces */
@@ -50,11 +50,11 @@ textarea.od-in { height: 84px; padding: 10px 12px; line-height: 1.45; resize: no
 .od-btn:hover:not(:disabled) { background: var(--od-soft); }
 .od-btn.ghost { background: transparent; min-height: 46px; padding: 0 18px; font-size: 15px; font-weight: 400; }
 .od-btn.cta { border: 0; background: var(--od-cta); color: var(--od-cta-ink); font-weight: 600; min-height: 46px; padding: 0 22px; font-size: 15px; }
-.od-btn.cta:hover:not(:disabled) { background: #cf8fec; }
+.od-btn.cta:hover:not(:disabled) { background: #C8D292; }
 .od-btn.danger { border: 0; background: var(--od-bad-fg); color: var(--od-cs); font-weight: 600; }
 .od-btn.danger:hover:not(:disabled) { background: var(--od-bad-fg); filter: brightness(0.92); }
 .od-chip { min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--od-line); background: var(--od-cs); color: var(--od-ink); font-size: 14px; font-weight: 500; }
-.od-chip[aria-pressed="true"] { border-color: var(--od-accent); background: var(--od-sel); }
+.od-chip[aria-pressed="true"] { border-color: var(--od-ink); background: var(--od-ink); color: var(--od-cs); }
 .od-seg { display: flex; gap: 2px; border: 1px solid var(--od-line); border-radius: 999px; padding: 4px; }
 .od-seg button { min-width: 48px; min-height: 38px; padding: 0 12px; border: 0; border-radius: 999px; font-size: 15px; font-weight: 500; background: transparent; color: var(--od-muted); position: relative; }
 /* 38px tall as drawn, 44px to the finger. */

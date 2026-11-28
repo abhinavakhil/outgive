@@ -19,7 +19,7 @@ import { db, isDemo } from "@/shared/lib/db";
 import { type Live, useLive, withStats } from "../bio/live";
 import { CauseArt, ILLUSTRATION_BG } from "../bio/illustrations";
 import { type BioPage, SUPPORTERS, onColour, useBioPage } from "../bio/model";
-import { type Item, LEVELS, MATCH, MODES, type Mode, NIGHTS, type Quote, expiryOk, gbp, impactOf, itemCount, levelOf, luhn, menuFrom, quote, splitOf } from "./model";
+import { type Item, LEVELS, MATCH, MODES, type Mode, NIGHTS, type Quote, expiryOk, gbp, impactOf, itemCount, levelOf, luhn, menuFrom, quote, receiptPdf, splitOf } from "./model";
 import { type Donor, type Give, type Method, clearGive, useGive } from "./store";
 import "./give.css";
 import "./pile.css";
@@ -27,8 +27,8 @@ import "./pile.css";
 type Page = "menu" | "amount" | "pay";
 type SetGive = ReturnType<typeof useGive>[1];
 type Add = (id: string, by: number, where: string) => void;
-type Paid = { receipt: string; q: Quote; mode: Mode; first: string; giftAid: boolean; method: Method; impact: string; level: number };
-const paidFrom = (receipt: string, g: Give, q: Quote, menu: Item[]): Paid => ({ receipt, q, mode: g.mode, first: g.donor.first.trim(), giftAid: g.giftAid, method: g.method, impact: impactOf(q.gifts - q.onceItems, g.qty, menu), level: levelOf(q.nightly) });
+type Paid = { receipt: string; date: string; name: string; q: Quote; mode: Mode; first: string; giftAid: boolean; method: Method; impact: string; level: number };
+const paidFrom = (receipt: string, g: Give, q: Quote, menu: Item[]): Paid => ({ receipt, date: new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }), name: `${g.donor.first} ${g.donor.last}`.trim(), q, mode: g.mode, first: g.donor.first.trim(), giftAid: g.giftAid, method: g.method, impact: impactOf(q.gifts - q.onceItems, g.qty, menu), level: levelOf(q.nightly) });
 
 /**
  * The pay function's request for this basket. ponytail: the whole Ramadan schedule is charged today as one payment; charging each
@@ -406,6 +406,13 @@ const money = (n: number) => `£${n.toLocaleString("en-GB", { minimumFractionDig
 const APPEAL_BG: Record<string, string> = { food: "#FDEBDF", water: "#F1EAFB", orphans: "#EEF2D6", emergency: "#FDEBDF", education: "#F1EAFB", shelter: "#FDEBDF" };
 const FUNDS: Give["donor"]["giveAs"][] = ["Sadaqah", "Zakat", "Sadaqah Jariyah", "Lillah"];
 const HOW: [Mode, string][] = [["once", "One-off"], ["30", "Every night"], ["10", "Last 10"], ["odd", "Odd nights"], ["fri", "Fridays"]];
+/** Arrow keys for a radiogroup of buttons: move to the next or previous option, select it and focus it. Only the checked radio is in the tab order. */
+const radioKeys = <T,>(opts: readonly T[], value: T, pick: (v: T) => void) => (e: React.KeyboardEvent<HTMLElement>) => {
+    const by = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key], n = opts.length, i = opts.indexOf(value);
+    const to = e.key === "Home" ? 0 : e.key === "End" ? n - 1 : by ? (Math.max(i, by > 0 ? -1 : 0) + by + n) % n : -1;
+    if (to < 0) return;
+    e.preventDefault(); pick(opts[to]); (e.currentTarget.querySelectorAll<HTMLElement>("[role=radio]")[to])?.focus();
+};
 
 const useNarrow = () => {
     const [m, setM] = useState(() => matchMedia("(max-width: 979px)").matches);
@@ -540,12 +547,12 @@ const GiveStep = ({ menu, g, set, q, bio, onMenu, onNext }: { menu: Item[]; g: G
                     <h1 className="gb-h" style={{ fontSize: m ? 30 : 44 }}>Add to the pile</h1>
                     <span>Pick a nightly bundle of coins for {items.length ? <button type="button" className="gb-tx" onClick={onMenu}>{items.map((i) => i.title).join(", ")}</button> : <>where it’s needed most (<button type="button" className="gb-tx" onClick={onMenu}>choose causes</button>)</>}. It lands on the pile with everyone else’s.</span>
                 </div>
-                <div className="gb-bundles" style={{ gap: m ? 6 : 8 }}>
+                <div className="gb-bundles" role="radiogroup" aria-label="Nightly bundle" style={{ gap: m ? 6 : 8 }} onKeyDown={radioKeys(LEVELS.map(([v]) => v), amt, pick)}>
                     {LEVELS.map(([v, name], i) => (
-                        <button key={v} type="button" aria-pressed={amt === v} onClick={() => pick(v)} className={cx("gb-bundle", amt === v && "on")} style={{ padding: m ? "10px 2px 8px" : "12px 4px 10px" }}>
+                        <button key={v} type="button" role="radio" aria-checked={amt === v} tabIndex={amt === v || (i === 0 && !LEVELS.some(([x]) => x === amt)) ? 0 : -1} onClick={() => pick(v)} className={cx("gb-bundle", amt === v && "on")}>
                             <span className="gb-bundle-stack" style={{ height: m ? 38 : 50 }}>{Array.from({ length: i + 1 }, (_, k) => <span key={k} style={{ width: m ? 22 : 28, height: m ? 8 : 10, background: amt === v ? GB.yellow : GB.peach }} />)}</span>
-                            <b className="gb-h" style={{ fontSize: m ? 17 : 21 }}>{short(v)}</b>
-                            <span className="gb-bundle-name" style={{ fontSize: m ? 9 : 10 }}>{m ? `LEVEL ${i + 1}` : name.toUpperCase()}</span>
+                            <b>{short(v)}</b>
+                            <span className="gb-bundle-name">{name}</span>
                         </button>
                     ))}
                 </div>
@@ -570,11 +577,11 @@ const GiveStep = ({ menu, g, set, q, bio, onMenu, onNext }: { menu: Item[]; g: G
                 )}
                 <div className="gb-how">
                     <div className="gb-how-head"><b>How often</b><span>{yearTxt}</span></div>
-                    <div className="gb-freqs" role="group" aria-label="How often">{HOW.map(([mo, l]) => <button key={mo} type="button" aria-pressed={g.mode === mo} className={cx(g.mode === mo && "on")} onClick={() => { set({ mode: mo }); track("rg_schedule", { mode: mo }); }}>{l}</button>)}</div>
+                    <div className="gb-freqs" role="radiogroup" aria-label="How often" style={{ "--n": HOW.length, "--i": HOW.findIndex(([mo]) => mo === g.mode) } as CSSProperties} data-none={HOW.some(([mo]) => mo === g.mode) ? undefined : ""} onKeyDown={radioKeys(HOW.map(([mo]) => mo), g.mode, (mo) => { set({ mode: mo }); track("rg_schedule", { mode: mo }); })}>{HOW.map(([mo, l], i) => <button key={mo} type="button" role="radio" aria-checked={g.mode === mo} tabIndex={g.mode === mo || (i === 0 && !HOW.some(([x]) => x === g.mode)) ? 0 : -1} className={cx(g.mode === mo && "on")} onClick={() => { set({ mode: mo }); track("rg_schedule", { mode: mo }); }}>{l}</button>)}</div>
                 </div>
                 <div className="gb-giveas"><b>Give as</b><span className="gb-input sel"><select aria-label="Donation type" value={g.donor.giveAs} onChange={(e) => { const v = e.target.value as Give["donor"]["giveAs"]; set((x) => ({ donor: { ...x.donor, giveAs: v, zakat: v === "Zakat" } })); track("rg_give_as", { value: v }); }}>{FUNDS.map((f) => <option key={f}>{f}</option>)}</select></span></div>
                 {showBehalf && (
-                    <div className="gb-behalf">
+                    <div className={cx("gb-behalf", behalfOn && "on")}>
                         <label><input type="checkbox" className="gb-checkbox" checked={behalfOn} onChange={(e) => { set((x) => ({ donor: { ...x.donor, behalfOn: e.target.checked } })); track("rg_behalf", { open: e.target.checked ? 1 : 0 }); }} /><span><b>Give this {g.donor.giveAs} on behalf of someone</b><span>A parent, a child or a loved one who has passed away</span></span></label>
                         {behalfOn && <div className="gb-behalf-name"><input aria-label="Their name" placeholder="Their name, e.g. Amina Ahmed" value={g.donor.behalf} onChange={(e) => set((x) => ({ donor: { ...x.donor, behalf: e.target.value } }))} /><span>Shown on your receipt and on the pile as "{g.donor.giveAs} for {g.donor.behalf || "their name"}".</span></div>}
                     </div>
@@ -646,7 +653,7 @@ const CompleteStep = ({ menu, g, set, q, bio, live, onEdit, onPaid }: { menu: It
             if (g.method === "card" && card.num.replace(/\D/g, "") === "4000000000000002") { setPhase("idle"); setError("Your card was declined. Nothing was taken. Try another card, or Apple Pay."); track("rg_pay_fail", { reason: "declined", method: g.method }); return; }
             setPhase("success");
             track("rg_paid", { method: g.method, total: q.total, gifts: q.gifts, payments: q.charges.length, mode: g.mode, items: itemCount(g.qty), giftaid: g.giftAid ? 1 : 0, tip: q.tips, level: lvl });
-            setTimeout(() => onPaid({ receipt: `RG-${Math.random().toString(36).slice(2, 8).toUpperCase()}`, q, mode: g.mode, first: d.first.trim(), giftAid: g.giftAid, method: g.method, impact, level: lvl }), 1900);
+            setTimeout(() => onPaid({ ...paidFrom(`RG-${Math.random().toString(36).slice(2, 8).toUpperCase()}`, g, q, menu), impact, level: lvl }), 1900);
         }, 2900);
     };
     /** The real payment, through the pay function. A retry of the same basket reuses the attempt key, so it can never charge twice. */
@@ -805,14 +812,21 @@ const Done = ({ paid, bio, onAgain }: { paid: Paid; bio: BioPage; onAgain: () =>
     const pctB = (raised / goal) * 100, pctA = ((raised + q.gifts + q.giftAid) / goal) * 100;
     const pf = (x: number) => `${Math.abs(pctA - pctB) < 1 ? x.toFixed(1) : Math.round(x)}%`;
     const qadr = nights.some((c) => c.night === 27);
-    const badges: [string, string, string, boolean, string][] = [["★", `Level ${lvl}`, LEVELS[lvl - 1][1], true, GB.yellow], ["1st", "First gift", `to ${bio.name}`, true, GB.mint], ["27", "Night 27", qadr ? "Unlocked" : "Give on night 27", qadr, "#F1EAFB"], ["+25%", "Gift Aid boost", paid.giftAid ? "Unlocked" : "Add Gift Aid", paid.giftAid, "#FDEBDF"]];
+    const badges: [string, string, string, boolean, string][] = [["★", `Level ${lvl}`, LEVELS[lvl - 1][1], true, GB.peach], ["1st", "First gift", `to ${bio.name}`, true, GB.mint], ["27", "Night 27", qadr ? "Unlocked" : "Give on night 27", qadr, "#F1EAFB"], ["+25%", "Gift Aid boost", paid.giftAid ? "Unlocked" : "Add Gift Aid", paid.giftAid, "#FDEBDF"]];
     const streak = nights.slice(0, 6);
     const tip = q.tips, method = METHOD[paid.method][0];
     const rows: [string, string][] = [["Donation", money(q.gifts)], ["Gift Aid claimed", paid.giftAid ? money(q.giftAid) : "Not claimed"], ["Given as", nights.length ? `${nights.length} nights` : "One-off"], ["Tip to Outgive", money(tip)], ["Paid with", method], ["Total charged", money(q.total)]];
+    // The receipt file is built from the rows the card shows, so the two can never disagree.
+    const download = () => {
+        const pdf = receiptPdf(`Donation receipt · ${bio.name}`, [`Receipt ${paid.receipt} · ${paid.date}`, ...(paid.name ? [`Donor: ${paid.name}`] : []), ...(bio.charityNo ? [bio.charityNo] : [])], [...rows, ...(nights.length ? [["Schedule", `Nights ${nights.map((c) => c.night).join(", ")}, charged each night at sunset`] as [string, string]] : [])], ["Thank you for your gift. Keep this receipt for your records.", "Sent through Outgive · outgive.tech"]);
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([Uint8Array.from(pdf, (c) => c.charCodeAt(0))], { type: "application/pdf" })); a.download = `receipt-${paid.receipt}.pdf`;
+        document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+        track("rg_receipt", { total: q.total });
+    };
     return (
         <div className="gb gb-done">
             <div className="gb-done-hero" style={{ background: "#FDEBDF", padding: m ? "22px 16px 60px" : "30px 40px 84px" }}>
-                <svg className="gb-rays" viewBox="0 0 800 800" aria-hidden="true" style={{ top: m ? -160 : -150 }}>{Array.from({ length: 18 }, (_, i) => <path key={i} d="M400 400 L 380 -400 L 420 -400 Z" transform={`rotate(${i * 20} 400 400)`} fill="#fff" opacity=".35" />)}</svg>
                 <div className="rg-confetti" aria-hidden="true">{Array.from({ length: 24 }, (_, i) => <i key={i} style={{ "--x": `${(i * 37) % 100}%`, "--d": `${(i % 8) * 0.11}s`, "--r": `${(i * 47) % 360}deg` } as CSSProperties} />)}</div>
                 <a href="/" aria-label="Outgive home" className="gb-done-logo"><OgLogo size={20} /></a>
                 <div className="gb-medal gb-burst" style={{ width: m ? 112 : 138, height: m ? 112 : 138 }}><span><span>LEVEL</span><b className="gb-h" style={{ fontSize: m ? 46 : 58 }}>{lvl}</b></span><em>{LEVELS[lvl - 1][1]}</em></div>
@@ -838,7 +852,7 @@ const Done = ({ paid, bio, onAgain }: { paid: Paid; bio: BioPage; onAgain: () =>
                 <div className="gb-box">
                     <div className="gb-rcpt-head"><span className="gb-rcpt-ico"><Ico d={I.note} size={20} /></span><span><b>Your receipt</b><span>Ref {paid.receipt} · emailed to you</span></span><em>PAID</em></div>
                     <div className="gb-rcpt" style={{ gridTemplateColumns: m ? "1fr" : "1fr 1fr" }}>{rows.map(([k, v]) => <div key={k}><span>{k}</span><b>{v}</b></div>)}</div>
-                    <div className="gb-rcpt-btns"><a className="gb-btn neutral" href="/ramadhan">Back to {bio.name}</a><button type="button" className="gb-btn outline" onClick={onAgain}>Give again</button></div>
+                    <div className="gb-rcpt-btns"><a className="gb-btn neutral" href="/ramadhan">Back to {bio.name}</a><button type="button" className="gb-btn outline" onClick={download}>Download receipt</button><button type="button" className="gb-btn outline" onClick={onAgain}>Give again</button></div>
                 </div>
             </div>
         </div>

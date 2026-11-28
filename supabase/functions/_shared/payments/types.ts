@@ -30,7 +30,8 @@ export interface StartCtx {
     input: StartInput;
     donationId: string;
     account: Account;
-    org: { id: string; name: string; platform_fee_bps: number };
+    /** country: "US" makes Stripe gifts direct charges on the charity's own account (stripe.ts isDirect). */
+    org: { id: string; name: string; platform_fee_bps: number; country?: string | null };
     /** What the charge says on the donor's statement and receipts. */
     title: string;
     /** gift: credited to the charity. cover: the donor-paid fee. tip: to Outgive. today: charged now. recur: each later charge. */

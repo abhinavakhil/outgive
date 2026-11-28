@@ -11,7 +11,7 @@ const one = async <T = any>(sql: string, params: unknown[] = []) => (await rows<
 const pay = (extra = "") => rows<{ id: string }>(`insert into donations (org_id, donor_name, donor_email, amount_cents, currency, status, source, recurring, stripe_subscription_id, pay_method, gift_aid_cents) values ($1, 'Amara', 'Amara@Example.test', 2500, 'GBP', 'succeeded', 'card', true, 'sub_1', 'dd', 625) returning id ${extra}`, [org]);
 
 beforeAll(async () => {
-    db = await fresh();
+    db = await fresh(); await db.query("update orgs set slug = slug || '-migrated' where slug = 'clearwell'"); // migration 20261127000000 already creates clearwell
     owner = await signUp(db, "owner@clearwell.test"); amara = await signUp(db, "amara@example.test"); other = await signUp(db, "other@example.test");
     org = (await as(db, owner, () => one<{ id: string }>("org_create($1)", [JSON.stringify({ slug: "clearwell", name: "Clearwell Trust" })]))).id;
     gift = (await pay())[0].id; // as the webhook would: service role, matched to the donor by email only

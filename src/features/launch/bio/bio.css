@@ -1,5 +1,6 @@
 /*
- * The charity's Ramadan page. One accent, --c (and its text colour --on-c), drives everything.
+ * The charity's Ramadan page. One accent, --c (and its text colour --on-c), drives bars, rings and highlights; buttons never take it:
+ * they are sage #D2DBA0, ink #191919 or white.
  * s-outline (default): a warm cream page, cards with a thin ink outline, outlined pill buttons and gradient grid panels.
  * s-soft: the colour washes down behind the profile; white cards, no outlines.
  * k-round / k-pill / k-square set the corner size.
@@ -11,7 +12,7 @@
 .bp.s-soft { --page: #F6F5F2; --line: transparent; --lw: 0px; }
 .bp a { color: inherit; text-decoration: none; }
 .bp button { font: inherit; cursor: pointer; }
-.bp :focus-visible { outline: 2px solid var(--c); outline-offset: 3px; }
+.bp :focus-visible { outline: 2px solid #7B3FD6; outline-offset: 3px; }
 .bp-bg { position: absolute; inset: 0 0 auto; height: 360px; pointer-events: none; }
 .s-soft .bp-bg { background: radial-gradient(90% 100% at 50% 0%, color-mix(in srgb, var(--c) 80%, #fff) 0%, var(--c) 40%, transparent 100%); }
 .bp-col { position: relative; width: min(520px, 100%); margin: 0 auto; padding: 22px 16px 0; display: flex; flex-direction: column; gap: 14px; }
@@ -77,8 +78,8 @@
 .bp-art.art3 { --g: linear-gradient(180deg, #FDB98A, #F8A5E9); }
 .bp-art b { font-size: 28px; font-weight: 600; letter-spacing: -.04em; }
 .bp-art-tag { padding: 4px 10px; border-radius: 99px; background: #fff; color: #222; font-size: 12px; font-weight: 600; border: var(--lw) solid var(--line); }
-.bp-camp.on, .bp-cause.on { box-shadow: 0 0 0 2.5px var(--c); }
-.s-outline .bp-camp.on, .s-outline .bp-cause.on { border-color: var(--c); box-shadow: 0 0 0 1.5px var(--c); }
+.bp-camp.on, .bp-cause.on { box-shadow: 0 0 0 2.5px #191919; }
+.s-outline .bp-camp.on, .s-outline .bp-cause.on { border-color: #191919; box-shadow: 0 0 0 1.5px #191919; }
 
 /* Causes. */
 .bp-causes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
@@ -92,8 +93,8 @@
 .bp-amounts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
 .bp-amounts button { min-height: 44px; border-radius: var(--rs); background: var(--card); color: var(--ink); font-size: 15px; font-weight: 600; border: var(--lw) solid var(--line); transition: background .15s, color .15s, transform .15s; }
 .s-soft .bp-amounts button{ background: #F4F3F0; }
-.bp-amounts button:hover { background: var(--tint); }
-.bp-amounts button[aria-pressed="true"] { background: var(--c); color: var(--on-c); }
+.bp-amounts button:hover { background: #EEEDE9; }
+.bp-amounts button[aria-pressed="true"] { background: #191919; color: #fff; }
 .bp-amounts button:active { transform: scale(.97); }
 
 /* Lists: supporters and gifts. */
@@ -121,7 +122,7 @@
 /* Links: outlined pill buttons. */
 .bp-links { display: flex; flex-direction: column; gap: 10px; }
 .bp-btn { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 56px; padding: 0 20px; border-radius: var(--rs); background: var(--card); border: var(--lw) solid var(--line); font-size: 16px; font-weight: 600; transition: transform .2s, box-shadow .2s; }
-.s-outline .bp-btn:hover { background: var(--soft); transform: translateY(-2px); }
+.s-outline .bp-btn:hover { background: #F4F3F0; transform: translateY(-2px); }
 .s-soft .bp-btn{ box-shadow: 0 0 0 1px rgb(25 25 25 / .06), 0 8px 20px -14px rgb(25 25 25 / .35); }
 
 .bp-foot { display: flex; justify-content: space-between; padding: 10px 6px; font-size: 13px; color: var(--mute); }
@@ -129,9 +130,8 @@
 
 /* Basket. */
 .bp-basket { position: sticky; bottom: 0; z-index: 20; display: flex; justify-content: center; padding: 14px 16px calc(14px + env(safe-area-inset-bottom)); pointer-events: none; }
-.bp-give { pointer-events: auto; display: flex; align-items: center; justify-content: center; gap: 10px; width: min(488px, 100%); min-height: 58px; border-radius: var(--rs); background: var(--c); color: var(--on-c) !important; font-size: 17px; font-weight: 600; border: var(--lw) solid var(--line); box-shadow: 0 16px 34px -14px var(--c); transition: transform .2s; }
-.s-outline .bp-give { box-shadow: 0 14px 28px -14px var(--c); }
-.bp-give:hover { transform: translateY(-2px); }
+.bp-give { pointer-events: auto; display: flex; align-items: center; justify-content: center; gap: 10px; width: min(488px, 100%); min-height: 58px; border-radius: var(--rs); background: #D2DBA0; color: #191919 !important; font-size: 17px; font-weight: 600; border: var(--lw) solid var(--line); box-shadow: 0 10px 22px -10px rgba(110,125,60,.55); transition: transform .2s; }
+.bp-give:hover { transform: translateY(-2px); background: #C8D292; }
 @media (prefers-reduced-motion: reduce) { .bp-live i { animation: none; } .bp-bar span, .bp-give, .bp-btn, .bp-amounts button { transition: none; } }
 
 .bp { flex: 1; }
@@ -149,7 +149,7 @@
 
 /* ---------- s-outgive: the home page's design system ----------
    White ground with the lilac glow, white 24px cards with the soft card shadow and no outlines, Outfit 500 set tight,
-   pastel lilac / sage / peach panels, ink for selected chips, the accent (default orange) for Give, a forest banner. */
+   pastel lilac / sage / peach panels, ink for selected chips, sage for Give, a forest banner. */
 .bp.s-outgive { --page: #FFFFFF; --line: transparent; --lw: 0px; --ink: #191919; --mute: #666666; --r: 24px; --rs: 999px;
     background: radial-gradient(70% 520px at 50% 0%, #efe6f6 0%, rgb(239 230 246 / .5) 45%, transparent 80%), radial-gradient(45% 420px at 50% 640px, rgb(240 123 69 / .07), transparent 70%), #FFFFFF; background-repeat: no-repeat; }
 .s-outgive.k-square { --r: 10px; --rs: 10px; } .s-outgive.k-round { --rs: 14px; }
@@ -182,8 +182,6 @@
 .s-outgive .bp-journey li.done i { border-color: #2F3A22; background: #2F3A22; } .s-outgive .bp-journey li.done:not(:last-child)::before { background: #D2DBA0; }
 .s-outgive .bp-btn { background: #fff; box-shadow: 0 0 0 1px rgba(25,25,25,.06), 0 6px 14px -8px rgba(25,25,25,.2); font-weight: 500; }
 .s-outgive .bp-btn:hover { background: #FAFAF8; transform: translateY(-2px); }
-.s-outgive .bp-give { background: #D2DBA0; color: #191919 !important; box-shadow: 0 10px 22px -10px rgba(110,125,60,.55); }
-.s-outgive .bp-give:hover { background: #C5CF9A; }
 .s-outgive .bp-link { color: #191919; }
 
 .bp-tools { position: fixed; top: 14px; right: 14px; z-index: 30; display: flex; gap: 8px; }
@@ -202,11 +200,10 @@
 .s-outgive .bp-stats dd { font-size: 20px; font-weight: 500; }
 
 /* Donate toggle on each campaign and cause card. */
-.bp-pick { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; margin-top: 12px; padding: 12px; border: var(--lw) solid var(--line); border-radius: var(--rs); background: var(--c); color: var(--on-c); font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; transition: background .15s, transform .15s; }
+.bp-pick { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; margin-top: 12px; padding: 12px; border: var(--lw) solid var(--line); border-radius: var(--rs); background: #D2DBA0; color: #191919; font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; transition: background .15s, transform .15s; }
 .bp-pick svg { width: 16px; height: 16px; }
 .bp-pick:hover { transform: translateY(-1px); }
 .bp-pick[aria-pressed="true"] { background: #191919; color: #fff; }
-.s-outline .bp-pick[aria-pressed="false"], .s-soft .bp-pick[aria-pressed="false"] { background: var(--c); }
 
 /* Causes grid: two cards a row on a phone, three when there's room; compact cards and buttons. */
 .bp-causes.grid { grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 10px; }
@@ -319,7 +316,7 @@
 .bp-goal-text { margin: 4px 0 0; font-size: 14px; }
 .bp-totals .bp-bar { height: 8px; margin-top: 12px; }
 .bp-goal-nums { margin-top: 8px; font-size: 13px; } .bp-goal-nums b { font-size: 14px; font-weight: 600; }
-.bp-cta { display: flex; align-items: center; justify-content: center; min-height: 48px; margin-top: 12px; border-radius: 999px; background: var(--c); color: var(--on-c) !important; font-size: 16px; font-weight: 600; transition: transform .15s; }
+.bp-cta { display: flex; align-items: center; justify-content: center; min-height: 48px; margin-top: 12px; border-radius: 999px; background: #D2DBA0; color: #191919 !important; font-size: 16px; font-weight: 600; transition: transform .15s; }
 .bp-cta:hover { transform: translateY(-1px); }
 .bp-goal-wrap { display: flex; flex-direction: column; gap: 12px; }
 
@@ -341,7 +338,7 @@
 .bp-causes.grid .bp-illo { width: 100%; height: 96px; }
 .bp-causes.grid .bp-cause h3 { margin: 12px 4px 0; font-size: 16px; font-weight: 500; }
 .bp-causes.grid .bp-cause p { margin: 2px 4px 0; flex: 1; font-size: 13px; line-height: 1.35; -webkit-line-clamp: 1; }
-.bp-pick.plain { background: #F3F1EC; color: #191919; }
+.bp-pick.plain { background: #fff; color: #191919; box-shadow: inset 0 0 0 1px rgba(25,25,25,.12); }
 .bp-pick.plain[aria-pressed="true"] { background: #191919; color: #fff; }
 .bp-causes.grid .bp-pick.plain { min-height: 44px; padding: 10px; font-size: 15px; }
 
@@ -361,7 +358,7 @@
 .bp-gmeta em.g0 { background: #EEF2D6; } .bp-gmeta em.g1 { background: #FDEBDF; color: #C24A14; } .bp-gmeta em.g2 { background: #EEF2D6; } .bp-gmeta em.g3 { background: #E8DDF7; color: #4A2A7A; }
 .bp-gifts-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 18px; border-top: 1px solid #EEEEEE; font-size: 13.5px; color: #444; }
 .bp-gifts-foot b { font-weight: 500; color: #191919; }
-.bp-fundraise { display: flex; align-items: center; justify-content: space-between; min-height: 56px; padding: 0 22px; border-radius: 99px; background: #FDEBDF; color: #C24A14 !important; font-size: 16px; font-weight: 500; }
+.bp-fundraise { display: flex; align-items: center; justify-content: space-between; min-height: 56px; padding: 0 22px; border-radius: 99px; background: #fff; color: #191919 !important; box-shadow: 0 0 0 1px rgba(25,25,25,.08); font-size: 16px; font-weight: 500; }
 
 /* Sticky dock: what's left to raise, and Give now. */
 .bp-dock { pointer-events: auto; display: flex; align-items: center; gap: 12px; width: min(488px, 100%); padding: 8px 8px 8px 20px; border-radius: 999px; background: #191919; color: rgba(255,255,255,.7); font-size: 14px; box-shadow: 0 16px 34px -14px rgba(0,0,0,.5); }
@@ -377,13 +374,11 @@
 .bp-seg button[aria-checked="true"] { background: #fff; color: #191919; box-shadow: 0 1px 3px rgba(25,25,25,.12); }
 .bp-cal { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; }
 .bp-cal button { aspect-ratio: 1; min-height: 28px; padding: 0; border: 0; border-radius: 8px; background: #F4F3F0; color: #444; font-size: 12.5px; font-weight: 500; }
-.bp-cal button.l10 { background: var(--soft); }
+.bp-cal button.l10 { background: #EEEDE9; }
 .bp-cal button[aria-pressed="true"] { background: #191919; color: #fff; }
 .bp-nights-pick .bp-cta { margin-top: 2px; }
 .bp-cta[aria-disabled="true"] { opacity: .5; pointer-events: none; }
 
-/* Outline and soft themes fill Give with the accent, so its text takes the accent's text colour. */
-.s-outline .bp-pick.plain[aria-pressed="false"], .s-soft .bp-pick.plain[aria-pressed="false"] { color: var(--on-c); }
 
 /* Give every night keeps its sage panel look inside the goal card: moon tile, translucent switch, ink button. */
 .bp-nights-pick { margin: 14px -6px -4px; padding: 14px; border-top: 0; border-radius: calc(var(--r) - 6px); background: linear-gradient(165deg, #E3EABF, #D2DBA0); gap: 12px; }

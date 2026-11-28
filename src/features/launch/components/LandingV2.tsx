@@ -1,12 +1,14 @@
 /**
  * / (and /v2): the Outgive landing page, built from the Outgive design system and its landing canvas.
- * Hero with a working donate card on a stage, the page deck, three ways to give, one night section
+ * A sticky header (a menu sheet on phones), hero with a working donate card on a stage, the page deck (swiped on phones),
+ * three ways to give, the donate-flow preview (GivePreview), one night section
  * (the live-screen flow and the four steps), the three donate layouts, and a forest close.
  * Figures are the sample appeal's and are marked "Sample figures" on the stage.
  */
 import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { DemoRequest } from "@/shared/ui";
 import { Logo, donateHref } from "./Ramadan";
+import { GivePreview } from "./GivePreview";
 import "./v2.css";
 
 type AppealKey = "zakat" | "sadaqah" | "iftar" | "fidya";
@@ -32,7 +34,7 @@ const STEPS = [
     ["Give", "Donors pick an amount, add Gift Aid and pay. The receipt arrives straight away.", "Card, Apple Pay, Google Pay, PayPal, Direct Debit", "Gift Aid in one tap"],
     ["Race", "Put the live screen up and watch teams climb the leaderboard through the Last 10 Nights.", "Teams and individuals", "Updates as gifts arrive"],
 ] as const;
-const NAV: [string, string][] = [["Features", "#pages"], ["Live nights", "#nights"], ["Pricing", "/pricing"], ["Leaderboard", "/leaderboard"]];
+const NAV: [string, string][] = [["Features", "#pages"], ["Donate flow", "#give"], ["Live nights", "#nights"], ["Pricing", "/pricing"], ["Leaderboard", "/leaderboard"]];
 const FOOT: [string, [string, string][]][] = [
     ["Product", [["Ramadan giving page", "/ramadhan"], ["Fundraising pages", "/create"], ["Live screens", "/demo/live"], ["Leaderboards", "/leaderboard"], ["Checkout", "/checkout"]]],
     ["Resources", [["Pricing", "/pricing"], ["Blog", "/blog"], ["FAQ", "/faq"], ["Fundraising rules", "/rules"]]],
@@ -90,6 +92,56 @@ export const LandingV2 = () => {
     const [step, setStep] = useState(0);
     const [tick, setTick] = useState(0);
     const stepTimer = useRef<number | undefined>(undefined);
+    const [menu, setMenu] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
+    const head = useRef<HTMLElement>(null);
+    const burger = useRef<HTMLButtonElement>(null);
+    const deck = useRef<HTMLDivElement>(null);
+    const tabs = useRef<HTMLDivElement>(null);
+    /** Until this time the deck is being scrolled by a tab, so its scroll events don't pick the page. */
+    const deckBusy = useRef(0);
+
+    useEffect(() => {
+        const onScroll = () => setScrolled(window.scrollY > 8);
+        onScroll(); window.addEventListener("scroll", onScroll, { passive: true });
+        return () => window.removeEventListener("scroll", onScroll);
+    }, []);
+    // The phone menu: the page behind stops scrolling, Escape closes it, and Tab stays inside the header.
+    useEffect(() => {
+        if (!menu) return;
+        document.documentElement.classList.add("v2-lock");
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape") { setMenu(false); burger.current?.focus(); return; }
+            if (e.key !== "Tab" || !head.current) return;
+            const f = [...head.current.querySelectorAll<HTMLElement>("a, button")].filter((el) => el.offsetParent !== null);
+            const first = f[0], last = f[f.length - 1], at = document.activeElement;
+            if (e.shiftKey && at === first) { e.preventDefault(); last.focus(); } else if (!e.shiftKey && at === last) { e.preventDefault(); first.focus(); }
+        };
+        const wide = window.matchMedia("(min-width: 900px)"), onWide = () => { if (wide.matches) setMenu(false); };
+        document.addEventListener("keydown", onKey); wide.addEventListener("change", onWide);
+        return () => { document.documentElement.classList.remove("v2-lock"); document.removeEventListener("keydown", onKey); wide.removeEventListener("change", onWide); };
+    }, [menu]);
+
+    // On phones the deck is a swipe row: a tab scrolls its card to the middle, and a swipe picks the tab.
+    const centre = (el: HTMLElement) => el.offsetLeft + el.offsetWidth / 2;
+    const pickPage = (i: number) => {
+        setPage(i);
+        const el = deck.current, c = el?.children[i] as HTMLElement | undefined;
+        if (!el || !c || el.scrollWidth <= el.clientWidth) return;
+        deckBusy.current = Date.now() + 700;
+        el.scrollTo({ left: centre(c) - el.clientWidth / 2, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    };
+    const onDeckScroll = () => {
+        const el = deck.current;
+        if (!el || el.scrollWidth <= el.clientWidth || Date.now() < deckBusy.current) return;
+        const mid = el.scrollLeft + el.clientWidth / 2;
+        let best = 0;
+        [...el.children].forEach((c, i) => { if (Math.abs(centre(c as HTMLElement) - mid) < Math.abs(centre(el.children[best] as HTMLElement) - mid)) best = i; });
+        setPage(best);
+    };
+    // Keep the chosen tab in view when the row of tabs scrolls (phones).
+    useEffect(() => { const el = tabs.current, b = el?.children[page] as HTMLElement | undefined; if (el && b && el.scrollWidth > el.clientWidth) el.scrollLeft = centre(b) - el.clientWidth / 2; }, [page]);
+    useEffect(() => { const el = deck.current, c = el?.children[2] as HTMLElement | undefined; if (el && c && el.scrollWidth > el.clientWidth) el.scrollLeft = centre(c) - el.clientWidth / 2; }, []);
 
     const startSteps = () => { window.clearInterval(stepTimer.current); stepTimer.current = window.setInterval(() => setStep((s) => (s + 1) % 4), 6000); };
     useEffect(() => {
@@ -108,22 +160,32 @@ export const LandingV2 = () => {
 
     return (
         <div className="v2">
-            <header className="v2-wrap" style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "8px 32px", paddingTop: 18, paddingBottom: 18, fontSize: 15 }}>
-                <a href="/" aria-label="Outgive home" style={{ display: "flex" }}><Logo size={26} /></a>
-                <nav aria-label="Main" style={{ display: "flex", flexWrap: "wrap", gap: "0 26px" }}>{NAV.map(([l, h]) => <a key={l} className="v2-navl" href={h}>{l}</a>)}</nav>
-                <div style={{ display: "flex", alignItems: "center", gap: 18 }}><a className="v2-navl" href="/login">Log in</a><a href="#demo" className="v2-btn v2-ink" style={{ minHeight: 44, padding: "0 20px", fontSize: 15 }}>Book a demo</a></div>
+            <header ref={head} className={`v2-head${scrolled || menu ? " is-solid" : ""}`}>
+                <div className="v2-wrap v2-head-in">
+                    <a href="/" aria-label="Outgive home" className="v2-head-logo"><Logo size={26} /></a>
+                    <nav aria-label="Main" className="v2-nav">{NAV.map(([l, h]) => <a key={l} className="v2-navl" href={h}>{l}</a>)}</nav>
+                    <div className="v2-head-r">
+                        <a className="v2-navl v2-login" href="/login">Log in</a>
+                        <a href="#demo" className="v2-btn v2-ink v2-head-cta" onClick={() => setMenu(false)}>Book a demo</a>
+                        <button ref={burger} type="button" className="v2-burger" aria-expanded={menu} aria-controls="v2-menu" aria-label={menu ? "Close menu" : "Open menu"} onClick={() => setMenu(!menu)}><span /><span /></button>
+                    </div>
+                </div>
+                <div id="v2-menu" className="v2-menu" hidden={!menu} onClick={(e) => { if ((e.target as HTMLElement).closest("a")) setMenu(false); }}>
+                    <nav aria-label="Menu">{NAV.map(([l, h]) => <a key={l} href={h}>{l}<svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="m7 4 5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg></a>)}</nav>
+                    <div className="v2-menu-foot"><a href="/login" className="v2-btn v2-soft-btn">Log in</a><a href="/ramadhan" className="v2-btn v2-ink">See a live Ramadan page</a></div>
+                </div>
             </header>
 
             <main>
-                <section id="top" className="v2-wrap" style={{ paddingTop: 64, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 26 }}>
-                    <h1 className="v2-rise" style={{ fontSize: "clamp(48px, 7.2vw, 100px)", lineHeight: 0.98, letterSpacing: "-0.055em", fontWeight: 500, maxWidth: "10.5em" }}>Make this <span className="v2-sc v2-mark">Ramadan</span> your biggest appeal yet.</h1>
+                <section id="top" className="v2-wrap" style={{ paddingTop: "clamp(36px, 6vw, 64px)", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 26 }}>
+                    <h1 className="v2-rise" style={{ fontSize: "clamp(42px, 7.2vw, 100px)", lineHeight: 0.98, letterSpacing: "-0.055em", fontWeight: 500, maxWidth: "10.5em" }}>Make this <span className="v2-sc v2-mark">Ramadan</span> your biggest appeal yet.</h1>
                     <p className="v2-sub v2-rise" style={{ maxWidth: "30em", fontSize: 18, ...d(0.1) }}>Launch your donation page in minutes, let supporters fundraise for you, and turn the Last 10 Nights into a live race.</p>
                     <div className="v2-rise" style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center", gap: "10px 12px", ...d(0.2) }}><a href="#demo" className="v2-btn v2-sage-btn">Book a demo</a><a href="/ramadhan" className="v2-btn v2-soft-btn">See a live Ramadan page</a></div>
                 </section>
 
-                <section className="v2-wrap v2-rise" style={{ paddingTop: 64, ...d(0.35) }}>
-                    <div style={{ position: "relative", borderRadius: 36, background: "#F4F3F0", padding: "64px clamp(16px, 3vw, 40px) 28px", display: "flex", flexDirection: "column", gap: 36 }}>
-                        <div className="v2-row v2-lbl" style={{ position: "absolute", top: 20, left: 26, right: 26 }}><Live label="Clearwell Trust, Ramadan appeal" /><span>Sample figures</span></div>
+                <section className="v2-wrap v2-rise" style={{ paddingTop: "clamp(40px, 6vw, 64px)", ...d(0.35) }}>
+                    <div className="v2-stagebox">
+                        <div className="v2-row v2-lbl v2-stagelbl"><Live label="Clearwell Trust, Ramadan appeal" /><span>Sample figures</span></div>
                         <div className="v2-stage">
                             <div className="v2-side" style={{ transform: "rotate(-4deg)", justifySelf: "end", width: "100%", maxWidth: 250 }}>
                                 <div className="v2-float" style={{ background: "linear-gradient(170deg, #DDE5B4, #CFD99C)", borderRadius: "6px 6px 22px 6px", padding: "24px 22px 20px", textAlign: "left", boxShadow: "0 1px 0 rgba(255,255,255,.6) inset, 0 30px 40px -22px rgba(60,70,20,.5)" }}>
@@ -136,12 +198,12 @@ export const LandingV2 = () => {
                                     </div>
                                 </div>
                             </div>
-                            <div style={{ position: "relative" }}>
-                                <div className="v2-card v2-floatb" style={{ position: "absolute", zIndex: 3, top: -44, right: -18, borderRadius: 999, padding: "8px 16px 8px 8px", display: "flex", alignItems: "center", gap: 10, fontSize: 14, whiteSpace: "nowrap" }}>
+                            <div className="v2-main" style={{ position: "relative" }}>
+                                <div className="v2-card v2-floatb v2-toast" style={{ borderRadius: 999, padding: "8px 16px 8px 8px", display: "flex", alignItems: "center", gap: 10, fontSize: 14, whiteSpace: "nowrap" }}>
                                     <span aria-hidden="true" style={{ width: 28, height: 28, borderRadius: "50%", background: "#DDE5B4", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 600 }}>{justGave ? "You" : "GM"}</span>
                                     <span><strong style={{ fontWeight: 600 }}>{justGave ? "You" : "Grace Mwangi"}</strong> gave £{justGave ? amount : 45}</span><span className="v2-lbl">{justGave ? "just now" : "4 min ago"}</span>
                                 </div>
-                                <div className="v2-lilac" style={{ position: "relative", overflow: "hidden", borderRadius: 30, padding: 30, textAlign: "left", boxShadow: "inset 0 1px 0 rgba(255,255,255,.55), 0 0 0 1px rgba(90,50,160,.08), 0 40px 70px -28px rgba(90,50,160,.55)", display: "flex", flexDirection: "column", gap: 20 }}>
+                                <div className="v2-lilac" style={{ position: "relative", overflow: "hidden", borderRadius: 30, padding: "clamp(20px, 5vw, 30px)", textAlign: "left", boxShadow: "inset 0 1px 0 rgba(255,255,255,.55), 0 0 0 1px rgba(90,50,160,.08), 0 40px 70px -28px rgba(90,50,160,.55)", display: "flex", flexDirection: "column", gap: 20 }}>
                                     <Moon id="hero" style={{ width: 210, height: 210, right: 18, top: -6 }} />
                                     <p className="v2-lbl" style={{ position: "relative", color: "#4A3A66", letterSpacing: "0.08em", fontSize: 11, fontWeight: 500 }}>CLEARWELL TRUST</p>
                                     <h2 style={{ position: "relative", fontSize: "clamp(34px, 3.6vw, 46px)", lineHeight: 1, letterSpacing: "-0.05em", fontWeight: 500, marginTop: 70 }}>{ap.title}<br /><span className="v2-sc">{ap.em}</span></h2>
@@ -149,9 +211,9 @@ export const LandingV2 = () => {
                                         <div className="v2-row" style={{ fontSize: 14 }}><strong style={{ fontWeight: 600 }}>£{money(raised)} raised</strong><span style={{ color: "#4A3A66" }}>of £{money(ap.goal)}</span></div>
                                         <div className="v2-bar" style={{ background: "rgba(255,255,255,.55)" }}><span style={{ background: "#F0783C", width: `${pct}%`, transition: "width .7s cubic-bezier(.2,.8,.2,1)" }} /></div>
                                     </div>
-                                    <div className="v2-row" style={{ position: "relative", flexWrap: "wrap" }}>
+                                    <div className="v2-row v2-give-row" style={{ position: "relative", flexWrap: "wrap" }}>
                                         <div role="group" aria-label="Choose an amount" style={{ display: "flex", gap: 6 }}>
-                                            {AMOUNTS.map((v) => <button key={v} type="button" aria-pressed={v === amount} onClick={() => setAmount(v)} style={{ minWidth: 54, minHeight: 44, padding: "0 12px", borderRadius: 999, fontSize: 15, fontWeight: 500, textAlign: "center", background: v === amount ? "#191919" : "rgba(255,255,255,.75)", color: v === amount ? "#fff" : "#191919", transition: "background .2s, color .2s" }}>£{v}</button>)}
+                                            {AMOUNTS.map((v) => <button key={v} type="button" aria-pressed={v === amount} onClick={() => setAmount(v)} style={{ flex: "1 0 54px", minHeight: 44, padding: "0 12px", borderRadius: 999, fontSize: 15, fontWeight: 500, textAlign: "center", background: v === amount ? "#191919" : "rgba(255,255,255,.75)", color: v === amount ? "#fff" : "#191919", transition: "background .2s, color .2s" }}>£{v}</button>)}
                                         </div>
                                         <button type="button" onClick={() => { setGave((g) => g + amount); setJustGave(true); }} className="v2-btn" style={{ background: "#D2DBA0", color: "#191919", minHeight: 44, padding: "0 22px", fontWeight: 600, boxShadow: "0 10px 22px -10px rgba(110,125,60,.55)" }}>Give £{amount}</button>
                                     </div>
@@ -174,7 +236,7 @@ export const LandingV2 = () => {
                             </div>
                         </div>
                         <div style={{ display: "flex", justifyContent: "center" }}>
-                            <div className="v2-seg v2-card" role="group" aria-label="Appeal type" style={{ alignItems: "center", borderRadius: 999 }}>
+                            <div className="v2-seg v2-seg-scroll v2-card" role="group" aria-label="Appeal type" style={{ alignItems: "center", borderRadius: 999 }}>
                                 <span className="v2-lbl" style={{ padding: "0 10px 0 16px" }}>Appeal</span>
                                 {(Object.keys(AP) as AppealKey[]).map((k) => <button key={k} type="button" aria-pressed={k === appeal} onClick={() => { setAppeal(k); setGave(0); setJustGave(false); }}>{AP[k].label}</button>)}
                             </div>
@@ -182,38 +244,38 @@ export const LandingV2 = () => {
                     </div>
                 </section>
 
-                <section id="pages" className="v2-wrap" style={{ paddingTop: 136, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 22 }}>
+                <section id="pages" className="v2-wrap v2-sec" style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 22 }}>
                     <h2 className="v2-h2" style={{ maxWidth: "8em" }}>Every page your appeal needs.</h2>
                     <p className="v2-sub" style={{ maxWidth: "31em" }}>One appeal gives you a donate page, fundraiser and team pages, a leaderboard and a live screen. They all count toward the same total.</p>
-                    <div className="v2-seg" role="group" aria-label="Pages" style={{ background: "#F4F3F0", justifyContent: "center", borderRadius: 28, marginTop: 6 }}>
-                        {PAGES.map((l, i) => <button key={l} type="button" aria-pressed={i === page} onClick={() => setPage(i)} style={{ boxShadow: i === page ? "0 6px 14px -6px rgba(25,25,25,.6)" : "none" }}>{l}</button>)}
+                    <div ref={tabs} className="v2-seg v2-seg-scroll" role="group" aria-label="Pages" style={{ background: "#F4F3F0", borderRadius: 28, marginTop: 6 }}>
+                        {PAGES.map((l, i) => <button key={l} type="button" aria-pressed={i === page} onClick={() => pickPage(i)} style={{ boxShadow: i === page ? "0 6px 14px -6px rgba(25,25,25,.6)" : "none" }}>{l}</button>)}
                     </div>
-                    <p className="v2-lbl" style={{ display: "inline-flex", alignItems: "center", gap: 8, marginTop: 10 }}>outgive.org/clearwell/{SLUGS[page]}<span style={{ background: "#EEF2D6", color: "#3F4A22", borderRadius: 6, padding: "2px 8px" }}>5 pages, one total</span></p>
+                    <p className="v2-lbl" style={{ display: "inline-flex", flexWrap: "wrap", justifyContent: "center", alignItems: "center", gap: 8, marginTop: 10 }}>outgive.org/clearwell/{SLUGS[page]}<span style={{ background: "#EEF2D6", color: "#3F4A22", borderRadius: 6, padding: "2px 8px" }}>5 pages, one total</span></p>
                 </section>
-                <div className="v2-deck">
-                    <button type="button" onClick={() => setPage(0)} aria-label="Donate page" className="v2-card v2-lilac" style={card(0)}>
+                <div className="v2-deck" ref={deck} onScroll={onDeckScroll}>
+                    <button type="button" onClick={() => pickPage(0)} aria-label="Donate page" className="v2-card v2-lilac" style={card(0)}>
                         <span className="v2-lbl" style={{ color: "#4A3A66" }}>Donate page</span>
                         <span style={{ ...T.title, fontSize: 27, marginTop: "auto" }}>Clean water for 40 villages.</span>
                         <span className="v2-bar" style={{ background: "rgba(255,255,255,.55)" }}><span style={{ width: "70%", background: "#F0783C" }} /></span>
                         <span style={{ display: "flex", gap: 6 }}>{AMOUNTS.map((v) => <span key={v} className={v === 50 ? "v2-chip v2-chip-on" : "v2-chip"}>£{v}</span>)}</span>
                     </button>
-                    <button type="button" onClick={() => setPage(1)} aria-label="Fundraiser" className="v2-card v2-peach" style={card(1)}>
+                    <button type="button" onClick={() => pickPage(1)} aria-label="Fundraiser" className="v2-card v2-peach" style={card(1)}>
                         <span className="v2-lbl" style={{ color: "#7A4A2E" }}>Fundraiser</span>
                         <span style={{ display: "flex", alignItems: "center", gap: 10, marginTop: "auto" }}><span aria-hidden="true" style={{ width: 40, height: 40, borderRadius: "50%", background: "#F0783C", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 600 }}>A</span><span className="v2-lbl" style={{ color: "#7A4A2E" }}>Amina is fundraising<br />for Clearwell Trust</span></span>
                         <span style={T.title}>Amina's Ramadan walk for water</span>
                         <span className="v2-bar" style={{ background: "rgba(255,255,255,.7)" }}><span style={{ width: "74%", background: "#191919" }} /></span>
                         <span className="v2-row" style={{ fontSize: 14 }}><strong style={{ fontWeight: 600 }}>£1,850</strong><span style={{ color: "#7A4A2E" }}>of £2,500</span></span>
                     </button>
-                    <button type="button" onClick={() => setPage(2)} aria-label="Leaderboard" className="v2-card" style={{ gap: 6, ...card(2) }}>
+                    <button type="button" onClick={() => pickPage(2)} aria-label="Leaderboard" className="v2-card" style={{ gap: 6, ...card(2) }}>
                         <span className="v2-row v2-lbl" style={{ paddingBottom: 8 }}><span>Leaderboard</span><Live /></span>
                         <LeaderRow n={1} name="Amara Okafor" v="£18,900" top /><LeaderRow n={2} name="Northfield Rotary" v="£16,861" /><LeaderRow n={3} name="Bluefin Logistics" v="£15,046" /><LeaderRow n={4} name="St Hilda's Primary" v="£13,430" />
                     </button>
-                    <button type="button" onClick={() => setPage(3)} aria-label="Team race" className="v2-card v2-sage" style={card(3)}>
+                    <button type="button" onClick={() => pickPage(3)} aria-label="Team race" className="v2-card v2-sage" style={card(3)}>
                         <span className="v2-lbl" style={{ color: "#4B5530" }}>Team race</span>
                         <span style={T.title}>Three teams, one total.</span>
                         <span style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: "auto", fontSize: 14 }}><Race name="Northfield Rotary" pct={82} /><Race name="Bluefin Logistics" pct={64} /><Race name="St Hilda's Primary" pct={41} /></span>
                     </button>
-                    <button type="button" onClick={() => setPage(4)} aria-label="Live screen" className="v2-card v2-forest" style={{ color: "#EEF2D6", ...card(4) }}>
+                    <button type="button" onClick={() => pickPage(4)} aria-label="Live screen" className="v2-card v2-forest" style={{ color: "#EEF2D6", ...card(4) }}>
                         <span className="v2-lbl" style={{ color: "#C5CF9A" }}>Live screen</span>
                         <span style={{ marginTop: "auto" }}><span className="v2-lbl" style={{ color: "#C5CF9A", display: "block" }}>Night 27, raised tonight</span><span style={{ fontSize: 64, lineHeight: 1, letterSpacing: "-0.06em", fontWeight: 500, color: "#fff" }}>£18,962</span></span>
                         <span className="v2-bar" style={{ background: "rgba(255,255,255,.15)" }}><span style={{ width: "62%", background: "#F0783C" }} /></span>
@@ -221,8 +283,8 @@ export const LandingV2 = () => {
                     </button>
                 </div>
 
-                <section className="v2-wrap" style={{ paddingTop: 112 }}>
-                    <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: "20px 48px", marginBottom: 56 }}>
+                <section className="v2-wrap v2-sec">
+                    <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: "20px 48px", marginBottom: "clamp(32px, 5vw, 56px)" }}>
                         <h2 className="v2-h2">More ways<br />to give.</h2>
                         <div style={{ maxWidth: "24em" }}><p className="v2-sub">Zakat, Sadaqah and Iftar each get their own appeal. Fidya, emergency and education appeals too.</p><a href="#demo" style={{ display: "inline-block", fontWeight: 500, borderBottom: "1.5px solid #191919", padding: "12px 0 4px" }}>Book a demo</a></div>
                     </div>
@@ -255,9 +317,11 @@ export const LandingV2 = () => {
                     </div>
                 </section>
 
-                <section id="nights" style={{ background: "#191919", color: "#F2F2F2", marginTop: 136 }}>
-                    <div className="v2-wrap" style={{ paddingTop: 120, paddingBottom: 120 }}>
-                        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: "24px 48px", marginBottom: 56 }}>
+                <section id="give" className="v2-wrap v2-sec"><GivePreview /></section>
+
+                <section id="nights" className="v2-night" style={{ background: "#191919", color: "#F2F2F2" }}>
+                    <div className="v2-wrap v2-night-in">
+                        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: "24px 48px", marginBottom: "clamp(32px, 5vw, 56px)" }}>
                             <h2 className="v2-h2" style={{ color: "#fff" }}>Light up the<br /><span className="v2-sc" style={{ color: "#D2DBA0" }}>last ten</span> nights.</h2>
                             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 14, flex: "0 1 400px" }}>
                                 <div className="v2-seg v2-seg-dark" role="group" aria-label="Who is it for" style={{ background: "#2A2A2A" }}>{(Object.keys(AUD) as Aud[]).map((k) => <button key={k} type="button" aria-pressed={k === aud} onClick={() => setAud(k)}>{AUD[k][0]}</button>)}</div>
@@ -307,17 +371,17 @@ export const LandingV2 = () => {
                             <a href="/demo/live" style={{ color: "#fff", fontWeight: 500, borderBottom: "1.5px solid #fff", padding: "12px 0 4px" }}>See a live screen</a>
                         </div>
 
-                        <h2 className="v2-h2" style={{ color: "#fff", marginTop: 160, marginBottom: 48 }}>Build an appeal,<br />step by step.</h2>
-                        <div role="group" aria-label="Steps" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 10 }}>
+                        <h2 className="v2-h2" style={{ color: "#fff", marginTop: "clamp(88px, 13vw, 160px)", marginBottom: "clamp(28px, 4vw, 48px)" }}>Build an appeal,<br />step by step.</h2>
+                        <div role="group" aria-label="Steps" className="v2-steps">
                             {STEPS.map((x, i) => (
                                 <button key={x[0]} type="button" aria-pressed={i === step} onClick={() => { setStep(i); if (stepTimer.current) startSteps(); }} style={{ display: "flex", flexDirection: "column", gap: 14, minHeight: 48, color: i === step ? "#fff" : "#8A8A8A", transition: "color .3s" }}>
                                     <span style={{ display: "block", height: 2, borderRadius: 2, background: "#3A3A3A", overflow: "hidden" }}>{i === step && <span key={step} className="v2-fill" style={{ display: "block", height: "100%", background: "#D2DBA0" }} />}</span>
-                                    <span style={{ fontSize: 16, fontWeight: 500 }}><span style={{ color: "#8A8A8A", marginRight: 8 }}>{i + 1}</span>{x[0]}</span>
+                                    <span className="v2-steps-l"><span>{i + 1}</span>{x[0]}</span>
                                 </button>
                             ))}
                         </div>
                         <div className="v2-dcard" style={{ marginTop: 18, padding: "clamp(24px, 4vw, 48px)", display: "flex", flexWrap: "wrap", gap: 40, alignItems: "stretch", borderRadius: 28 }}>
-                            <div style={{ flex: "1 1 300px", minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 40, minHeight: 300 }}>
+                            <div style={{ flex: "1 1 300px", minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 40, minHeight: "min(300px, 60vw)" }}>
                                 <div><h3 style={{ fontSize: 36, letterSpacing: "-0.045em", fontWeight: 500, color: "#fff" }}>{st[0]}</h3><p style={{ fontSize: 17, lineHeight: 1.55, color: "#A8A8A8", marginTop: 12, maxWidth: "24em" }}>{st[1]}</p></div>
                                 <ul style={{ display: "flex", flexDirection: "column", gap: 12, fontSize: 15 }}><li style={{ display: "flex", alignItems: "center", gap: 10 }}><Check />{st[2]}</li><li style={{ display: "flex", alignItems: "center", gap: 10 }}><Check />{st[3]}</li></ul>
                             </div>
@@ -350,8 +414,8 @@ export const LandingV2 = () => {
                     </div>
                 </section>
 
-                <section className="v2-wrap" style={{ paddingTop: 136 }}>
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 18, marginBottom: 56 }}><h2 className="v2-h2">Make it your own.</h2><p className="v2-sub">Three donate page layouts. Pick the one that suits your appeal.</p></div>
+                <section className="v2-wrap v2-sec">
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 18, marginBottom: "clamp(32px, 5vw, 56px)" }}><h2 className="v2-h2">Make it your own.</h2><p className="v2-sub">Three donate page layouts. Pick the one that suits your appeal.</p></div>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24 }}>
                         <Layout href={donateHref("hero")} title="Hero stage" body="A big amount dial with the impact beside it." art={
                             <div className="v2-lilac" style={{ position: "relative", overflow: "hidden", borderRadius: 16, padding: 26, minHeight: 220, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -369,31 +433,31 @@ export const LandingV2 = () => {
                     </div>
                 </section>
 
-                <section id="start" className="v2-wrap" style={{ paddingTop: 136, paddingBottom: 64 }}>
-                    <div style={{ position: "relative", overflow: "hidden", background: "linear-gradient(170deg, #3A4829 0%, #27311B 100%)", color: "#EEF2D6", borderRadius: 40, padding: "clamp(56px, 8vw, 104px) 24px 0", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 26, boxShadow: "inset 0 1px 0 rgba(255,255,255,.12)" }}>
+                <section id="start" className="v2-wrap v2-sec" style={{ paddingBottom: "clamp(32px, 5vw, 64px)" }}>
+                    <div style={{ position: "relative", overflow: "hidden", background: "linear-gradient(170deg, #3A4829 0%, #27311B 100%)", color: "#EEF2D6", borderRadius: "clamp(28px, 5vw, 40px)", padding: "clamp(56px, 8vw, 104px) clamp(16px, 4vw, 24px) 0", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 26, boxShadow: "inset 0 1px 0 rgba(255,255,255,.12)" }}>
                         <Moon id="end" style={{ width: 300, height: 300, right: -70, top: -90 }} />
-                        <h2 style={{ position: "relative", fontSize: "clamp(64px, 10vw, 140px)", lineHeight: 1.1, letterSpacing: "-0.06em", fontWeight: 500, color: "#fff", marginBottom: 20 }}>Start <span className="v2-sc" style={{ color: "#D2DBA0" }}>giving.</span></h2>
+                        <h2 style={{ position: "relative", fontSize: "clamp(56px, 10vw, 140px)", lineHeight: 1.1, letterSpacing: "-0.06em", fontWeight: 500, color: "#fff", marginBottom: 20 }}>Start <span className="v2-sc" style={{ color: "#D2DBA0" }}>giving.</span></h2>
                         <p style={{ position: "relative", fontSize: 17, lineHeight: 1.55, maxWidth: "27em" }}>Gifts are paid into the charity's own Stripe account. They never pass through a fundraiser's hands, or ours.</p>
-                        <div style={{ position: "relative", display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 10 }}>
+                        <div className="v2-cta-row" style={{ position: "relative", display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 10 }}>
                             <a href="#demo" className="v2-btn" style={{ background: "#D2DBA0", color: "#191919" }}>Book a demo</a>
                             <a href="/ramadhan" className="v2-btn" style={{ background: "rgba(255,255,255,.1)", color: "#fff" }}>See a live Ramadan page</a>
                             <a href="/pricing" className="v2-btn" style={{ background: "rgba(255,255,255,.1)", color: "#fff" }}>See pricing</a>
                         </div>
                         <dl style={{ position: "relative", width: "100%", maxWidth: 720, display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", marginTop: 40, borderTop: "1px solid rgba(255,255,255,.14)" }}>
-                            {[["£0", "to start"], ["0%", "platform fee"], ["+25%", "Gift Aid"]].map(([v, k]) => <div key={k} style={{ padding: "32px 8px 48px", display: "flex", flexDirection: "column-reverse" }}><dt style={{ fontSize: 14, color: "#C5CF9A" }}>{k}</dt><dd style={{ fontSize: "clamp(32px, 4vw, 48px)", letterSpacing: "-0.05em", fontWeight: 500, color: "#D2DBA0" }}>{v}</dd></div>)}
+                            {[["£0", "to start"], ["0%", "platform fee"], ["+25%", "Gift Aid"]].map(([v, k]) => <div key={k} style={{ padding: "clamp(22px, 4vw, 32px) 4px clamp(30px, 5vw, 48px)", display: "flex", flexDirection: "column-reverse" }}><dt style={{ fontSize: 14, color: "#C5CF9A" }}>{k}</dt><dd style={{ fontSize: "clamp(28px, 4vw, 48px)", letterSpacing: "-0.05em", fontWeight: 500, color: "#D2DBA0" }}>{v}</dd></div>)}
                         </dl>
                     </div>
                 </section>
             </main>
 
             <footer className="v2-wrap" style={{ paddingTop: 32, paddingBottom: 40, fontSize: 15, color: "#666" }}>
-                <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: "40px 56px", borderTop: "1px solid #EEE", paddingTop: 48 }}>
+                <div className="v2-foot">
                     <a href="/" aria-label="Outgive home" style={{ display: "flex", alignSelf: "flex-start" }}><Logo size={26} /></a>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "32px 80px" }}>
+                    <div className="v2-foot-cols">
                         {FOOT.map(([t, links]) => <div key={t} style={{ display: "flex", flexDirection: "column" }}><strong style={{ color: "#191919", fontWeight: 600, padding: "6px 0" }}>{t}</strong>{links.map(([l, h]) => <a key={l} className="v2-navl" style={{ padding: "6px 0" }} href={h}>{l}</a>)}</div>)}
                     </div>
                 </div>
-                <p style={{ fontSize: 14, marginTop: 48 }}>© 2026 Outgive</p>
+                <p style={{ fontSize: 14, marginTop: "clamp(32px, 5vw, 48px)" }}>© 2026 Outgive</p>
             </footer>
             <DemoRequest />
         </div>

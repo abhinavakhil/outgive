@@ -1,10 +1,7 @@
 // Stripe → donations. Verifies the signature, then applies the event through handle.ts with a Postgres-backed Store.
-import { admin, fail, json, stripe, SITE_URL } from "../_shared/deps.ts";
-import { sendReceipt } from "../_shared/email.ts";
-import { fmt } from "../_shared/money.ts";
-import { type Event, handle, type Store, type StoredDonation } from "./handle.ts";
-
-const PREFIX: Record<string, string> = { fundraiser: "f", campaign: "c", team: "t", challenge: "ch", event: "e", memory: "m" };
+import { admin, fail, json, stripe } from "../_shared/deps.ts";
+import { receiptOnPaid } from "../_shared/receipts/issue.ts";
+import { type Event, handle, type Store, type StoredDonation, verifyAny } from "./handle.ts";
 
 const store = (): Store => {
     const db = admin();
@@ -23,13 +20,9 @@ const store = (): Store => {
         },
         userIdByEmail: async (email) => (await db.from("profiles").select("id").ilike("email", email).maybeSingle()).data?.id ?? null,
         orgStripeStatus: async (acct, charges, payouts) => { await db.from("orgs").update({ stripe_charges_enabled: charges, stripe_payouts_enabled: payouts }).eq("stripe_account_id", acct); },
-        receipt: async (d) => {
-            const { data: org } = await db.from("orgs").select("name, registration_number, country, color, slug, custom_domain").eq("id", d.org_id).single();
-            const { data: page } = d.page_id ? await db.from("pages").select("title, type, slug").eq("id", d.page_id).single() : { data: null };
-            if (!org || !d.donor_email) return false;
-            const base = org.custom_domain ? `https://${org.custom_domain}` : `${SITE_URL()}/o/${org.slug}`;
-            return sendReceipt({ to: d.donor_email, donorName: d.donor_name, orgName: org.name, orgRegistration: org.registration_number, orgCountry: org.country, amount: fmt(d.amount_cents, d.currency), tip: d.tip_cents ? fmt(d.tip_cents, d.currency) : "", total: fmt(d.amount_cents + d.tip_cents + d.cover_cents, d.currency), date: new Date(d.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }), donationId: d.id, pageTitle: page?.title ?? org.name, pageUrl: page ? `${base}/${PREFIX[page.type]}/${page.slug}` : base, recurring: d.recurring, dedication: d.dedication, brandColor: org.color });
-        },
+        // The US receipt (number, fund lines, EIN, the IRS wording): _shared/receipts. Emails it when the charity sends receipts right away.
+        receipt: (d) => receiptOnPaid(db, d.id),
+        nightCharge: async (pi, status, error) => { await db.from("gift_schedule_charges").update({ status, error: error ?? null }).eq("stripe_payment_intent_id", pi).in("status", ["processing", "charging", "failed"]); },
     };
 };
 
@@ -37,6 +30,7 @@ Deno.serve(async (req) => {
     const sig = req.headers.get("stripe-signature"); if (!sig) return fail("Missing signature", 400);
     const body = await req.text();
     let event: Event;
-    try { event = (await stripe().webhooks.constructEventAsync(body, sig, Deno.env.get("STRIPE_WEBHOOK_SECRET")!)) as unknown as Event; } catch (e) { return fail(`Bad signature: ${(e as Error).message}`, 400); }
+    // Platform events, and Connect events from charities' own accounts (US direct charges, their subscriptions and ACH): one handler for both.
+    try { event = await verifyAny([Deno.env.get("STRIPE_WEBHOOK_SECRET"), Deno.env.get("STRIPE_CONNECT_WEBHOOK_SECRET")], async (secret) => (await stripe().webhooks.constructEventAsync(body, sig, secret)) as unknown as Event); } catch (e) { return fail(`Bad signature: ${(e as Error).message}`, 400); }
     try { const result = await handle(store(), event); console.log(event.type, result); return json({ received: true, result }); } catch (e) { console.error(e); return fail((e as Error).message, 500); }
 });

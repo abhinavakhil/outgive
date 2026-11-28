@@ -14,7 +14,19 @@ export interface Store {
     userIdByEmail: (email: string) => Promise<string | null>;
     orgStripeStatus: (accountId: string, charges: boolean, payouts: boolean) => Promise<void>;
     receipt: (d: StoredDonation) => Promise<boolean>;
+    /** A last-ten-nights charge settled later (ACH): mirror it onto its gift_schedule_charges row. Optional for stores without schedules. */
+    nightCharge?: (paymentIntent: string, status: "succeeded" | "failed", error?: string) => Promise<void>;
 }
+
+/**
+ * Tries each signing secret in turn: the platform's endpoint (STRIPE_WEBHOOK_SECRET) and the Connect endpoint for events on charities'
+ * own accounts, i.e. direct charges (STRIPE_CONNECT_WEBHOOK_SECRET). The first that verifies wins; unset secrets are skipped.
+ */
+export const verifyAny = async <E>(secrets: (string | undefined)[], verify: (secret: string) => Promise<E>): Promise<E> => {
+    let last: unknown = new Error("No webhook signing secret is set");
+    for (const s of secrets) { if (!s) continue; try { return await verify(s); } catch (e) { last = e; } }
+    throw last;
+};
 
 type Obj = Record<string, unknown>;
 export interface Event { id: string; type: string; data: { object: Obj } }
@@ -66,9 +78,16 @@ export const handle = async (s: Store, ev: Event): Promise<string> => {
             return "renewal";
         }
         // The in-page checkout (the pay function) confirms a PaymentIntent directly; its rows carry an attempt_key. Checkout Session gifts keep to the cases above.
+        // A bank debit (ACH, Bacs) on its way: nothing changes until it succeeds or fails.
+        case "payment_intent.processing": return "processing";
         case "payment_intent.succeeded":
         case "payment_intent.payment_failed": {
-            const id = (o.metadata as Obj | undefined)?.donation_id as string | undefined;
+            const meta = o.metadata as Obj | undefined, id = meta?.donation_id as string | undefined;
+            // A ten-nights charge (nightly-charge) carries schedule_id: keep its night row in step too.
+            if (meta?.schedule_id && s.nightCharge) {
+                const e = o.last_payment_error as Obj | undefined;
+                await s.nightCharge(String(o.id), ev.type === "payment_intent.succeeded" ? "succeeded" : "failed", e ? String(e.decline_code ?? e.code ?? "failed") : undefined);
+            }
             const d = (id && (await s.byId(id))) || (await s.byIntent(String(o.id)));
             if (!d?.attempt_key) return "ignored";
             if (ev.type === "payment_intent.payment_failed") {

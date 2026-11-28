@@ -1,4 +1,5 @@
-// Donation receipts through Resend. Nothing is sent until RESEND_API_KEY is set; the webhook then marks receipt_sent_at.
+// Donation receipts, sent through _shared/notify (Resend). Nothing is sent until RESEND_API_KEY is set; the webhook then marks receipt_sent_at.
+import { send } from "./notify/index.ts";
 
 export interface Receipt { to: string; donorName: string; orgName: string; orgRegistration: string; orgCountry: string; amount: string; tip: string; total: string; date: string; donationId: string; pageTitle: string; pageUrl: string; recurring: boolean; dedication: string; brandColor: string }
 
@@ -23,10 +24,9 @@ export const receiptHtml = (r: Receipt) => `<!doctype html><html><body style="ma
   </div>
 </div></body></html>`;
 
+/** True only when an email really went out (the console stand-in does not count), so receipt_sent_at stays honest. */
 export const sendReceipt = async (r: Receipt) => {
-    const key = Deno.env.get("RESEND_API_KEY"); if (!key) return false;
-    const from = Deno.env.get("RECEIPT_FROM") ?? "Outgive <receipts@outgive.org>";
-    const res = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [r.to], subject: `Your gift to ${r.orgName}: ${r.amount}`, html: receiptHtml(r) }) });
-    if (!res.ok) { console.error("resend", res.status, await res.text()); return false; }
-    return true;
+    const out = await send({ to: r.to, channel: "email", subject: `Your gift to ${r.orgName}: ${r.amount}`, body: `Thank you for your gift of ${r.amount} to ${r.orgName}. Reference ${r.donationId}.`, html: receiptHtml(r) });
+    if (!out.ok) console.error("receipt", out.provider, out.error);
+    return out.ok && out.provider !== "console";
 };

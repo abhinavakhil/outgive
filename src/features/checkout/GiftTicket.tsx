@@ -2,7 +2,7 @@
 import { cx } from "@/shared/utils/cx";
 import { OgMark } from "@/shared/ui";
 import { METHOD_NAME, impactFor } from "./model";
-import { AfterButtons, AmountInput, Boosts, Details, Dial, Err, ExpressGiftAid, Extras, FreqSeg, GiftRows, Later, Mandate, NextStep, NoPayments, Nudge, PayFields, Presets, Radio, Row, Tribute, TrustPanel, cta, dark, endCopy, soft } from "./parts";
+import { AddonCards, DafPanel, EmployerMatch, FundChips, NightsPanel, UnitAmount, AfterButtons, AmountInput, Boosts, Details, Dial, Err, ExpressGiftAid, Extras, FreqSeg, GiftRows, Later, Mandate, NextStep, NoPayments, Nudge, PayFields, Presets, Radio, Row, Tribute, TrustPanel, cta, dark, endCopy, soft } from "./parts";
 import type { Ck } from "./useCheckout";
 
 const NAMES = ["Amount", "Boost", "You", "Pay"];
@@ -29,10 +29,11 @@ export const GiftTicket = ({ ck, brand, onShare, onStart }: { ck: Ck; brand: str
                 <a href="/" aria-label={`${brand} home`} className="flex flex-none"><OgMark size={22} tone="auto" /></a>
                 <div className="ml-auto flex gap-3 sm:gap-5 lg:my-auto lg:ml-0 lg:flex-col lg:gap-[22px]">
                     {NAMES.map((label, i) => {
+                        if (!ck.flow.includes(i)) return null;
                         const past = i < step || done, cur = i === step;
                         return (
                             <button key={label} type="button" disabled={i > step || done} onClick={() => ck.go(i)} aria-current={cur ? "step" : undefined} className="flex flex-col items-center gap-1.5 border-0 bg-transparent p-0" style={{ color: past ? "var(--ck-green)" : cur ? "var(--ck-ink)" : "var(--ck-muted)" }}>
-                                <span className="flex size-10 items-center justify-center rounded-2xl text-[16px] font-extrabold lg:size-[46px] lg:text-[17px]" style={{ background: past ? "var(--ck-green-soft)" : cur ? "var(--ck-accent)" : "var(--ck-seg)", boxShadow: cur ? "0 8px 18px rgba(150,70,190,0.30)" : "none" }}>{past ? "✓" : i + 1}</span>
+                                <span className="flex size-10 items-center justify-center rounded-2xl text-[16px] font-extrabold lg:size-[46px] lg:text-[17px]" style={{ background: past ? "var(--ck-green-soft)" : cur ? "var(--ck-accent)" : "var(--ck-seg)", boxShadow: cur ? "0 8px 18px rgba(75,85,48,0.30)" : "none" }}>{past ? "✓" : i + 1}</span>
                                 <span className="text-[12px] font-extrabold">{label}</span>
                             </button>
                         );
@@ -68,9 +69,9 @@ export const GiftTicket = ({ ck, brand, onShare, onStart }: { ck: Ck; brand: str
                                 <div className="flex flex-col gap-3.5">
                                     {c.giftAid && <>
                                         {([[true, "Yes, add Gift Aid", "I’m a UK taxpayer. The charity claims 25p for every £1 from HMRC.", `+${f(ck.gaAdds)}`], [false, "No thanks", "I don’t pay UK tax, or I’d rather not.", ""]] as const).map(([v, title, sub, right]) => {
-                                            const on = s.ga === v, col = v ? "#C99A12" : "var(--ck-accent-strong)";
+                                            const on = s.ga === v, col = "var(--ck-accent-strong)";
                                             return (
-                                                <button key={title} type="button" aria-pressed={on} onClick={() => ck.setGa(v)} className="ck-soft flex min-h-[84px] items-center gap-[18px] rounded-3xl border-2 px-[22px] py-3.5 text-left text-(--ck-ink)" style={{ borderColor: on ? col : "var(--ck-line)", background: on ? (v ? "var(--ck-gold-soft)" : "var(--ck-accent-soft)") : "#fff" }}>
+                                                <button key={title} type="button" aria-pressed={on} onClick={() => ck.setGa(v)} className="ck-soft flex min-h-[84px] items-center gap-[18px] rounded-3xl border-2 px-[22px] py-3.5 text-left text-(--ck-ink)" style={{ borderColor: on ? col : "var(--ck-line)", background: "#fff" }}>
                                                     <Radio on={on} color={col} />
                                                     <span className="flex flex-1 flex-col gap-[3px]"><strong className="text-[19px] font-extrabold tracking-[-0.3px] sm:text-[21px]">{title}</strong><span className="text-[15px] text-(--ck-muted)">{sub}</span></span>
                                                     {right && <strong className="text-[24px] font-extrabold tracking-[-0.8px] whitespace-nowrap text-(--ck-green) sm:text-[30px]">{right}</strong>}
@@ -79,7 +80,8 @@ export const GiftTicket = ({ ck, brand, onShare, onStart }: { ck: Ck; brand: str
                                         })}
                                         <span className="text-[13px] leading-normal text-(--ck-muted)">By choosing yes you confirm that if you pay less Income Tax or Capital Gains Tax than the Gift Aid claimed on all your donations this tax year, you will pay any difference.</span>
                                     </>}
-                                    <span className="mt-2.5 text-[14px] font-extrabold">Small extras, if you like</span>
+                                    {ck.us && <><span className="text-[14px] font-extrabold">Which fund?</span><FundChips ck={ck} /><UnitAmount ck={ck} /><AddonCards ck={ck} /></>}
+                                    <span className="mt-2.5 text-[14px] font-extrabold">{ck.us ? "Add to your gift" : "Small extras, if you like"}</span>
                                     <Extras ck={ck} grid />
                                     <Tribute ck={ck} />
                                     <Nudge ck={ck} />
@@ -88,7 +90,9 @@ export const GiftTicket = ({ ck, brand, onShare, onStart }: { ck: Ck; brand: str
                             {step === 2 && <><Details ck={ck} address="flat" prefsRow /></>}
                             {step === 3 && (
                                 <div data-ck-methods className="flex flex-col gap-3">
+                                    {ck.detailsOnPay && !s.express && <Details ck={ck} address="flat" prefsRow />}
                                     <NoPayments ck={ck} />
+                                    <DafPanel ck={ck} />
                                     <ExpressGiftAid ck={ck} />
                                     {ck.methods.map((m) => {
                                         const on = ck.method === m;
@@ -126,6 +130,7 @@ export const GiftTicket = ({ ck, brand, onShare, onStart }: { ck: Ck; brand: str
                         <h1 className={cx("m-0 leading-none font-bold text-balance", ck.pending ? "text-[38px] tracking-[-1.4px] sm:text-[56px] sm:tracking-[-2.2px]" : "text-[48px] tracking-[-2px] sm:text-[76px] sm:tracking-[-3px]")}>{end.title}</h1>
                         <p className="m-0 max-w-[30em] text-[18px] leading-normal text-(--ck-ink-2) sm:text-[20px]">{ck.pending ? end.body : <>Your ticket is your receipt. {cap(c.beneficiary)} gets <strong className="font-extrabold text-(--ck-ink)">{f(q.receives)}</strong> because of you.</>}</p>
                         <Later ck={ck} manage className="rounded-[20px] px-5 py-4 text-[15px]" />
+                        <EmployerMatch ck={ck} />
                         {ck.nextUp && <div className="flex flex-col rounded-[28px] bg-(--ck-tint) px-6 py-[22px]"><NextStep ck={ck} onShare={onShare} onStart={onStart} /></div>}
                         <AfterButtons ck={ck} onShare={onShare} onStart={onStart} receipt className="grid-cols-[repeat(auto-fit,minmax(min(180px,100%),1fr))]" />
                     </div>
@@ -139,7 +144,7 @@ export const GiftTicket = ({ ck, brand, onShare, onStart }: { ck: Ck; brand: str
                     <div className="flex flex-col gap-3 px-6 pt-[18px] pb-5 sm:px-7">
                         <div className="flex items-center justify-between text-[12px] font-extrabold tracking-[1.4px] uppercase"><span className="text-(--ck-link)">Gift ticket</span><span className="text-(--ck-muted)">No. {ticketNo(c.id)}</span></div>
                         <div className="flex flex-col gap-1"><span className="text-[13px] font-bold text-(--ck-muted)">{c.charity}</span><strong className="text-[22px] leading-[1.12] font-extrabold tracking-[-0.6px] sm:text-[24px]">{c.title}</strong><span className="text-[14px] font-bold text-(--ck-muted)">{fullName ? `For ${fullName}` : ck.trust?.registration ? `Registered charity no. ${ck.trust.registration.regNo}` : ""}</span></div>
-                        <div className="flex flex-col gap-1.5"><div className="h-2 rounded-full bg-[#EFE9FA]"><div className="h-full rounded-full bg-linear-to-r from-[#E7B4F7] to-(--ck-accent-strong)" style={{ width: `${Math.min(100, pct)}%` }} /></div><span className="text-[13px] font-bold text-(--ck-muted)">{f(c.raised)} of {f(c.goal)}, {pct}% funded</span></div>
+                        <div className="flex flex-col gap-1.5"><div className="h-2 rounded-full bg-[#EFE9FA]"><div className="h-full rounded-full bg-linear-to-r from-[#E7B4F7] to-(--ck-coral-ink)" style={{ width: `${Math.min(100, pct)}%` }} /></div><span className="text-[13px] font-bold text-(--ck-muted)">{f(c.raised)} of {f(c.goal)}, {pct}% funded</span></div>
                     </div>
                     <div aria-hidden="true" className="relative mx-[22px] h-0 border-t-2 border-dashed border-[#D9D2E8]"><span className="absolute -top-[17px] -left-[38px] size-8 rounded-full bg-[#E9E4FB]" /><span className="absolute -top-[17px] -right-[38px] size-8 rounded-full bg-[#E9E4FB]" /></div>
                     <div className="flex flex-col gap-3 px-6 pt-[22px] pb-5 sm:px-7">

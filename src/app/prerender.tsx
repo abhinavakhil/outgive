@@ -7,6 +7,7 @@ import { LEGAL_DRAFT, SITE, metaFor } from "@/shared/lib/seo";
 import { LandingV2 } from "@/features/launch";
 import { FAQ, Info, Pricing } from "@/features/marketing";
 import { Blog, POSTS, allPosts, docTitle, primeCms, type Post } from "@/features/blog";
+import { ZAKAT_FAQ, ZakatPage } from "@/features/zakat";
 
 /**
  * Build-time HTML for the pages worth indexing, loaded by scripts/prerender.mjs.
@@ -37,13 +38,14 @@ const screens = (posts: Post[]): [View, () => React.ReactNode, Extra?][] => [
     [{ name: "about" }, () => <Info kind="about" />, { jsonLd: [crumbs([["About", "/about"]])] }],
     [{ name: "blog" }, () => <Blog />, { lastmod: posts.map((p) => p.updated).sort().at(-1), image: "/og/blog.png", imageAlt: "The Outgive blog: fundraising guides", jsonLd: [{ "@context": "https://schema.org", "@type": "Blog", name: `${SITE.name} blog`, url: `${SITE.url}/blog`, blogPost: posts.map((p) => ({ "@type": "BlogPosting", headline: p.title, url: `${SITE.url}/blog/${p.slug}`, datePublished: p.published })) }, crumbs([["Blog", "/blog"]])] }],
     ...posts.map((p): [View, () => React.ReactNode, Extra] => [{ name: "post", slug: p.slug }, () => <Blog slug={p.slug} />, { title: docTitle(p), description: p.description, jsonLd: postLd(p), lastmod: p.updated, ogType: "article", image: p.cover ? `${p.cover}?w=1200&h=630&fit=crop` : POSTS.includes(p) ? `/og/${p.slug}.png` : "/og/blog.png", imageAlt: p.coverAlt || p.title }]),
+    [{ name: "zakat-calculator" }, () => <ZakatPage />, { jsonLd: [{ "@context": "https://schema.org", "@type": "WebApplication", name: "Zakat calculator", url: `${SITE.url}/zakat-calculator`, applicationCategory: "FinanceApplication", operatingSystem: "Web", offers: { "@type": "Offer", price: "0", priceCurrency: "USD" } }, { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: ZAKAT_FAQ.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) }, crumbs([["Zakat calculator", "/zakat-calculator"]])] }],
 ];
 
 export const site = SITE;
 /** Loads the posts written in Sanity, so pages() prerenders them too. */
 export { primeCms };
 /** Only open screens (the home page and the blog) are prerendered, and so in the sitemap: the rest show "Coming soon" until VITE_ALL_PAGES=true (see isOpen in App.tsx). */
-export const pages = () => screens(allPosts(POSTS)).filter(([view]) => import.meta.env.VITE_ALL_PAGES === "true" || ["landing", "blog", "post"].includes(view.name)).map(([view, el, x = {}]) => {
+export const pages = () => screens(allPosts(POSTS)).filter(([view]) => import.meta.env.VITE_ALL_PAGES === "true" || ["landing", "blog", "post", "zakat-calculator"].includes(view.name)).map(([view, el, x = {}]) => {
     const [title, description] = metaFor(view.name, DEFAULT_BRAND);
     return { path: pathOf(view, tenant), title: x.title ?? title, description: x.description ?? description, html: renderToStaticMarkup(<AppContext.Provider value={ctx}>{el()}</AppContext.Provider>), jsonLd: x.jsonLd ?? [], lastmod: x.lastmod, ogType: x.ogType ?? "website", image: x.image ?? "/og.png", imageAlt: x.imageAlt ?? title, noindex: LEGAL_DRAFT && (view.name === "terms" || view.name === "privacy") };
 });

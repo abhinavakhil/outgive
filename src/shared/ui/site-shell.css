@@ -1,4 +1,4 @@
-/* The public site's frame, in the Outgive design system (white ground, ink, Outfit, orange for action). Always light. */
+/* The public site's frame, in the Outgive design system (white ground, ink, Outfit; buttons green, black or white, orange only as colour). Always light. */
 .og-site { min-height: 100dvh; display: flex; flex-direction: column; background: radial-gradient(70% 700px at 50% 0%, #efe6f6 0%, rgb(239 230 246 / 0.5) 45%, transparent 80%), #FFFFFF; background-repeat: no-repeat; color: #191919; font-family: "Outfit", system-ui, sans-serif; -webkit-font-smoothing: antialiased; color-scheme: light; }
 @layer base { .og-site a { color: inherit; text-decoration: none; } }
 .og-site :focus-visible { outline: 2px solid #7B3FD6; outline-offset: 3px; border-radius: 6px; }
@@ -96,7 +96,7 @@
 .og-field :is(input, select, textarea):focus { box-shadow: inset 0 0 0 2px #191919; }
 .og-field textarea { resize: vertical; }
 .og-btn-give { min-height: 52px; background: #D2DBA0; color: #191919 !important; font-weight: 600; cursor: pointer; border: 0; font-size: 16px; }
-.og-btn-give:hover { background: #E0662A; }
+.og-btn-give:hover { background: #C8D292; }
 .og-btn-give:disabled { opacity: .7; cursor: progress; }
 @media (prefers-reduced-motion: reduce) { .og-dialog[open] { animation: none; } }
 

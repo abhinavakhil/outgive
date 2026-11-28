@@ -2,8 +2,14 @@ import { defineArrayMember, defineField, defineType } from "sanity";
 
 /**
  * A blog post. Fields match the site's Post type (src/features/blog/posts.ts), which cms.tsx maps it onto.
- * Headings (H2) in the body become the article's "On this page" list.
+ * The body takes any number of images: single ones across the column, and rows of two or three side by side.
  */
+/** What every image in a post carries. The description is read out by screen readers; the caption shows under the image. */
+const imageFields = [
+    defineField({ name: "alt", title: "Describe the image", type: "string", description: "For people who can't see it. Leave empty only if the image is decoration.", validation: (r) => r.required().warning("Add a short description so screen readers can read the image.") }),
+    defineField({ name: "caption", type: "string", description: "Optional. Shown under the image." }),
+];
+
 export const post = defineType({
     name: "post",
     title: "Blog post",
@@ -23,7 +29,7 @@ export const post = defineType({
         defineField({ name: "author", type: "string", group: "main", description: "Leave empty to show “The Outgive team”." }),
         defineField({
             name: "cover", title: "Cover image", type: "image", group: "main", options: { hotspot: true },
-            description: "Optional. Without one, the post gets a coloured card for its audience. Best at 1600×1000 or wider.",
+            description: "Optional. Shown under the title and as the small picture beside the post on the blog page. Best at 1600×1000 or wider.",
             fields: [defineField({ name: "alt", title: "Describe the image", type: "string" })],
         }),
         defineField({
@@ -31,10 +37,19 @@ export const post = defineType({
             of: [
                 defineArrayMember({
                     type: "block",
-                    styles: [{ title: "Paragraph", value: "normal" }, { title: "Heading", value: "h2" }, { title: "Subheading", value: "h3" }, { title: "Quote", value: "blockquote" }],
+                    styles: [{ title: "Paragraph", value: "normal" }, { title: "Heading", value: "h2" }, { title: "Subheading", value: "h3" }, { title: "Quote", value: "blockquote" }, { title: "Pull quote", value: "pull" }],
                     marks: { annotations: [{ name: "link", type: "object", title: "Link", fields: [{ name: "href", type: "url", title: "Address", validation: (r) => r.uri({ scheme: ["http", "https", "mailto"], allowRelative: true }) }] }] },
                 }),
-                defineArrayMember({ type: "image", options: { hotspot: true }, fields: [{ name: "alt", type: "string", title: "Describe the image" }, { name: "caption", type: "string" }] }),
+                defineArrayMember({ type: "image", title: "Image", options: { hotspot: true }, fields: imageFields }),
+                defineArrayMember({
+                    name: "gallery", title: "Image row", type: "object",
+                    description: "Two or three images side by side at the same height.",
+                    fields: [
+                        defineField({ name: "images", type: "array", of: [defineArrayMember({ type: "image", options: { hotspot: true }, fields: [imageFields[0]] })], options: { layout: "grid" }, validation: (r) => r.required().min(2).max(3) }),
+                        defineField({ name: "caption", type: "string", description: "Optional. One line under the whole row." }),
+                    ],
+                    preview: { select: { caption: "caption", images: "images", media: "images.0" }, prepare: ({ caption, images, media }) => ({ title: caption || "Image row", subtitle: `${(images ?? []).length} images`, media }) },
+                }),
                 defineArrayMember({
                     name: "note", title: "Highlighted note", type: "object",
                     fields: [{ name: "title", type: "string", initialValue: "Tip" }, { name: "text", type: "text", rows: 3 }],
